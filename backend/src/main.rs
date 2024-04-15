@@ -9,14 +9,13 @@ use tower::ServiceBuilder;
 use axum_session::{SessionPgPool, SessionConfig, SessionStore, SessionLayer};
 
 pub mod server_state;
-pub mod send_msg_req_validator;
+pub mod api;
 pub mod web_socket_manager;
 pub mod middlewares;
 pub mod serve_app;
 pub mod database;
 
 use crate::server_state::ServerState;
-use crate::send_msg_req_validator::post_message;
 
 #[tokio::main]
 async fn main() {
@@ -30,7 +29,8 @@ async fn main() {
     let app = Router::new()
         .route("/ws", get(web_socket_manager::handler))
         .route("/app/*any", get(serve_app::serve_app))
-        .route("/api/post_message", post(post_message))
+        .route("/api/post_message", post(api::post_message))
+        .route("/api/send_friend_request", post(api::send_friend_request))
         .layer(
             ServiceBuilder::new()
                 .layer(middleware::from_fn(middlewares::validate_auth))
@@ -39,6 +39,7 @@ async fn main() {
         .route("/api/signin", post(serve_app::signin))
         .route("/api/signup", post(serve_app::signup))
         .nest_service("/assets", ServeDir::new("../frontend/dist/assets"))
+        .nest_service("/", ServeDir::new("../frontend/public"))
         .layer(middleware::from_fn(middlewares::log))
         .layer(CorsLayer::permissive())
         .layer(SessionLayer::new(session_store))

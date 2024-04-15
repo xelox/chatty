@@ -38,7 +38,8 @@ pub async fn signup(session: Session<SessionPgPool>, Json(form): Json<AuthForm>)
     
     let res: Result<User, _> = diesel::insert_into(schema::users::table)
         .values(&models::NewUser{
-            nick: &form.username,
+            unique_name: &form.username,
+            display_name: None,
             password_hash: &password_hash,
         })
         .returning(models::User::as_returning())
@@ -47,8 +48,7 @@ pub async fn signup(session: Session<SessionPgPool>, Json(form): Json<AuthForm>)
     match res {
         Ok(user) => {
             session.set_store(true);
-            session.set("username", user.nick);
-            dbg!(&session.get::<String>("username"));
+            session.set("client_unique_name", user.unique_name);
             "OK".to_string()
         }
         _ => {
@@ -71,7 +71,7 @@ pub async fn signin(session: Session<SessionPgPool>, Json(form): Json<AuthForm>)
             match password_auth::verify_password(form.password, &user.password_hash) {
                 Ok(()) => {
                     session.set_store(true);
-                    session.set("username", user.nick);
+                    session.set("client_unique_name", user.unique_name);
                     "OK".to_string()
                 }
                 _ => {

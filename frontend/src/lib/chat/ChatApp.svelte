@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Header from "./Header.svelte";
 let self = {
   name: "John Snow"
 }
@@ -8,24 +7,6 @@ let channel = {
   id: "slahdglkj"
 }
 
-const socket = new WebSocket("ws://localhost:8080/ws");
-let i = 0;
-socket.onopen = _ => {
-  console.log("web socket open");
-  setInterval(()=>{
-    socket.send(`hello! ${i}`);
-    i++;
-  }, 1000);
-}
-socket.onmessage = e => {
-  console.log("socket message:", e.data);
-}
-socket.onclose = _ => {
-  console.log("web socket close");
-}
-socket.onerror = e => {
-  console.error("web socket error", e);
-}
 
 type message = {
   body: string,
@@ -62,12 +43,6 @@ messages.push({
 
 const try_send_message = (e: Event) => {
   let new_message = (e.target as HTMLInputElement).value;
-  messages.push({
-    body: new_message,
-    author: self.name,
-    id: 'akshg'
-  });
-  messages = messages;
 
   fetch('http://localhost:8080/api/post_message', {
     method: 'POST',
@@ -87,7 +62,6 @@ const try_send_message = (e: Event) => {
 </script>
 
 <main>
-  <Header/>
   <div class="chat_wrapper">
     <div class="messages_wrapper">
       {#each messages as message}

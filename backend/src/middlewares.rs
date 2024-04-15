@@ -10,9 +10,9 @@ use axum::{
 use axum_session::{Session, SessionPgPool};
 
 pub async fn validate_auth(session: Session<SessionPgPool>, uri: Uri, request: Request, next: Next) -> Result<Response, StatusCode> {
-    match session.get::<String>("username") {
-        Some(username) => {
-            println!("User: {}", username);
+    match session.get::<String>("client_unique_name") {
+        Some(client_unique_name) => {
+            println!("User: {}", client_unique_name);
             let response = next.run(request).await; 
             Ok(response)
         },

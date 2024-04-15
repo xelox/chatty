@@ -1,9 +1,9 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    users (nick) {
-        nick -> Varchar,
+    users (unique_name) {
+        unique_name -> Varchar,
         password_hash -> Varchar,
-        auth_token -> Nullable<Uuid>,
+        display_name -> Nullable<Varchar>,
     }
 }
