@@ -14,6 +14,7 @@ pub mod web_socket_manager;
 pub mod middlewares;
 pub mod serve_app;
 pub mod database;
+pub mod structs;
 
 use crate::server_state::ServerState;
 
