@@ -1,6 +1,7 @@
 use axum::extract::{Json, State};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use crate::database::models::{Friendship, FriendshipTargets};
 use crate::server_state::ServerState;
 use crate::database::{self, models::User, schema};
 use crate::structs::notification::Notification;
@@ -29,28 +30,32 @@ pub struct FriendRequestForm {
     to: String
 }
 pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>) -> String {
-    let from = session.get::<String>("client_unique_name");
-    if from.is_none() {
+    let sender = session.get::<String>("client_unique_name");
+    if sender.is_none() {
         return "Who are you?".to_string();
     }
-    let from = from.unwrap();
+    let sender = sender.unwrap();
 
     use schema::users::dsl::*;
     use diesel::prelude::*;
     let conn = &mut database::establish_connection();
     
 
-    let user_search: Result<User, _> = users
+    let query: Result<User, _> = users
         .find(payload.to)
         .first(conn);
 
-    match user_search {
-        Ok(user) => {
-            let message = format!("Friend request from {}", from);
-            if let Some(connected_client) = state.get_client(&user.unique_name).await {
+    match query {
+        Ok(target) => {
+            let message = format!("Friend request from {}", &sender);
+            let req_id_res = Friendship::create(FriendshipTargets::new(&sender, &target.unique_name), &sender);
+            if req_id_res.is_none() { return "COULD NOT FULFIL".to_string(); }
+            let req_id = req_id_res.unwrap();
+            Notification::new_friend_req(&target.unique_name, &sender, req_id);
+            if let Some(connected_client) = state.get_client(&target.unique_name).await {
                 connected_client.send_socket_message(&message).await;
             }
-            let notification = Notification::new(user.unique_name, message);
+            let notification = Notification::new(target.unique_name, message);
             notification.store();
             "OK".to_string()
         }
