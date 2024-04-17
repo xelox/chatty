@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{fs, sync::Arc};
 use axum::{
     routing::{get, post}, 
     Router,
@@ -20,6 +20,8 @@ use crate::server_state::ServerState;
 
 #[tokio::main]
 async fn main() {
+    setup();
+
     database::establish_connection();
     let session_config = SessionConfig::default()
         .with_table_name("session_table")
@@ -27,6 +29,7 @@ async fn main() {
         .with_database_key(axum_session::Key::generate());
     let session_store = SessionStore::<SessionPgPool>::new(None, session_config).await.unwrap();
     let server_state = Arc::new(ServerState::new());
+
     let app = Router::new()
         .route("/ws", get(web_socket_manager::handler))
         .route("/app/*any", get(serve_app::serve_app))
@@ -49,4 +52,8 @@ async fn main() {
     // run our app with hyper, listening globally on port 8080
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+
+fn setup() {
+    fs::create_dir_all("/home/alex/dev/chatty/private/client_notifications").expect("could not setup client_notifications");
 }

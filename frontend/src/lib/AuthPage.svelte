@@ -1,24 +1,24 @@
 <script lang="ts">
-let username = ""
+let unique_name = ""
 let password = ""
-let username_label_focus = false;
+let unique_name_label_focus = false;
 let password_label_focus = false;
 
 const signup = () => {
-  if (username === "" && password === "") {
+  if (unique_name === "" && password === "") {
     document.dispatchEvent(new CustomEvent('notification', {
       detail: {
         type: 'error',
-        info: 'Please provide a username and a password.'
+        info: 'Please provide a unique_name and a password.'
       }
     }));
     return;
   }
-  if (username === "") {
+  if (unique_name === "") {
     document.dispatchEvent(new CustomEvent('notification', {
       detail: {
         type: 'error',
-        info: 'Please provide a username.'
+        info: 'Please provide a unique_name.'
       }
     }));
     return;
@@ -27,7 +27,7 @@ const signup = () => {
     document.dispatchEvent(new CustomEvent('notification', {
       detail: {
         type: 'error',
-        info: 'Please provide a username.'
+        info: 'Please provide a unique_name.'
       }
     }));
     return;
@@ -39,7 +39,7 @@ const signup = () => {
       ["Content-Type", "application/json"]
     ],
     body: JSON.stringify({
-      username,
+      unique_name,
       password
     })
   }).then(fetch_res => {
@@ -53,20 +53,20 @@ const signup = () => {
 }
 
 const login = () => {
-  if (username === "" && password === "") {
+  if (unique_name === "" && password === "") {
     document.dispatchEvent(new CustomEvent('notification', {
       detail: {
         type: 'error',
-        info: 'Please provide a username and a password.'
+        info: 'Please provide a unique_name and a password.'
       }
     }));
     return;
   }
-  if (username === "") {
+  if (unique_name === "") {
     document.dispatchEvent(new CustomEvent('notification', {
       detail: {
         type: 'error',
-        info: 'Please provide a username.'
+        info: 'Please provide a unique_name.'
       }
     }));
     return;
@@ -75,7 +75,7 @@ const login = () => {
     document.dispatchEvent(new CustomEvent('notification', {
       detail: {
         type: 'error',
-        info: 'Please provide a username.'
+        info: 'Please provide a unique_name.'
       }
     }));
     return;
@@ -87,7 +87,7 @@ const login = () => {
       ["Content-Type", "application/json"]
     ],
     body: JSON.stringify({
-      username,
+      unique_name,
       password
     })
   }).then(fetch_res => {
@@ -105,10 +105,10 @@ const login = () => {
   <div class="outer_wrap">
     <h2>Log In</h2>
     <div class="input_wrap">
-      <span  class={`label ${username_label_focus || username !== "" ? 'small_label' : ''}`}>Username</span>
-      <input bind:value={username} type="text" 
-        on:focusin={()=>{ username_label_focus = true; }}
-        on:focusout={()=>{ username_label_focus = false; }}
+      <span  class={`label ${unique_name_label_focus || unique_name !== "" ? 'small_label' : ''}`}>Unique Name</span>
+      <input bind:value={unique_name} type="text" 
+        on:focusin={()=>{ unique_name_label_focus = true; }}
+        on:focusout={()=>{ unique_name_label_focus = false; }}
       >
     </div>
     <div class="input_wrap">

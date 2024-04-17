@@ -13,8 +13,7 @@ pub async fn validate_auth(session: Session<SessionPgPool>, uri: Uri, request: R
     match session.get::<String>("client_unique_name") {
         Some(client_unique_name) => {
             println!("User: {}", client_unique_name);
-            let response = next.run(request).await; 
-            Ok(response)
+            Ok(next.run(request).await) 
         },
         _ => {
             print!("UNAUTHORIZED usage {} ", uri);
