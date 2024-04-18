@@ -5,8 +5,10 @@ use crate::database::models::{Friendship, FriendshipTargets};
 use crate::server_state::ServerState;
 use crate::database::{self, models::User, schema};
 use crate::structs::notification::Notification;
+use crate::structs::socket_signal::Signal;
 use axum_session::{Session, SessionPgPool};
 use crate::structs::client::{ Client, AuthValidationResult };
+use axum_macros::debug_handler;
 
 #[derive(Debug)]
 #[derive(Deserialize)]
@@ -29,6 +31,8 @@ pub async fn post_message(State(state): State<Arc<ServerState>>, Json(payload): 
 pub struct FriendRequestForm {
     to: String
 }
+
+#[debug_handler()]
 pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>) -> String {
     let sender = session.get::<String>("client_unique_name");
     if sender.is_none() {
@@ -47,16 +51,18 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
 
     match query {
         Ok(target) => {
-            let message = format!("Friend request from {}", &sender);
             let req_id_res = Friendship::create(FriendshipTargets::new(&sender, &target.unique_name), &sender);
             if req_id_res.is_none() { return "COULD NOT FULFIL".to_string(); }
             let req_id = req_id_res.unwrap();
-            Notification::new_friend_req(&target.unique_name, &sender, req_id);
-            if let Some(connected_client) = state.get_client(&target.unique_name).await {
-                connected_client.send_socket_message(&message).await;
+
+            let n = Notification::new_friend_req(&target.unique_name, &sender, &req_id);
+
+            if let Some(live_target) = state.get_client(&target.unique_name).await {
+                live_target.send_socket_order(Arc::new([
+                    Signal::Notification(n)
+                ])).await;
             }
-            let notification = Notification::new(target.unique_name, message);
-            notification.store();
+
             "OK".to_string()
         }
         _ => {

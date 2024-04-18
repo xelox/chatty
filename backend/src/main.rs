@@ -15,6 +15,7 @@ pub mod middlewares;
 pub mod serve_app;
 pub mod database;
 pub mod structs;
+pub mod config;
 
 use crate::server_state::ServerState;
 

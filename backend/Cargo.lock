@@ -189,6 +189,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum-macros"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00c055ee2d014ae5981ce1016374e8213682aa14d9bf40e48ab48b5f3ef20eaa"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.59",
+]
+
+[[package]]
 name = "axum_session"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -321,6 +333,7 @@ name = "chatty-backend"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "axum-macros",
  "axum_session",
  "diesel",
  "diesel-derive-enum",

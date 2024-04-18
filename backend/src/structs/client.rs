@@ -2,8 +2,10 @@ use crate::database::{self, models::{self, User}, schema};
 use diesel::{RunQueryDsl, SelectableHelper};
 
 use std::sync::Arc;
-use axum::extract::ws::WebSocket;
+use axum::extract::ws::{Message, WebSocket};
 use futures_locks::{Mutex, RwLock};
+
+use super::socket_signal::{Signal, SignalList};
 
 #[derive(Clone)]
 pub struct Client {
@@ -65,10 +67,12 @@ impl Client {
         }
     }
 
-    pub async fn send_socket_message(&self, message: &String) {
+    pub async fn send_socket_order(&self, signals: Arc<[Signal]>) {
         if let Some(socket_mutex) = &self.socket {
             let mut socket = socket_mutex.lock().await;
-            let _ = socket.send(axum::extract::ws::Message::Text(message.to_string())).await;
+            if let Some(message) = SignalList::new(signals).to_message() {
+                let _ = socket.send(message).await;
+            }
         }
     }
 }
