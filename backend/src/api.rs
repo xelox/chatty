@@ -4,6 +4,7 @@ use std::sync::Arc;
 use crate::database::models::{Friendship, FriendshipTargets};
 use crate::server_state::ServerState;
 use crate::database::{self, models::User, schema};
+use crate::structs::checked_string::CheckedString;
 use crate::structs::notification::Notification;
 use crate::structs::socket_signal::Signal;
 use axum_session::{Session, SessionPgPool};
@@ -29,12 +30,12 @@ pub async fn post_message(State(state): State<Arc<ServerState>>, Json(payload): 
 #[derive(Deserialize)]
 #[derive(Serialize)]
 pub struct FriendRequestForm {
-    to: String
+    to: CheckedString
 }
 
 #[debug_handler()]
 pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>) -> String {
-    let sender = session.get::<String>("client_unique_name");
+    let sender = session.get::<CheckedString>("client_unique_name");
     if sender.is_none() {
         return "Who are you?".to_string();
     }
@@ -55,7 +56,7 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
             if req_id_res.is_none() { return "COULD NOT FULFIL".to_string(); }
             let req_id = req_id_res.unwrap();
 
-            let n = Notification::new_friend_req(&target.unique_name, &sender, &req_id);
+            let n = Notification::new_friend_req(target.unique_name, &sender, &req_id);
 
             if let Some(live_target) = state.get_client(&target.unique_name).await {
                 live_target.send_socket_order(Arc::new([
