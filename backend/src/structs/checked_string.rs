@@ -78,6 +78,20 @@ where
                 formatter.write_str(T::format().as_str())    
             }
 
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+                where
+                E: serde::de::Error, {
+                let input = String::from(v);
+                match T::new(input) {
+                    Some(t) => {
+                        Ok(t)
+                    },
+                    None => {
+                        Err(Error::invalid_value(Unexpected::Str(&v), &self))
+                    }
+                }
+            }
+
             fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
         where
                 E: serde::de::Error, {
@@ -93,7 +107,7 @@ where
             }
         }
 
-        deserializer.deserialize_string(TVisitor)
+        deserializer.deserialize_str(TVisitor)
     }
 }
 
@@ -119,7 +133,7 @@ impl ToSql<VarChar, Pg> for T {
 }
 
 #[test]
-fn test(){
+fn basic_test(){
     let should_work = CheckedString::new(String::from("xelox")); 
     assert_ne!(should_work, None);
 
@@ -143,4 +157,32 @@ fn test(){
 
     let should_fail = CheckedString::new(String::from("bad_example@aaaaaaa")); 
     assert_eq!(should_fail, None);
+}
+
+#[test]
+fn deserialize_test(){
+    #[derive(Debug, PartialEq, Eq)]
+    #[derive(Deserialize)]
+    struct TestStruct {
+        str: String,
+        num: i32,
+        tested: CheckedString,
+    }
+
+    let test_json = r#"
+        {
+            "str": "such a random string...",
+            "num": 42,
+            "tested": "xelox_1234"
+        }
+    "#;
+
+    let obj = serde_json::from_str::<TestStruct>(test_json).expect("Could not deserialize");
+    let should_eq = TestStruct {
+        str: String::from("such a random string..."),
+        num: 42,
+        tested: CheckedString::new(String::from("xelox_1234")).expect("bamboozled"),
+    };
+
+    assert_eq!(obj, should_eq)
 }
