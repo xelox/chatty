@@ -2,10 +2,10 @@ use crate::database::{self, models::{self, User}, schema};
 use diesel::{RunQueryDsl, SelectableHelper};
 
 use std::sync::Arc;
-use axum::extract::ws::{Message, WebSocket};
+use axum::extract::ws::{WebSocket};
 use futures_locks::{Mutex, RwLock};
 
-use super::socket_signal::{Signal, SignalList};
+use super::{checked_string::CheckedString, socket_signal::{Signal, SignalList}};
 
 #[derive(Clone)]
 pub struct Client {
@@ -25,13 +25,13 @@ impl Client {
         }
     }
 
-    pub fn create_new_acc(unique_name: &String, password: &String) -> bool {
+    pub fn create_new_acc(unique_name: &CheckedString, password: &String) -> bool {
         let conn = &mut database::establish_connection();
         let password_hash = password_auth::generate_hash(&password);
 
         let res: Result<User, _> = diesel::insert_into(schema::users::table)
             .values(&models::NewUser{
-                unique_name: &unique_name,
+                unique_name: &unique_name.to_string(),
                 display_name: None,
                 password_hash: &password_hash,
             })
@@ -41,7 +41,7 @@ impl Client {
         return res.is_ok();
     }
 
-    pub fn validate_password(unique_name_: &String, password: &String) -> AuthValidationResult {
+    pub fn validate_password(unique_name_: &CheckedString, password: &String) -> AuthValidationResult {
         use schema::users::dsl::*;
         use diesel::prelude::*;
         let conn = &mut database::establish_connection();

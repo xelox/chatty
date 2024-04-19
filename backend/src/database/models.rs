@@ -1,8 +1,8 @@
-use diesel::prelude::*;
+use diesel::{expression::ValidGrouping, prelude::*};
 use uuid::{NoContext, Uuid};
 use crate::{database::{self, schema}, structs::checked_string::CheckedString};
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, ValidGrouping)]
 #[derive(Clone, Debug)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]

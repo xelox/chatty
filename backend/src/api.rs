@@ -44,7 +44,6 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
     use schema::users::dsl::*;
     use diesel::prelude::*;
     let conn = &mut database::establish_connection();
-    
 
     let query: Result<User, _> = users
         .find(payload.to)
@@ -56,7 +55,7 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
             if req_id_res.is_none() { return "COULD NOT FULFIL".to_string(); }
             let req_id = req_id_res.unwrap();
 
-            let n = Notification::new_friend_req(target.unique_name, &sender, &req_id);
+            let n = Notification::new_friend_req(target.unique_name.clone(), &sender, &req_id);
 
             if let Some(live_target) = state.get_client(&target.unique_name).await {
                 live_target.send_socket_order(Arc::new([
@@ -74,7 +73,7 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
 
 #[derive(Deserialize)]
 pub struct AuthForm {
-    unique_name: String,
+    unique_name: CheckedString,
     password: String,
 }
 pub async fn signup(session: Session<SessionPgPool>, Json(form): Json<AuthForm>) -> String {
