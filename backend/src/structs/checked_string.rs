@@ -7,7 +7,6 @@ use diesel::sql_types::*;
 
 #[derive(Clone, Debug)]
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
-#[derive(Deserialize)]
 #[derive(AsExpression, FromSqlRow)]
 #[diesel(sql_type = VarChar)]
 pub struct CheckedString {
@@ -17,7 +16,6 @@ pub struct CheckedString {
 #[derive(Clone, Debug)]
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 #[derive(FromSqlRow)]
-#[derive(Deserialize)]
 pub struct Email {
     str: String,
 }
@@ -27,16 +25,14 @@ impl CheckedString {
         if input.len() > 254 {
             return None;
         }
-        if Regex::new(r"/^[\w\-\.]+$/gm").unwrap().is_match(&input) {
-            return Some(CheckedString {
-                str: input
-            });
+        if Regex::new(r"^[\w\-\.]+$").unwrap().is_match(&input) {
+            return Some(CheckedString { str: input });
         } else {
             return None;
         }
     }
     fn format() -> String {
-        String::from("example-unique_name.1234")
+        String::from("only alpha numerics, underscore, dash or dots.")
     }
 }
 
@@ -45,17 +41,15 @@ impl Email {
         if input.len() > 254 {
             return None;
         }
-        if Regex::new(r"/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$/gm").unwrap().is_match(&input) {
-            return Some(Email {
-                str: input
-            });
+        if Regex::new(r"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$").unwrap().is_match(&input) {
+            return Some(Email { str: input });
         } else {
             return None;
         }
     }
 
     fn format() -> String {
-        String::from("email@example.com")
+        String::from("an email looks like: email@example.com")
     }
 }
 
@@ -71,25 +65,35 @@ impl Serialize for T
     }
 }
 
-#[duplicate_item(T; [Email]; [CheckedString])]
-impl<'de> Visitor<'de> for T {
-    type Value = T;
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str(T::format().as_str())    
-    }
 
-    fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+#[duplicate_item(T; [Email]; [CheckedString])]
+impl<'de> Deserialize<'de> for T {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+where
+        D: serde::Deserializer<'de> {
+        struct TVisitor;
+        impl<'de> Visitor<'de> for TVisitor {
+            type Value = T;
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str(T::format().as_str())    
+            }
+
+            fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
         where
-            E: serde::de::Error, {
-        let input = String::from(&v);
-        match T::new(input) {
-            Some(t) => {
-                Ok(t)
-            },
-            None => {
-                Err(Error::invalid_value(Unexpected::Str(&v), &self))
+                E: serde::de::Error, {
+                let input = String::from(&v);
+                match T::new(input) {
+                    Some(t) => {
+                        Ok(t)
+                    },
+                    None => {
+                        Err(Error::invalid_value(Unexpected::Str(&v), &self))
+                    }
+                }
             }
         }
+
+        deserializer.deserialize_string(TVisitor)
     }
 }
 
@@ -112,4 +116,31 @@ impl ToSql<VarChar, Pg> for T {
     fn to_sql<'b>(&'b self, out: &mut diesel::serialize::Output<'b, '_, Pg>) -> diesel::serialize::Result {
         <std::string::String as ToSql<diesel::sql_types::VarChar, Pg>>::to_sql(&self.str, &mut out.reborrow())
     }
+}
+
+#[test]
+fn test(){
+    let should_work = CheckedString::new(String::from("xelox")); 
+    assert_ne!(should_work, None);
+
+    let should_work = CheckedString::new(String::from("xelox_1234")); 
+    assert_ne!(should_work, None);
+
+    let should_fail = CheckedString::new(String::from("xelox@&")); 
+    assert_eq!(should_fail, None);
+
+    let should_work = Email::new(String::from("example_1234@mail.co.uk")); 
+    assert_ne!(should_work, None);
+
+    let should_work = Email::new(String::from("example@mail.co.uk")); 
+    assert_ne!(should_work, None);
+
+    let should_fail = CheckedString::new(String::from("bad*example@aaa.bbb")); 
+    assert_eq!(should_fail, None);
+
+    let should_fail = CheckedString::new(String::from("bad@example@aaa.bbb")); 
+    assert_eq!(should_fail, None);
+
+    let should_fail = CheckedString::new(String::from("bad_example@aaaaaaa")); 
+    assert_eq!(should_fail, None);
 }
