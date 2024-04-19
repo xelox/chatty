@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use diesel::pg::Pg;
 use serde::{de::{Error, Unexpected, Visitor}, Deserialize, Serialize};
 use regex::Regex;
 
@@ -6,6 +7,7 @@ static BASIC_PATTERN: Regex = Regex::new(r"/^[\w\-\.]+$/gm").unwrap();
 static EMAIL_PATTERN: Regex = Regex::new(r"/^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$/gm").unwrap();
 
 #[derive(Clone, Deserialize, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub struct CheckedString {
     str: String,
 }
@@ -54,6 +56,13 @@ impl Email {
 
 use duplicate::duplicate_item;
 #[duplicate_item(T; [Email]; [CheckedString])]
+impl T {
+    fn unchecked(input: String) -> T {
+        T{str: input}
+    }
+}
+
+#[duplicate_item(T; [Email]; [CheckedString])]
 impl Serialize for T
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -96,3 +105,12 @@ impl Display for T {
 impl diesel::Expression for T {
     type SqlType = diesel::sql_types::VarChar;
 }
+
+#[duplicate_item(T; [Email]; [CheckedString])]
+impl diesel::Queryable<diesel::sql_types::VarChar, Pg> for T {
+    type Row = String;
+    fn build(row: Self::Row) -> diesel::deserialize::Result<Self> {
+        Ok(Self::unchecked(row))
+    }
+}
+

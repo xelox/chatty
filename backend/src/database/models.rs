@@ -1,13 +1,13 @@
 use diesel::prelude::*;
 use uuid::{NoContext, Uuid};
-use crate::database::{self, schema::{self}};
+use crate::{database::{self, schema}, structs::checked_string::CheckedString};
 
 #[derive(Queryable, Selectable)]
 #[derive(Clone, Debug)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
-    pub unique_name: String,
+    pub unique_name: CheckedString,
     pub password_hash: String,
     pub display_name: Option<String>,
 }
@@ -38,7 +38,7 @@ pub struct FriendshipTargets {
 }
 
 impl FriendshipTargets {
-    pub fn new(target_a: &String, target_b: &String) -> FriendshipTargets {
+    pub fn new(target_a: &CheckedString, target_b: &CheckedString) -> FriendshipTargets {
         if target_a > target_b {
             return FriendshipTargets { a: target_b.to_string(), b: target_a.to_string() };
         }
@@ -71,7 +71,7 @@ impl Friendship {
         return false;
     }
 
-    pub fn create(targets: FriendshipTargets, sender_: &String) -> Option<Uuid> {
+    pub fn create(targets: FriendshipTargets, sender_: &CheckedString) -> Option<Uuid> {
         let (a_, b_) = targets.unpack();
         let ts = uuid::Timestamp::now(NoContext);
         let id_ = Uuid::new_v7(ts);
