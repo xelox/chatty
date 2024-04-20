@@ -35,11 +35,9 @@ pub struct FriendRequestForm {
 
 #[debug_handler()]
 pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>) -> String {
-    let sender = session.get::<CheckedString>("client_unique_name");
-    if sender.is_none() {
+    let Some(sender) = session.get::<CheckedString>("client_unique_name") else {
         return "Who are you?".to_string();
-    }
-    let sender = sender.unwrap();
+    };
 
     use schema::users::dsl::*;
     use diesel::prelude::*;
@@ -51,9 +49,9 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
 
     match query {
         Ok(target) => {
-            let req_id_res = Friendship::create(FriendshipTargets::new(&sender, &target.unique_name), &sender);
-            if req_id_res.is_none() { return "COULD NOT FULFIL".to_string(); }
-            let req_id = req_id_res.unwrap();
+            let Some(req_id) = Friendship::create(FriendshipTargets::new(&sender, &target.unique_name), &sender) else {
+                return "COULD NOT FULFIL".to_string(); 
+            };
 
             let n = Notification::new_friend_req(target.unique_name.clone(), &sender, &req_id);
 
