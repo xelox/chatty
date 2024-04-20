@@ -1,21 +1,21 @@
-use std::{fs, sync::Arc};
 use axum::{
-    routing::{get, post}, 
+    middleware,
+    routing::{get, post},
     Router,
-    middleware
 };
-use tower_http::{cors::CorsLayer, services::ServeDir};
+use axum_session::{SessionConfig, SessionLayer, SessionPgPool, SessionStore};
+use std::{fs, sync::Arc};
 use tower::ServiceBuilder;
-use axum_session::{SessionPgPool, SessionConfig, SessionStore, SessionLayer};
+use tower_http::{cors::CorsLayer, services::ServeDir};
 
-pub mod server_state;
 pub mod api;
-pub mod web_socket_manager;
+pub mod config;
+pub mod database;
 pub mod middlewares;
 pub mod serve_app;
-pub mod database;
+pub mod server_state;
 pub mod structs;
-pub mod config;
+pub mod web_socket_manager;
 
 use crate::server_state::ServerState;
 
@@ -28,7 +28,9 @@ async fn main() {
         .with_table_name("session_table")
         .with_key(axum_session::Key::generate())
         .with_database_key(axum_session::Key::generate());
-    let session_store = SessionStore::<SessionPgPool>::new(None, session_config).await.unwrap();
+    let session_store = SessionStore::<SessionPgPool>::new(None, session_config)
+        .await
+        .unwrap();
     let server_state = Arc::new(ServerState::new());
 
     let app = Router::new()
@@ -36,10 +38,7 @@ async fn main() {
         .route("/app/*any", get(serve_app::serve_app))
         .route("/api/post_message", post(api::post_message))
         .route("/api/send_friend_request", post(api::send_friend_request))
-        .layer(
-            ServiceBuilder::new()
-                .layer(middleware::from_fn(middlewares::validate_auth))
-        )
+        .layer(ServiceBuilder::new().layer(middleware::from_fn(middlewares::validate_auth)))
         .route("/app/auth", get(serve_app::serve_app))
         .route("/api/signin", post(api::signin))
         .route("/api/signup", post(api::signup))
@@ -56,5 +55,6 @@ async fn main() {
 }
 
 fn setup() {
-    fs::create_dir_all("/home/alex/dev/chatty/private/client_notifications").expect("could not setup client_notifications");
+    fs::create_dir_all("/home/alex/dev/chatty/private/client_notifications")
+        .expect("could not setup client_notifications");
 }
