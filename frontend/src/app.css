@@ -27,6 +27,28 @@
 --rosewater:  #f5e0dc;
 }
 
+@font-face {
+  font-family: "maple";
+  src: url("../public/ttf-maple/MapleMono-SC-NF-Italic.ttf") format("truetype");
+  font-style: italic;
+}
+@font-face {
+  font-family: "maple";
+  src: url("../public/ttf-maple/MapleMono-SC-NF-Bold.ttf") format("truetype");
+  font-weight: bold;
+}
+@font-face {
+  font-family: "maple";
+  src: url("../public/ttf-maple/MapleMono-SC-NF-BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+}
+@font-face {
+  font-family: "maple";
+  src: url("../public/ttf-maple/MapleMono-SC-NF-Regular.ttf") format("truetype");
+}
+
+
 
 body {
   margin: 0;
@@ -35,3 +57,9 @@ body {
   font-family: 'Noto Sans';
 }
 
+input, button {
+  background: none;
+  color: var(--text);
+  font-family: 'maple';
+  border: none;
+}

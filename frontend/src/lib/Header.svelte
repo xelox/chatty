@@ -1,6 +1,8 @@
 <script lang='ts'>
   import { navigate } from "svelte-routing";
   import search_query from "../stores/search_query"
+  import { onMount } from "svelte";
+  import { header_end } from "../stores/ui"
 
   const nav_click = (to: {url?: string, overlay?: string}) => {
     const url = to.url ?? `${window.location.href.split('?')[0]}`;
@@ -12,9 +14,21 @@
     navigate(`${url}?${query_params.toString()}`);
     search_query.set(Object.fromEntries(query_params.entries()));
   }
+
+  let header_dom: HTMLElement | null = null;
+
+  onMount(() => {
+    setTimeout(() => {
+
+    })
+    if (!header_dom) { return }
+    let rect = header_dom.getBoundingClientRect();
+    let end = rect.bottom;
+    header_end.set(end);
+  })
 </script>
 
-<main>
+<main bind:this={header_dom}>
   <button class="btn" on:click={() => {nav_click({url: '/app/chat'})}}>
     <img class="btn_svg" src="/svg-files/Communication/comments-alt-2.svg" title="chat" alt="link to chat"/>
   </button>
@@ -41,5 +55,8 @@
     display: flex;
     gap: 4px;
     padding: 4px;
+    height: 40px;
+    width: 100vw;
+    position: fixed;
   }
 </style>
