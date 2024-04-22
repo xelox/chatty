@@ -1,9 +1,11 @@
 use axum::extract::{Json, State};
+use axum::response::IntoResponse;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use crate::database::models::{Friendship, FriendshipTargets};
 use crate::server_state::ServerState;
 use crate::database::{self, models::User, schema};
+use crate::structs::chatty_response::ChattyResponse;
 use crate::structs::checked_string::CheckedString;
 use crate::structs::notification::Notification;
 use crate::structs::socket_signal::Signal;
@@ -21,8 +23,8 @@ pub struct MessageJSON {
     content: String,
 }
 
-pub async fn post_message(State(state): State<Arc<ServerState>>, Json(payload): Json<MessageJSON>)  -> String {
-    "OK".to_string()
+pub async fn post_message(State(_state): State<Arc<ServerState>>, Json(_payload): Json<MessageJSON>) -> impl IntoResponse {
+    ChattyResponse::Ok
 }
 
 
@@ -34,7 +36,7 @@ pub struct FriendRequestForm {
 }
 
 #[debug_handler()]
-pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>) -> String {
+pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>) -> impl IntoResponse {
     let Some(sender) = session.get::<CheckedString>("client_unique_name") else {
         return "Who are you?".to_string();
     };
@@ -68,6 +70,10 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
         }
     }
 }
+
+// pub async fn initial_data_request(session: Session<SessionPgPool>) -> String {
+//
+// }
 
 #[derive(Deserialize)]
 pub struct AuthForm {

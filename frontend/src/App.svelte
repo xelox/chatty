@@ -10,7 +10,6 @@ import _socket_manager from './socket_manager';
 import ActiveNotification from './lib/active_notification.svelte';
 import LeftNav from './lib/left_nav/LeftNav.svelte';
 export let url = ""
-import { user_data } from './stores/userdata';
 </script>
 
 <main>

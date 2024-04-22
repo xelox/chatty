@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { navigate } from "svelte-routing";
+
 let unique_name = ""
 let password = ""
 let unique_name_label_focus = false;
@@ -46,7 +48,7 @@ const signup = () => {
       fetch_res.text().then(res => {
         console.log(res);
         if ( res === 'OK' ) {
-          window.location.href = "chat"
+          navigate("/chat", {replace: false})
         }
       })
     });
@@ -94,7 +96,7 @@ const login = () => {
       fetch_res.text().then(res => {
         console.log(res);
         if ( res === 'OK' ) {
-          window.location.href = "chat"
+          navigate("/chat", {replace: false})
         }
       })
     });

@@ -6,6 +6,13 @@
 
   type section_enum = "friends" | "guilds" | "requests";  
   let section: section_enum = "friends";
+  let subpath: string = "";
+  let path_extra: string | null = null;
+  $: if(section) {
+    const args: string[] = [section];
+    if (path_extra) args.push(path_extra);
+    subpath = "/" + args.join("/")
+  }
 </script>
 
 <main style="top: {$header_end}px; height: calc(100vh - {$header_end}px)">
@@ -14,6 +21,7 @@
     <button class="button" on:click={()=>{section = "guilds"}}> Guilds </button>
     <button class="button" on:click={()=>{section = "requests"}}> Requests </button>
   </div> 
+  <p class="subpath">{subpath}</p>
   <div class="active_section_wrapper">
     {#if section == "friends"}
       <FriendsSection/>
@@ -26,11 +34,19 @@
 </main>
 
 <style>
+.subpath {
+  font-family: "maple";
+  padding: 2px 10px 2px 10px;
+  font-size: 0.65rem;
+  margin: 0;
+  border-bottom: 1px solid var(--overlay0);
+}
 .buttons_wrap {
-  margin-top: 10px;
+  padding: 10px;
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--overlay0);
 }
 .button {
   font-style: italic;
