@@ -2,7 +2,7 @@ use crate::database::{self, models::{self, User}, schema};
 use diesel::{RunQueryDsl, SelectableHelper};
 
 use std::sync::Arc;
-use axum::extract::ws::{WebSocket};
+use axum::extract::ws::WebSocket;
 use futures_locks::{Mutex, RwLock};
 
 use super::{checked_string::CheckedString, socket_signal::{Signal, SignalList}};

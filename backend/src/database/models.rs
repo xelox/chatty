@@ -1,6 +1,7 @@
 use diesel::{expression::ValidGrouping, prelude::*};
+use serde::Serialize;
 use uuid::{NoContext, Uuid};
-use crate::{database::{self, schema}, structs::checked_string::CheckedString};
+use crate::{database::{self, schema::{self}}, structs::checked_string::CheckedString};
 
 #[derive(Queryable, Selectable, ValidGrouping)]
 #[derive(Clone, Debug)]
@@ -21,6 +22,7 @@ pub struct NewUser<'a> {
 }
 
 #[derive(Queryable, Selectable, Insertable, Identifiable)]
+#[derive(Serialize)]
 #[derive(Clone, Debug)]
 #[diesel(table_name = schema::friendship)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -92,4 +94,64 @@ impl Friendship {
         if query.is_ok() { Some(id_) }
         else { None }
     }
+
+    pub fn query_user_relations(target: &CheckedString) -> Option<Vec<((String, Option<String>), Friendship)>> {
+    use schema::friendship;
+    use schema::users;
+    let conn = &mut database::establish_connection();
+    let query: Result<Vec<((String, Option<String>), Friendship)>, diesel::result::Error> = friendship::table
+        .inner_join( users::table.on(
+            users::unique_name
+                .eq(friendship::b)
+                .or(users::unique_name.eq(friendship::a))
+                .and(users::unique_name.ne(friendship::sender))
+        ))
+        .select(((users::unique_name, users::display_name), friendship::all_columns))
+        .filter(friendship::a.eq(&target)).or_filter(friendship::b.eq(&target))
+        .load(conn);
+
+        if let Ok(result) = query {
+            Some(result)
+        } else {
+            None
+        }
+    }
+}
+
+#[test]
+fn name() {
+    let target = String::from("pablo");
+
+    use schema::friendship;
+    use schema::users;
+    let conn = &mut database::establish_connection();
+
+    let query: Result<Vec<((String, Option<String>), Friendship)>, diesel::result::Error> = friendship::table
+        .inner_join( users::table.on(
+            users::unique_name
+                .eq(friendship::b)
+                .or(users::unique_name.eq(friendship::a))
+                .and(users::unique_name.ne(friendship::sender))
+        ))
+        .select(((users::unique_name, users::display_name), friendship::all_columns))
+        .filter(friendship::a.eq(&target)).or_filter(friendship::b.eq(&target))
+        .load(conn);
+
+    let Ok(rows) = query else {
+        panic!("Query error");
+    };
+
+    let formatter = serde_json::ser::PrettyFormatter::with_indent(b"    ");
+    let mut buf = Vec::new();
+    let mut ser = serde_json::Serializer::with_formatter(&mut buf, formatter);
+    let Ok(_) = rows.serialize(&mut ser) else {
+        panic!("Faild to pase to json");
+    };
+
+    let json = String::from_utf8(buf).unwrap();
+    
+    println!("{json}");
+
+
+    panic!();
 }

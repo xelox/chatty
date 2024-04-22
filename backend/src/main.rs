@@ -42,6 +42,7 @@ async fn main() {
         .route("/app/auth", get(serve_app::serve_app))
         .route("/api/signin", post(api::signin))
         .route("/api/signup", post(api::signup))
+        .route("/api/initial_data_request", get(api::initial_data_request))
         .nest_service("/assets", ServeDir::new("../frontend/dist/assets"))
         .nest_service("/", ServeDir::new("../frontend/public"))
         .layer(middleware::from_fn(middlewares::log))

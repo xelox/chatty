@@ -1,11 +1,11 @@
 use axum::extract::{Json, State};
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use crate::database::models::{Friendship, FriendshipTargets};
 use crate::server_state::ServerState;
 use crate::database::{self, models::User, schema};
-use crate::structs::chatty_response::ChattyResponse;
+use crate::structs::chatty_response::{json_response, ChattyResponse};
 use crate::structs::checked_string::CheckedString;
 use crate::structs::notification::Notification;
 use crate::structs::socket_signal::Signal;
@@ -71,8 +71,16 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
     }
 }
 
-pub async fn initial_data_request(session: Session<SessionPgPool>) -> String {
+pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
+    let Some(target) = session.get::<CheckedString>("client_unique_name") else {
+        return ChattyResponse::Unauthorized.into_response();
+    };
 
+    if let Some(relations) = Friendship::query_user_relations(&target) {
+        return json_response(relations);
+    } else {
+        return ChattyResponse::InternalError.into_response();
+    }
 }
 
 #[derive(Deserialize)]

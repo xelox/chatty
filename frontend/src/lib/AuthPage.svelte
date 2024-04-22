@@ -47,8 +47,8 @@ const signup = () => {
   }).then(fetch_res => {
       fetch_res.text().then(res => {
         console.log(res);
-        if ( res === 'OK' ) {
-          navigate("/chat", {replace: false})
+        if ( res === 'Ok' ) {
+          navigate("/app/chat", {replace: false})
         }
       })
     });
@@ -95,8 +95,8 @@ const login = () => {
   }).then(fetch_res => {
       fetch_res.text().then(res => {
         console.log(res);
-        if ( res === 'OK' ) {
-          navigate("/chat", {replace: false})
+        if ( res === 'Ok' ) {
+          navigate("/app/chat", {replace: false})
         }
       })
     });

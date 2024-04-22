@@ -59,20 +59,15 @@ impl IntoResponse for ChattyResponse
     }
 }
 
-trait SerializeToJson {
-    fn json_response(&self) -> Response<Body>;
-}
 
-impl<T: Serialize> SerializeToJson for T {
-    fn json_response(&self) -> Response<Body> {
-        let Ok(json) = serde_json::to_string(self) else {
-            return ChattyResponse::InternalError.into_response();
-        };
-        
-        return Response::builder()
-            .status(200)
-            .header("Content-Type", "application/json")
-            .body(Body::from(json))
-            .unwrap()
-    }
+pub fn json_response<T: Serialize>(item: T) -> Response<Body> {
+    let Ok(json) = serde_json::to_string(&item) else {
+        return ChattyResponse::InternalError.into_response();
+    };
+
+    return Response::builder()
+        .status(200)
+        .header("Content-Type", "application/json")
+        .body(Body::from(json))
+        .unwrap()
 }
