@@ -80,30 +80,30 @@ pub struct AuthForm {
     unique_name: CheckedString,
     password: String,
 }
-pub async fn signup(session: Session<SessionPgPool>, Json(form): Json<AuthForm>) -> String {
+pub async fn signup(session: Session<SessionPgPool>, Json(form): Json<AuthForm>) -> ChattyResponse {
     let valid = Client::create_new_acc(&form.unique_name, &form.password);
     if valid {
         session.set_store(true);
         session.set("client_unique_name", form.unique_name);
-        "OK".to_string()
+        ChattyResponse::Ok
     } else {
-        "FAILED".to_string()
+        ChattyResponse::BadRequest(Some(String::from("Username is taken")))
     }
 }
 
-pub async fn signin(session: Session<SessionPgPool>, Json(form): Json<AuthForm>) -> String {
+pub async fn signin(session: Session<SessionPgPool>, Json(form): Json<AuthForm>) -> ChattyResponse {
     let result = Client::validate_password(&form.unique_name, &form.password);
     match result {
         AuthValidationResult::Valid => {
             session.set_store(true);
             session.set("client_unique_name", form.unique_name);
-            String::from("OK")
+            ChattyResponse::Ok
         },
         AuthValidationResult::IncorrectPassword => {
-            String::from("INCORRECT PASSWORD")
+            ChattyResponse::BadRequest(Some(String::from("Incorrect password")))
         },
         AuthValidationResult::IncorrectUniqueName => {
-            String::from("INCORRECT UNIQUE_NAME")
+            ChattyResponse::BadRequest(Some(String::from("Incorrect username")))
         }
     }
 }

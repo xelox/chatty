@@ -5,7 +5,8 @@ pub enum ChattyResponse {
     Ok,
     Unauthorized,
     InternalError,
-    Plain(String),
+    Plain(String, Option<u16>),
+    BadRequest(Option<String>),
 }
 
 impl IntoResponse for ChattyResponse
@@ -29,9 +30,10 @@ impl IntoResponse for ChattyResponse
                     .unwrap();
             }
 
-            Self::Plain(str) => {
+            Self::Plain(str, status) => {
+                let status = status.unwrap_or(200);
                 return Response::builder()
-                    .status(200)
+                    .status(status)
                     .header("Content-Type", "text/plain")
                     .body(Body::from(str))
                     .unwrap();
@@ -42,6 +44,15 @@ impl IntoResponse for ChattyResponse
                     .status(500)
                     .header("Content-Type", "text/plain")
                     .body(Body::from("Internal Server Error"))
+                    .unwrap();
+            }
+
+            Self::BadRequest(option) => {
+                let body_text = option.unwrap_or(String::from("Bad Request"));
+                return Response::builder()
+                    .status(400)
+                    .header("Content-Type", "text/plain")
+                    .body(Body::from(body_text))
                     .unwrap();
             }
         }
