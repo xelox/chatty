@@ -23,7 +23,7 @@ pub struct MessageJSON {
     content: String,
 }
 
-pub async fn post_message(State(_state): State<Arc<ServerState>>, Json(_payload): Json<MessageJSON>) -> impl IntoResponse {
+pub async fn post_message(State(_state): State<Arc<ServerState>>, Json(_payload): Json<MessageJSON>) -> ChattyResponse {
     ChattyResponse::Ok
 }
 
@@ -36,9 +36,9 @@ pub struct FriendRequestForm {
 }
 
 #[debug_handler()]
-pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>) -> impl IntoResponse {
+pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>) -> ChattyResponse {
     let Some(sender) = session.get::<CheckedString>("client_unique_name") else {
-        return "Who are you?".to_string();
+        return ChattyResponse::Unauthorized;
     };
 
     use schema::users::dsl::*;
@@ -52,7 +52,7 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
     match query {
         Ok(target) => {
             let Some(req_id) = Friendship::create(FriendshipTargets::new(&sender, &target.unique_name), &sender) else {
-                return "COULD NOT FULFIL".to_string(); 
+                return ChattyResponse::InternalError;
             };
 
             let n = Notification::new_friend_req(target.unique_name.clone(), &sender, &req_id);
@@ -63,17 +63,17 @@ pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): 
                 ])).await;
             }
 
-            "OK".to_string()
+            ChattyResponse::Ok
         }
         _ => {
-            "USER NOT FOUND".to_string()
+            ChattyResponse::BadRequest(Some(String::from("User does not exist")))
         }
     }
 }
 
-// pub async fn initial_data_request(session: Session<SessionPgPool>) -> String {
-//
-// }
+pub async fn initial_data_request(session: Session<SessionPgPool>) -> String {
+
+}
 
 #[derive(Deserialize)]
 pub struct AuthForm {

@@ -75,12 +75,12 @@ impl Friendship {
         let (a_, b_) = targets.unpack();
         let ts = uuid::Timestamp::now(NoContext);
         let id_ = Uuid::new_v7(ts);
-        let r = Friendship { 
-            id: id_, 
-            a: a_, 
-            b: b_, 
-            sender: sender_.to_string(), 
-            accepted: false 
+        let r = Friendship {
+            id: id_,
+            a: a_,
+            b: b_,
+            sender: sender_.to_string(),
+            accepted: false
         };
 
         use schema::friendship::dsl::*;
