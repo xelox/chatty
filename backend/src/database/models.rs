@@ -72,6 +72,7 @@ pub struct FriendshipTargets {
 }
 
 #[derive(Serialize)]
+#[derive(Debug)]
 pub struct RelationAndUser {
     pub relation: Friendship,
     pub user: User,
@@ -160,35 +161,9 @@ impl Friendship {
     }
 }
 
+// gooffy ah ah this will fail github actions.
 #[test]
-fn name() {
-    let target = String::from("pablo");
-
-    use schema::friendship;
-    use schema::users;
-    let conn = &mut database::establish_connection();
-
-    let query: Result<Vec<((String, Option<String>), Friendship)>, diesel::result::Error> = friendship::table
-        .inner_join( users::table.on(
-            users::unique_name
-                .eq(friendship::b)
-                .or(users::unique_name.eq(friendship::a))
-                .and(users::unique_name.ne(friendship::sender))
-        ))
-        .select(((users::unique_name, users::display_name), friendship::all_columns))
-        .filter(friendship::a.eq(&target)).or_filter(friendship::b.eq(&target))
-        .load(conn);
-
-    let Ok(rows) = query else {
-        panic!("Query error");
-    };
-
-    let formatter = serde_json::ser::PrettyFormatter::with_indent(b"    ");
-    let mut buf = Vec::new();
-    let mut ser = serde_json::Serializer::with_formatter(&mut buf, formatter);
-    let Ok(_) = rows.serialize(&mut ser) else {
-        panic!("Faild to pase to json");
-    };
-
-    let _ = String::from_utf8(buf).unwrap();
+fn query_user_relations() {
+    let target = CheckedString::new(String::from("test")).unwrap();
+    assert!(Friendship::query_user_relations(&target).is_some());
 }

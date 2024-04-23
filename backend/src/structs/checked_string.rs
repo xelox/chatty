@@ -21,7 +21,7 @@ pub struct Email {
 }
 
 impl CheckedString {
-    fn new(input: String) -> Option<CheckedString> {
+    pub fn new(input: String) -> Option<CheckedString> {
         if input.len() > 254 {
             return None;
         }
