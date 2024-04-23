@@ -25,6 +25,11 @@
 --pink:       #f5c2e7;
 --flamingo:   #f2cdcd;
 --rosewater:  #f5e0dc;
+
+--size-normal:1em;
+--size-small: 0.8em;
+--size-large: 1.2em;
+--size-mini:  0.75em;
 }
 
 @font-face {
@@ -55,6 +60,7 @@ body {
   background: var(--crust);
   color: var(--text);
   font-family: 'Noto Sans';
+  font-size: 14px;
 }
 
 input, button {
@@ -62,4 +68,8 @@ input, button {
   color: var(--text);
   font-family: 'maple';
   border: none;
+}
+
+p{
+  margin: 0;
 }

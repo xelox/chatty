@@ -44,7 +44,7 @@ const render_update_callback = () => {
 <style>
 .source_p {
   color: var(--sky);
-  font-size: 1rem;
+  font-size: var(--size-normal);
 }
 .elapsed_bar {
   display: block;
@@ -54,7 +54,7 @@ const render_update_callback = () => {
   margin-bottom: 8px;
 }
 main>p {
-  font-size: 0.8rem;
+  font-size: var(--size-small);
   margin: 0;
 }
 main{

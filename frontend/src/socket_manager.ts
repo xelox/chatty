@@ -17,7 +17,7 @@ class SocketManager {
       user_data.set(json_response.user_info);
       console.log(json)
     } catch (err) {
-      // TODO *maybe* propper error handeling could be nicer here?
+      // TODO *maybe* more error handeling could be nicer here?
       let n: notification = {
         ts: Number(new Date()),
         content: "Failed to initialize",

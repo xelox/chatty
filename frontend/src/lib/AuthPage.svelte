@@ -140,7 +140,7 @@ const login = () => {
 }
 .small_label {
   opacity: 0.5;
-  font-size: 0.7rem;
+  font-size: var(--size-small);
   transform: translate(6px, -2px);
 }
 .input_wrap {

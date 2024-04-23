@@ -17,9 +17,9 @@ $: if(section) {
 
 <main>
   <div class="buttons_wrap">
-    <button class="button" on:click={()=>{section = "friends"}}> Friends </button>
-    <button class="button" on:click={()=>{section = "guilds"}}> Guilds </button>
-    <button class="button" on:click={()=>{section = "requests"}}> Requests </button>
+    <button class="button" on:click={()=>{section = "friends"}} style="color: {section === "friends" ? "var(--yellow)" : ""}"> Friends </button>
+    <button class="button" on:click={()=>{section = "guilds"}} style="color: {section === "guilds" ? "var(--yellow)" : ""}"> Guilds </button>
+    <button class="button" on:click={()=>{section = "requests"}} style="color: {section === "requests" ? "var(--yellow)" : ""}"> Requests </button>
   </div> 
   <p class="subpath">{subpath}</p>
   <div class="active_section_wrapper">
@@ -37,7 +37,7 @@ $: if(section) {
 .subpath {
   font-family: "maple";
   padding: 2px 10px 2px 10px;
-  font-size: 0.65rem;
+  font-size: var(--size-mini);
   margin: 0;
   border-bottom: 1px solid var(--overlay0);
 }
@@ -49,8 +49,9 @@ $: if(section) {
   border-bottom: 1px solid var(--overlay0);
 }
 .button {
-  font-style: italic;
+  /* font-style: italic; */
   cursor: pointer;
+  font-size: var(--size-normal);
 }
 
 .button:hover {
