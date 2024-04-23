@@ -1,7 +1,10 @@
 import { writable } from "svelte/store"
 
-export type schema_user_data = {
-  username: string,
+export type schema_user_info = {
+  unique_name: string,
+  pfp_url?: string,
+  dislplay_name: string | null,
+  status?: string,
 };
 
 export type schema_channel = {
@@ -18,5 +21,5 @@ export type schema_peer = {
   last_message: string,
 };
 
-export const user_data = writable<schema_user_data | null>(null);
+export const user_data = writable<schema_user_info | null>(null);
 export const friend_list = writable<schema_peer[]>([]);

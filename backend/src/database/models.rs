@@ -1,16 +1,48 @@
-use diesel::{expression::ValidGrouping, prelude::*};
+use diesel::associations::Identifiable;
+use diesel::JoinOnDsl;
+use diesel::QueryDsl;
+use diesel::RunQueryDsl;
+use diesel::ExpressionMethods;
+use diesel::BoolExpressionMethods;
+use diesel::SelectableHelper;
+use diesel::deserialize::Queryable;
+use diesel::prelude::Insertable;
+use diesel::Selectable;
+use diesel::expression::ValidGrouping;
 use serde::Serialize;
 use uuid::{NoContext, Uuid};
-use crate::{database::{self, schema::{self}}, structs::checked_string::CheckedString};
+use crate::database;
+use crate::structs::checked_string::CheckedString;
+use crate::database::schema;
 
 #[derive(Queryable, Selectable, ValidGrouping)]
 #[derive(Clone, Debug)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Serialize)]
 pub struct User {
     pub unique_name: CheckedString,
+    #[serde(skip_serializing)]
     pub password_hash: String,
     pub display_name: Option<String>,
+}
+
+impl User {
+    /// Needed only for sending the use information about themselves.
+    /// TODO: could cache this result on the session store and reduce querys count?
+    pub fn query_user(target: &CheckedString) -> Option<User> {
+        use schema::users;
+        let conn = &mut database::establish_connection();
+        let query: Result<User, _> = users::table
+            .find(target)
+            .first(conn);
+
+        if let Ok(user) = query {
+            Some(user)        
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Insertable)]
@@ -37,6 +69,12 @@ pub struct Friendship {
 pub struct FriendshipTargets {
     a: String,
     b: String,
+}
+
+#[derive(Serialize)]
+pub struct RelationAndUser {
+    pub relation: Friendship,
+    pub user: User,
 }
 
 impl FriendshipTargets {
@@ -95,23 +133,27 @@ impl Friendship {
         else { None }
     }
 
-    pub fn query_user_relations(target: &CheckedString) -> Option<Vec<((String, Option<String>), Friendship)>> {
+    pub fn query_user_relations(target: &CheckedString) -> Option<Vec<RelationAndUser>> {
     use schema::friendship;
     use schema::users;
     let conn = &mut database::establish_connection();
-    let query: Result<Vec<((String, Option<String>), Friendship)>, diesel::result::Error> = friendship::table
+    let query: Result<Vec<(User, Friendship)>, diesel::result::Error> = friendship::table
         .inner_join( users::table.on(
             users::unique_name
                 .eq(friendship::b)
                 .or(users::unique_name.eq(friendship::a))
-                .and(users::unique_name.ne(friendship::sender))
+                .and(users::unique_name.ne(target))
         ))
-        .select(((users::unique_name, users::display_name), friendship::all_columns))
+        .select((users::all_columns, friendship::all_columns))
         .filter(friendship::a.eq(&target)).or_filter(friendship::b.eq(&target))
         .load(conn);
 
         if let Ok(result) = query {
-            Some(result)
+            let mapped_result = result.into_iter().map(|item| {
+                let (user, relation) = item;
+                RelationAndUser{ relation, user }
+            }) .collect();
+            Some(mapped_result)
         } else {
             None
         }
@@ -151,7 +193,6 @@ fn name() {
     let json = String::from_utf8(buf).unwrap();
     
     println!("{json}");
-
 
     panic!();
 }

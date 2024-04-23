@@ -1,5 +1,8 @@
 <script lang="ts">
-    import { navigate } from "svelte-routing";
+import { navigate } from "svelte-routing";
+import socket_manager from "../socket_manager";
+import notification_manager from "../notification_manager";
+import type { notification } from "../stores/inbox";
 
 let unique_name = ""
 let password = ""
@@ -45,10 +48,11 @@ const signup = () => {
       password
     })
   }).then(fetch_res => {
-      fetch_res.text().then(res => {
+      fetch_res.text().then((res) => {
         console.log(res);
         if ( res === 'Ok' ) {
-          navigate("/app/chat", {replace: false})
+          navigate("/app/chat", {replace: false});
+          socket_manager.initialize_client();
         }
       })
     });
@@ -97,6 +101,7 @@ const login = () => {
         console.log(res);
         if ( res === 'Ok' ) {
           navigate("/app/chat", {replace: false})
+          socket_manager.initialize_client();
         }
       })
     });

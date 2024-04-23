@@ -1,12 +1,6 @@
 <script lang="ts">
 import {friend_list} from '../../stores/data'
 
-fetch("/api/initial_data_request").then(response=>{
-  response.json().then(json=>{
-    console.log(json)
-  }).catch(e=>console.error(e))
-}).catch(e=>console.error(e))
-
 </script>
 
 <main>

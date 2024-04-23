@@ -60,7 +60,7 @@ impl IntoResponse for ChattyResponse
 }
 
 
-pub fn json_response<T: Serialize>(item: T) -> Response<Body> {
+pub fn chatty_json_response<T: Serialize>(item: T) -> Response<Body> {
     let Ok(json) = serde_json::to_string(&item) else {
         return ChattyResponse::InternalError.into_response();
     };

@@ -1,21 +1,21 @@
 <script lang="ts">
-  import {header_end} from '../../stores/ui'
-  import FriendsSection from "./FriendsSection.svelte"
-  import GuildsSection from "./GuildsSection.svelte"
-  import RequestsSection from "./RequestsSection.svelte"
+import FriendsSection from "./FriendsSection.svelte"
+import GuildsSection from "./GuildsSection.svelte"
+import RequestsSection from "./RequestsSection.svelte"
 
-  type section_enum = "friends" | "guilds" | "requests";  
-  let section: section_enum = "friends";
-  let subpath: string = "";
-  let path_extra: string | null = null;
-  $: if(section) {
-    const args: string[] = [section];
-    if (path_extra) args.push(path_extra);
-    subpath = "/" + args.join("/")
-  }
+type section_enum = "friends" | "guilds" | "requests";  
+let section: section_enum = "friends";
+let subpath: string = "";
+let path_extra: string | null = null;
+$: if(section) {
+  const args: string[] = [section];
+  if (path_extra) args.push(path_extra);
+  subpath = "/" + args.join("/")
+}
+
 </script>
 
-<main style="top: {$header_end}px; height: calc(100vh - {$header_end}px)">
+<main>
   <div class="buttons_wrap">
     <button class="button" on:click={()=>{section = "friends"}}> Friends </button>
     <button class="button" on:click={()=>{section = "guilds"}}> Guilds </button>
@@ -57,11 +57,10 @@
   text-decoration: underline;
 }
 main {
-  position: fixed;
   background: var(--crust);
-  height: 100vh;
-  width: 260px;
   border: 1px solid var(--overlay0);
   border-top: none;
+  height: 100%;
+  min-width: 260px;
 }
 </style>

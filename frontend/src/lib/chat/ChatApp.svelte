@@ -1,12 +1,4 @@
 <script lang="ts">
-let self = {
-  name: "John Snow"
-}
-
-let channel = {
-  id: "slahdglkj"
-}
-
 
 type message = {
   body: string,
@@ -41,23 +33,9 @@ messages.push({
 
 
 
+// TODO call send message api endpoint.
 const try_send_message = (e: Event) => {
   let new_message = (e.target as HTMLInputElement).value;
-
-  fetch('http://localhost:8080/api/post_message', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      content: new_message,
-      author_id: self.name,
-      channel_id: channel.id,
-      attachments: [],
-    })
-  }).then(res => {
-      res.text().then(text => {
-        console.log(text);
-      }).catch(err => console.error(err))
-    }).catch(err => console.error(err))
 }
 </script>
 
@@ -113,6 +91,6 @@ main {
   background: var(--base);
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
 }
 </style>

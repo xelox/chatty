@@ -1,21 +1,19 @@
-use axum::extract::{Json, State};
-use axum::response::{IntoResponse, Response};
-use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-use crate::database::models::{Friendship, FriendshipTargets};
-use crate::server_state::ServerState;
+use crate::database::models::{Friendship, FriendshipTargets, RelationAndUser};
 use crate::database::{self, models::User, schema};
-use crate::structs::chatty_response::{json_response, ChattyResponse};
+use crate::server_state::ServerState;
+use crate::structs::chatty_response::{chatty_json_response, ChattyResponse};
 use crate::structs::checked_string::CheckedString;
+use crate::structs::client::{AuthValidationResult, Client};
 use crate::structs::notification::Notification;
 use crate::structs::socket_signal::Signal;
-use axum_session::{Session, SessionPgPool};
-use crate::structs::client::{ Client, AuthValidationResult };
+use axum::extract::{Json, State};
+use axum::response::{IntoResponse, Response};
 use axum_macros::debug_handler;
+use axum_session::{Session, SessionPgPool};
+use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
-#[derive(Debug)]
-#[derive(Deserialize)]
-#[derive(Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct MessageJSON {
     attachments: Vec<String>,
     author_id: String,
@@ -23,64 +21,87 @@ pub struct MessageJSON {
     content: String,
 }
 
-pub async fn post_message(State(_state): State<Arc<ServerState>>, Json(_payload): Json<MessageJSON>) -> ChattyResponse {
+pub async fn post_message(
+    State(_state): State<Arc<ServerState>>,
+    Json(_payload): Json<MessageJSON>,
+) -> ChattyResponse {
     ChattyResponse::Ok
 }
 
-
-#[derive(Debug)]
-#[derive(Deserialize)]
-#[derive(Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct FriendRequestForm {
-    to: CheckedString
+    to: CheckedString,
 }
 
 #[debug_handler()]
-pub async fn send_friend_request(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>) -> ChattyResponse {
+pub async fn send_friend_request(
+    session: Session<SessionPgPool>,
+    State(state): State<Arc<ServerState>>,
+    Json(payload): Json<FriendRequestForm>,
+) -> ChattyResponse {
     let Some(sender) = session.get::<CheckedString>("client_unique_name") else {
         return ChattyResponse::Unauthorized;
     };
 
-    use schema::users::dsl::*;
     use diesel::prelude::*;
+    use schema::users::dsl::*;
     let conn = &mut database::establish_connection();
 
-    let query: Result<User, _> = users
-        .find(payload.to)
-        .first(conn);
+    let query: Result<User, _> = users.find(payload.to).first(conn);
 
     match query {
         Ok(target) => {
-            let Some(req_id) = Friendship::create(FriendshipTargets::new(&sender, &target.unique_name), &sender) else {
+            let Some(req_id) = Friendship::create(
+                FriendshipTargets::new(&sender, &target.unique_name),
+                &sender,
+            ) else {
                 return ChattyResponse::InternalError;
             };
 
             let n = Notification::new_friend_req(target.unique_name.clone(), &sender, &req_id);
 
             if let Some(live_target) = state.get_client(&target.unique_name).await {
-                live_target.send_socket_order(Arc::new([
-                    Signal::Notification(n)
-                ])).await;
+                live_target
+                    .send_socket_order(Arc::new([Signal::Notification(n)]))
+                    .await;
             }
-
+            // TODO: store the notification.
             ChattyResponse::Ok
         }
-        _ => {
-            ChattyResponse::BadRequest(Some(String::from("User does not exist")))
-        }
+        _ => ChattyResponse::BadRequest(Some(String::from("User does not exist"))),
     }
 }
 
+/**
+type response_schema = {
+  user_info: {
+    username: string,
+    pfp_url: string,
+    dislplay_name: string,
+    status: string,
+  }
+  relations: schema_peer[]
+}
+*/
 pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
     let Some(target) = session.get::<CheckedString>("client_unique_name") else {
         return ChattyResponse::Unauthorized.into_response();
     };
-
-    if let Some(relations) = Friendship::query_user_relations(&target) {
-        return json_response(relations);
-    } else {
+    let Some(relations) = Friendship::query_user_relations(&target) else {
         return ChattyResponse::InternalError.into_response();
+    };
+    let Some(user_info) = User::query_user(&target) else {
+        return ChattyResponse::InternalError.into_response();
+    };
+    #[derive(Serialize)]
+    struct CompleteResult {
+        relations: Vec<RelationAndUser>,
+        user_info: User,
     }
+    let complete_result = CompleteResult {
+        relations, user_info
+    };
+    return chatty_json_response(complete_result);
 }
 
 #[derive(Deserialize)]
@@ -106,10 +127,10 @@ pub async fn signin(session: Session<SessionPgPool>, Json(form): Json<AuthForm>)
             session.set_store(true);
             session.set("client_unique_name", form.unique_name);
             ChattyResponse::Ok
-        },
+        }
         AuthValidationResult::IncorrectPassword => {
             ChattyResponse::BadRequest(Some(String::from("Incorrect password")))
-        },
+        }
         AuthValidationResult::IncorrectUniqueName => {
             ChattyResponse::BadRequest(Some(String::from("Incorrect username")))
         }
