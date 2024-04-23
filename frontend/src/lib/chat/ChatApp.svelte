@@ -7,31 +7,6 @@ type message = {
 }
 
 let messages: message[] = [];
-messages.push({
-  author: 'Marco Polo',
-  body: 'Some Random Test Message',
-  id: 'salkdjgklasjhm'
-});
-
-messages.push({
-  author: 'Marco Polo',
-  body: 'Some Random Test Message',
-  id: 'salkdjgklasjhm'
-});
-
-messages.push({
-  author: 'John Snow',
-  body: 'This is a message from John Snow',
-  id: 'salkdjgklasjhm'
-});
-
-messages.push({
-  author: 'Marco Polo',
-  body: 'Some Random Test Message',
-  id: 'salkdjgklasjhm'
-});
-
-
 
 // TODO call send message api endpoint.
 const try_send_message = (e: Event) => {
@@ -42,31 +17,12 @@ const try_send_message = (e: Event) => {
 <main>
   <div class="chat_wrapper">
     <div class="messages_wrapper">
-      {#each messages as message}
-        <div class="message_div {message.author == self.name ? 'self_message' : ''}">
-          <p class="author">{message.author}</p>
-          <p>{message.body}</p>
-        </div>
-      {/each}
     </div>
     <input type="text" class='input' placeholder="Chatty chatty chattttt..." on:change={try_send_message}>
   </div>
 </main>
 
 <style>
-.author {
-  color: var(--vividtext);
-  font-size: 1rem;
-}
-.message_div {
-  padding: 4px;
-  border-bottom: 1px solid var(--overlay0);
-  padding: 4px 20px 4px 20px;
-  font-size: 0.9rem;
-}
-.message_div>p {
-  margin: 0;
-}
 .messages_wrapper {
   display: flex;
   flex-direction: column;
