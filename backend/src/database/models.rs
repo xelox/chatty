@@ -190,9 +190,5 @@ fn name() {
         panic!("Faild to pase to json");
     };
 
-    let json = String::from_utf8(buf).unwrap();
-    
-    println!("{json}");
-
-    panic!();
+    let _ = String::from_utf8(buf).unwrap();
 }
