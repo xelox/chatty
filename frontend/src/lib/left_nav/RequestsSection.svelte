@@ -73,8 +73,11 @@ button:hover {
   text-decoration: underline;
 }
 .section_selection_wrap {
+  padding: 10px;
   display: flex;
   justify-content: space-around;
+  border-bottom: 1px solid var(--overlay0);
+  margin-bottom: 10px;
 }
 .display_name {
   font-size: 1em;

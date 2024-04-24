@@ -19,12 +19,12 @@ const manipulate_path = (s: string) => {
 </script>
 
 <main>
+  <p class="subpath">{subpath}</p>
   <div class="buttons_wrap">
     <button class="button" on:click={()=>{section = "friends"}} style="color: {section === "friends" ? "var(--yellow)" : ""}"> Friends </button>
     <button class="button" on:click={()=>{section = "guilds"}} style="color: {section === "guilds" ? "var(--yellow)" : ""}"> Guilds </button>
     <button class="button" on:click={()=>{section = "requests"}} style="color: {section === "requests" ? "var(--yellow)" : ""}"> Requests </button>
   </div> 
-  <p class="subpath">{subpath}</p>
   <div class="active_section_wrapper">
     {#if section == "friends"}
       <FriendsSection {manipulate_path}/>
