@@ -1,4 +1,5 @@
 import type { Notification } from "./stores/inbox";
+import notification_manager from "./notification_manager"
 
 /** 
  * @param exectly validation fails if result does not match this value exactly.
@@ -36,9 +37,7 @@ class RequestsManager {
         content: err_message,
         source: "System",
       }
-      const event = new CustomEvent("request_error", {detail: n});
-      window.dispatchEvent(event);
-      window.dispatchEvent(event);
+      notification_manager.notify(n, 'system');
     }
     if (options?.fail_action) options.fail_action(err_message);
   }
@@ -49,6 +48,9 @@ class RequestsManager {
       headers: [ ["Content-Type", "application/json"] ],
       body
     }).then(res=>{
+        if (!res.ok) {
+          return this.handle_error(`${path}: ${res.statusText}`, options);
+        }
         res.text().then(res=>{
           if (!options) return;
           if (options.exactly) {

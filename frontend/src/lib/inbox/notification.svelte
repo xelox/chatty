@@ -1,6 +1,6 @@
 <script lang='ts'>
-  import type { notification } from "../../stores/inbox";
-  export let n: notification;
+  import type { Notification } from "../../stores/inbox";
+  export let n: Notification;
 </script>
 <main>
   {n.content}

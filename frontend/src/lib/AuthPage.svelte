@@ -38,7 +38,6 @@ const validate = (): boolean => {
 const signup = () => {
   if (!validate()) return;
   const options: RequestOptions = {
-    exactly: "Ok",
     succeed_action: () => {
       navigate("/app/chat", {replace: false});
       socket_manager.initialize_client();
@@ -52,7 +51,6 @@ const signup = () => {
 const signin = () => {
   if (!validate()) return;
   const options: RequestOptions = {
-    exactly: "Ok",
     succeed_action: () => {
       navigate("/app/chat", {replace: false});
       socket_manager.initialize_client();

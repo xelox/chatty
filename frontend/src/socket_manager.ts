@@ -1,5 +1,5 @@
 import notification_manager from "./notification_manager";
-import {pending_friends_in, pending_friends_out, user_data, type schema_pending_peer, type schema_user_info } from "./stores/data";
+import {pending_friends_in, pending_friends_out, user_data, type SchemaPeer, type SchemaPeerList, type SchemaUserInfo } from "./stores/data";
 import type { Notification } from "./stores/inbox";
 class SocketManager {
   private socket: WebSocket | null = null;
@@ -31,17 +31,17 @@ class SocketManager {
 
       user_data.set(json.user_info);
       
-      const friends_: schema_user_info[] = []
-      const pending_friends_out_: schema_pending_peer[] = []
-      const pending_friends_in_: schema_pending_peer[] = []
+      const friends_: SchemaUserInfo[] = []
+      const pending_friends_out_: SchemaPeerList = {}
+      const pending_friends_in_: SchemaPeerList = {}
 
       for (const item of json.relations) {
         if (item.relation.accepted) {
           friends_.push(item.user)
         } else if (item.relation.sender === json.user_info.unique_name) {
-          pending_friends_out_.push({...item.user, relation_id: item.relation.id});
+          pending_friends_out_[item.relation.id] = {...item.user, relation_id: item.relation.id}
         } else {
-          pending_friends_in_.push({...item.user, relation_id: item.relation.id});
+          pending_friends_in_[item.relation.id] = {...item.user, relation_id: item.relation.id}
         }
       }
       pending_friends_in.set(pending_friends_in_);

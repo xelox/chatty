@@ -10,8 +10,6 @@ import socket_manager from './socket_manager';
 import ActiveNotification from './lib/active_notification.svelte';
 import LeftNav from './lib/left_nav/LeftNav.svelte';
 import { user_data } from './stores/data';
-import notification_manager from './notification_manager'
-import type { notification } from './stores/inbox';
 
 socket_manager.initialize_client(); 
 

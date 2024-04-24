@@ -1,16 +1,16 @@
 <script lang="ts">
-import type { notification } from "../stores/inbox";
-type shortly_rendered_notification = notification & {
+import type { Notification } from "../stores/inbox";
+type ShortlyLivedNotification = Notification & {
   render_ts?: number;
 }
 
 const TTLms = 1_000; // Alloted time to show the active notification (in miliseconds)
-let notification_queue: shortly_rendered_notification[] = [];
-let active_notification: shortly_rendered_notification | null = null;
+let notification_queue: ShortlyLivedNotification[] = [];
+let active_notification: ShortlyLivedNotification | null = null;
 let elapsed_bar: number = TTLms;
 
 window.addEventListener('C_E_notification', (event) => {
-  const new_notification = (event as CustomEvent).detail as notification;
+  const new_notification = (event as CustomEvent).detail as Notification;
   notification_queue.push(new_notification);
   if(active_notification === null && notification_queue.length === 1) {
     active_notification = notification_queue.shift()!;

@@ -1,6 +1,6 @@
-import inbox, { type notification } from './stores/inbox'
+import inbox, { type Notification } from './stores/inbox'
 class NotificationManager {
-  public notify(n: notification, group: 'dms' | 'guilds' | 'system') {
+  public notify(n: Notification, group: 'dms' | 'guilds' | 'system') {
     inbox.update(i => {
       i[group].push(n);
       return i;
