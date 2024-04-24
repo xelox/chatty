@@ -39,7 +39,7 @@ set_section("inbound");
       <div class="right">
         <span class="display_name">{item.display_name ?? item.unique_name}</span>
         <div class="interations_wrap">
-        <button on:click={()=>interact("cancel", item.relation_id)}>Accept</button>
+        <button on:click={()=>interact("cancel", item.relation_id)}>Cancel</button>
         </div>
       </div>
     </div>
