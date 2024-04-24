@@ -11,8 +11,8 @@ use super::{checked_string::CheckedString, socket_signal::{Signal, SignalList}};
 pub struct Client {
     socket: Option<Mutex<WebSocket>>,
     unique_name: Arc<String>,
-    chats: RwLock<Vec<String>>, //TODO chats class
-    status: RwLock<String>, //TODO status class
+    chats: RwLock<Vec<String>>, //TODO: chats class
+    status: RwLock<String>, //TODO: status class
 }
 
 impl Client {

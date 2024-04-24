@@ -8,7 +8,7 @@ type message = {
 
 let messages: message[] = [];
 
-// TODO call send message api endpoint.
+// TODO: call send message api endpoint.
 const try_send_message = (e: Event) => {
   let new_message = (e.target as HTMLInputElement).value;
 }

@@ -12,7 +12,7 @@ let password_label_focus = false;
 
 const validate = (): boolean => {
   let valid = true;
-  // TODO propper username validation.
+  // TODO: propper username validation.
   if (unique_name === "") {
     const notification: Notification = {
       ts: Number(new Date()),
@@ -22,7 +22,7 @@ const validate = (): boolean => {
     notification_manager.notify(notification, 'system');
     valid = false;
   }
-  // TODO propper password stregth validation.
+  // TODO: propper password stregth validation.
   if (password === "") {
     const notification: Notification = {
       ts: Number(new Date()),
