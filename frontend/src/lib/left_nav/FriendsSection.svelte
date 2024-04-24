@@ -1,6 +1,8 @@
 <script lang="ts">
 import {friend_list} from '../../stores/data'
 
+export let manipulate_path: (s: string) => void;
+manipulate_path("");
 </script>
 
 <main>

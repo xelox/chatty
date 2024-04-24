@@ -14,20 +14,10 @@ export type schema_channel = {
 };
 
 export type schema_peer = schema_user_info & { last_message?: string };
+export type schema_pending_peer = schema_peer & {relation_id: string}
 
 export const user_data = writable<schema_user_info | null>(null);
-export const friend_list = writable<schema_peer[]>([
-  {
-    unique_name: "pablo",
-    display_name: null,
-    pfp_url: undefined, 
-    last_message: undefined,
-  },
-  {
-    unique_name: "mark",
-    display_name: "Markus Primus",
-    pfp_url: undefined, 
-    last_message: "What's cooking fam",
-  }
-]);
+export const friend_list = writable<schema_peer[]>([]);
+export const pending_friends_out = writable<schema_pending_peer[]>([]);
+export const pending_friends_in = writable<schema_pending_peer[]>([]);
 

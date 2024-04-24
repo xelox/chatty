@@ -13,6 +13,9 @@ $: if(section) {
   subpath = "/" + args.join("/")
 }
 
+const manipulate_path = (s: string) => {
+  path_extra = s;
+}
 </script>
 
 <main>
@@ -24,11 +27,11 @@ $: if(section) {
   <p class="subpath">{subpath}</p>
   <div class="active_section_wrapper">
     {#if section == "friends"}
-      <FriendsSection/>
+      <FriendsSection {manipulate_path}/>
     {:else if section == "guilds"}
-      <GuildsSection/>
+      <GuildsSection {manipulate_path}/>
     {:else if section == "requests"}
-      <RequestsSection/>
+      <RequestsSection {manipulate_path}/>
     {/if}
   </div>
 </main>

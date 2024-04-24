@@ -1,20 +1,52 @@
 import notification_manager from "./notification_manager";
-import { user_data, type schema_peer, type schema_user_info } from "./stores/data";
+import {pending_friends_in, pending_friends_out, user_data, type schema_pending_peer, type schema_user_info } from "./stores/data";
 import type { notification } from "./stores/inbox";
 class SocketManager {
   private socket: WebSocket | null = null;
 
   public initialize_client = async (): Promise<boolean> => {
     type response_schema = {
-      user_info: schema_user_info,
-      relations: schema_peer[],
+      user_info: {
+        unique_name: string,
+        display_name: string | null,
+      },
+      relations: {
+        relation:{
+          id: string,
+          a: string,
+          b: string,
+          sender: string,
+          accepted: boolean,
+        }
+        user: {
+          unique_name: string,
+          display_name: string | null,
+        }
+      }[]
     }
 
     try {
-      const response = await fetch("/api/initial_data_request")
-      const json_response = await response.json();
-      const json = json_response as response_schema;
-      user_data.set(json_response.user_info);
+      const response = await fetch("http://localhost:8080/api/initial_data_request")
+      const json = await response.json() as response_schema;
+
+      user_data.set(json.user_info);
+      
+      const friends_: schema_user_info[] = []
+      const pending_friends_out_: schema_pending_peer[] = []
+      const pending_friends_in_: schema_pending_peer[] = []
+
+      for (const item of json.relations) {
+        if (item.relation.accepted) {
+          friends_.push(item.user)
+        } else if (item.relation.sender === json.user_info.unique_name) {
+          pending_friends_out_.push({...item.user, relation_id: item.relation.id});
+        } else {
+          pending_friends_in_.push({...item.user, relation_id: item.relation.id});
+        }
+      }
+      pending_friends_in.set(pending_friends_in_);
+      pending_friends_out.set(pending_friends_out_);
+
       console.log(json)
     } catch (err) {
       // TODO *maybe* more error handeling could be nicer here?

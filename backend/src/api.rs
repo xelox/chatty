@@ -21,10 +21,7 @@ pub struct MessageJSON {
     content: String,
 }
 
-pub async fn post_message(
-    State(_state): State<Arc<ServerState>>,
-    Json(_payload): Json<MessageJSON>,
-) -> ChattyResponse {
+pub async fn post_message( State(_state): State<Arc<ServerState>>, Json(_payload): Json<MessageJSON>,) -> ChattyResponse {
     ChattyResponse::Ok
 }
 
@@ -34,11 +31,7 @@ pub struct FriendRequestForm {
 }
 
 #[debug_handler()]
-pub async fn send_friend_request(
-    session: Session<SessionPgPool>,
-    State(state): State<Arc<ServerState>>,
-    Json(payload): Json<FriendRequestForm>,
-) -> ChattyResponse {
+pub async fn send_friend_request( session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>,) -> ChattyResponse {
     let Some(sender) = session.get::<CheckedString>("client_unique_name") else {
         return ChattyResponse::Unauthorized;
     };
@@ -72,17 +65,6 @@ pub async fn send_friend_request(
     }
 }
 
-/**
-type response_schema = {
-  user_info: {
-    username: string,
-    pfp_url: string,
-    dislplay_name: string,
-    status: string,
-  }
-  relations: schema_peer[]
-}
-*/
 pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
     let Some(target) = session.get::<CheckedString>("client_unique_name") else {
         return ChattyResponse::Unauthorized.into_response();
