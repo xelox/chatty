@@ -1,13 +1,13 @@
 import { writable } from "svelte/store";
-export type notification = {
+export type Notification = {
   ts: number,
   content: string,
   source: string,
 }
 export type inbox_store = {
-  dms: notification[],
-  guilds: notification[],
-  system: notification[],
+  dms: Notification[],
+  guilds: Notification[],
+  system: Notification[],
 }
 
 export default writable<inbox_store>({

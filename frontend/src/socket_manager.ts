@@ -1,6 +1,6 @@
 import notification_manager from "./notification_manager";
 import {pending_friends_in, pending_friends_out, user_data, type schema_pending_peer, type schema_user_info } from "./stores/data";
-import type { notification } from "./stores/inbox";
+import type { Notification } from "./stores/inbox";
 class SocketManager {
   private socket: WebSocket | null = null;
 
@@ -50,7 +50,7 @@ class SocketManager {
       console.log(json)
     } catch (err) {
       // TODO *maybe* more error handeling could be nicer here?
-      let n: notification = {
+      let n: Notification = {
         ts: Number(new Date()),
         content: "Failed to initialize",
         source: "System",
@@ -73,7 +73,7 @@ class SocketManager {
     notification_manager.notify({
       ts: Number(new Date()),
       content: 'socket connection established',
-      source: 'system'
+      source: 'System'
     }, 'system');
   }
 
@@ -81,7 +81,7 @@ class SocketManager {
     notification_manager.notify({
       ts: Number(new Date()),
       content: `socket message: ${e.data}`,
-      source: 'system'
+      source: 'System'
     }, 'system');
   }
   
@@ -89,7 +89,7 @@ class SocketManager {
     notification_manager.notify({
       ts: Number(new Date()),
       content: 'socket connection closed',
-      source: 'system'
+      source: 'System'
     }, 'system');
   }
 
@@ -97,7 +97,7 @@ class SocketManager {
     notification_manager.notify({
       ts: Number(new Date()),
       content: `socket error: ${e}`,
-      source: 'system'
+      source: 'System'
     }, 'system');
   }
 }

@@ -2,110 +2,67 @@
 import { navigate } from "svelte-routing";
 import socket_manager from "../socket_manager";
 import notification_manager from "../notification_manager";
-import type { notification } from "../stores/inbox";
+import { requests_manager, type RequestOptions } from "../requests_manager";
+import type { Notification } from "../stores/inbox";
 
 let unique_name = ""
 let password = ""
 let unique_name_label_focus = false;
 let password_label_focus = false;
 
+const validate = (): boolean => {
+  let valid = true;
+  // TODO propper username validation.
+  if (unique_name === "") {
+    const notification: Notification = {
+      ts: Number(new Date()),
+      content: "Username can not be empty",
+      source: "System",
+    }
+    notification_manager.notify(notification, 'system');
+    valid = false;
+  }
+  // TODO propper password stregth validation.
+  if (password === "") {
+    const notification: Notification = {
+      ts: Number(new Date()),
+      content: "Password can not be empty",
+      source: "System",
+    }
+    notification_manager.notify(notification, 'system');
+    valid = false;
+  }
+  return valid;
+}
+
 const signup = () => {
-  if (unique_name === "" && password === "") {
-    document.dispatchEvent(new CustomEvent('notification', {
-      detail: {
-        type: 'error',
-        info: 'Please provide a unique_name and a password.'
-      }
-    }));
-    return;
+  if (!validate()) return;
+  const options: RequestOptions = {
+    exactly: "Ok",
+    succeed_action: () => {
+      navigate("/app/chat", {replace: false});
+      socket_manager.initialize_client();
+    }
   }
-  if (unique_name === "") {
-    document.dispatchEvent(new CustomEvent('notification', {
-      detail: {
-        type: 'error',
-        info: 'Please provide a unique_name.'
-      }
-    }));
-    return;
-  }
-  if (password === "") {
-    document.dispatchEvent(new CustomEvent('notification', {
-      detail: {
-        type: 'error',
-        info: 'Please provide a unique_name.'
-      }
-    }));
-    return;
-  }
-
-  fetch(`http://localhost:8080/api/signup`, {
-    method: "POST",
-    headers: [
-      ["Content-Type", "application/json"]
-    ],
-    body: JSON.stringify({
-      unique_name,
-      password
-    })
-  }).then(fetch_res => {
-      fetch_res.text().then((res) => {
-        console.log(res);
-        if ( res === 'Ok' ) {
-          navigate("/app/chat", {replace: false});
-          socket_manager.initialize_client();
-        }
-      })
-    });
+  requests_manager.post("/api/signup", {
+    unique_name, password,
+  }, options)
 }
 
-const login = () => {
-  if (unique_name === "" && password === "") {
-    document.dispatchEvent(new CustomEvent('notification', {
-      detail: {
-        type: 'error',
-        info: 'Please provide a unique_name and a password.'
-      }
-    }));
-    return;
+const signin = () => {
+  if (!validate()) return;
+  const options: RequestOptions = {
+    exactly: "Ok",
+    succeed_action: () => {
+      navigate("/app/chat", {replace: false});
+      socket_manager.initialize_client();
+    }
   }
-  if (unique_name === "") {
-    document.dispatchEvent(new CustomEvent('notification', {
-      detail: {
-        type: 'error',
-        info: 'Please provide a unique_name.'
-      }
-    }));
-    return;
-  }
-  if (password === "") {
-    document.dispatchEvent(new CustomEvent('notification', {
-      detail: {
-        type: 'error',
-        info: 'Please provide a unique_name.'
-      }
-    }));
-    return;
-  }
-
-  fetch(`http://localhost:8080/api/signin`, {
-    method: "POST",
-    headers: [
-      ["Content-Type", "application/json"]
-    ],
-    body: JSON.stringify({
-      unique_name,
-      password
-    })
-  }).then(fetch_res => {
-      fetch_res.text().then(res => {
-        console.log(res);
-        if ( res === 'Ok' ) {
-          navigate("/app/chat", {replace: false})
-          socket_manager.initialize_client();
-        }
-      })
-    });
+  requests_manager.post("/api/signin", {
+    unique_name, password,
+  }, options)
 }
+
 </script>
 
 <main>
@@ -126,7 +83,7 @@ const login = () => {
       >
     </div>
     <div class="input_wrap">
-      <input type="button" value="Log In" on:click={login}>
+      <input type="button" value="Log In" on:click={signin}>
       <input type="button" value="Sign Up" on:click={signup}>
     </div>
   </div>
