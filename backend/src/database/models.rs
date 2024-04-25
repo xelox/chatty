@@ -4,7 +4,6 @@ use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use diesel::ExpressionMethods;
 use diesel::BoolExpressionMethods;
-use diesel::SelectableHelper;
 use diesel::deserialize::Queryable;
 use diesel::prelude::Insertable;
 use diesel::Selectable;
@@ -94,26 +93,6 @@ impl FriendshipTargets {
 } 
 
 impl Friendship {
-    pub fn accept(id_: Uuid, acceptor: CheckedString) -> bool {
-        use schema::friendship::dsl::*;
-        let conn = &mut database::establish_connection();
-        let query: Result<Friendship, _> = friendship
-            .find(id_)
-            .select(Friendship::as_select())
-            .first(conn);
-
-        if let Ok(r) = query {
-            if r.accepted == false && acceptor != r.sender {
-                let query = diesel::update(&r)
-                    .set((sender.eq(acceptor), accepted.eq(true)))
-                    .execute(conn);
-
-                return query.is_ok();
-            }
-        } 
-        return false;
-    }
-
     pub fn create(targets: FriendshipTargets, sender_: &CheckedString) -> Option<Uuid> {
         let (a_, b_) = targets.unpack();
         let ts = uuid::Timestamp::now(NoContext);
