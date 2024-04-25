@@ -6,11 +6,12 @@ use crate::structs::checked_string::CheckedString;
 use crate::structs::client::{AuthValidationResult, Client};
 use crate::structs::notification::Notification;
 use crate::structs::socket_signal::Signal;
-use axum::extract::{Json, State};
+use axum::extract::{Json, Path, State};
 use axum::response::{IntoResponse, Response};
 use axum_macros::debug_handler;
 use axum_session::{Session, SessionPgPool};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 use std::sync::Arc;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -84,6 +85,21 @@ pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
         relations, user_info
     };
     return chatty_json_response(complete_result);
+}
+
+#[derive(Deserialize)]
+pub struct FriendshipInteraction {
+    relation_id: Uuid,
+}
+
+
+use database::models::EditFriendshipEnum;
+pub async fn edit_relation(Path(action): Path<EditFriendshipEnum>, session: Session<SessionPgPool>, Json(form): Json<FriendshipInteraction>) -> ChattyResponse {
+    let Some(request_maker) = session.get::<CheckedString>("client_unique_name") else {
+        return ChattyResponse::Unauthorized;
+    };
+    Friendship::edit_relation(request_maker, form.relation_id, action)
+    // TODO: If the operation returns Ok, also send socket message to live "other" client.
 }
 
 #[derive(Deserialize)]

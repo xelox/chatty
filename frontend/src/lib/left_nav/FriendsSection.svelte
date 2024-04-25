@@ -6,7 +6,7 @@ manipulate_path("");
 </script>
 
 <main>
-  {#each $friend_list as friend_item}
+  {#each Object.entries($friend_list) as [relation_id, friend_item]}
     <div class="friend_item">
       <span class="left"> <img src="" title="{friend_item.display_name ?? friend_item.unique_name}" alt=""> </span>
       <div class="right">

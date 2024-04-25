@@ -9,9 +9,11 @@ use diesel::deserialize::Queryable;
 use diesel::prelude::Insertable;
 use diesel::Selectable;
 use diesel::expression::ValidGrouping;
+use serde::Deserialize;
 use serde::Serialize;
 use uuid::{NoContext, Uuid};
 use crate::database;
+use crate::structs::chatty_response::ChattyResponse;
 use crate::structs::checked_string::CheckedString;
 use crate::database::schema;
 
@@ -62,7 +64,7 @@ pub struct Friendship {
     id: Uuid,
     a: String,
     b: String,
-    sender: String,
+    sender: CheckedString,
     accepted: bool,
 }
 
@@ -92,7 +94,7 @@ impl FriendshipTargets {
 } 
 
 impl Friendship {
-    pub fn accept(id_: Uuid, acceptor: String) -> bool {
+    pub fn accept(id_: Uuid, acceptor: CheckedString) -> bool {
         use schema::friendship::dsl::*;
         let conn = &mut database::establish_connection();
         let query: Result<Friendship, _> = friendship
@@ -120,7 +122,7 @@ impl Friendship {
             id: id_,
             a: a_,
             b: b_,
-            sender: sender_.to_string(),
+            sender: sender_.clone(),
             accepted: false
         };
 
@@ -159,6 +161,92 @@ impl Friendship {
             None
         }
     }
+
+    pub fn edit_relation(request_maker: CheckedString, id: Uuid, method: EditFriendshipEnum) -> ChattyResponse {
+        use diesel::result::Error;
+        use schema::friendship;
+        let conn = &mut database::establish_connection();
+        let query: Result<Friendship, Error> = friendship::table
+            .find(id)
+            .select(friendship::all_columns)
+            .first(conn);
+        if let Ok(relation) = query {
+
+            match method {
+                EditFriendshipEnum::Cancel => {
+                    if relation.sender != request_maker {
+                        return  ChattyResponse::Unauthorized;
+                    }
+                    if relation.accepted {
+                        return ChattyResponse::BadRequest(
+                            Some("It's too late to cancel this request.".to_string())
+                        );
+                    }
+                },
+                EditFriendshipEnum::Remove => {
+                    if !relation.accepted {
+                        return ChattyResponse::BadRequest(
+                            Some("To be removed, a friendship must first be accepted.".to_string())
+                        );
+                    }
+                },
+                EditFriendshipEnum::Accept => {
+                    if request_maker == relation.sender {
+                        return ChattyResponse::Unauthorized
+                    }
+                    if relation.accepted {
+                        return ChattyResponse::BadRequest(
+                            Some("Friendship already accepted.".to_string())
+                        );
+                    }
+                },
+                EditFriendshipEnum::Refuse => {
+                    if request_maker == relation.sender {
+                        return ChattyResponse::BadRequest(
+                            Some("Can't refuse a friendship you sent yourself.".to_string())
+                        );
+                    }
+                    if relation.accepted {
+                        return ChattyResponse::BadRequest(
+                            Some("Can't refuse a friendship that has already been accepted.".to_string())
+                        );
+                    }
+                }
+            }
+
+            let query = friendship::table.find(id);
+            let res: Result<_, Error>;
+            if method == EditFriendshipEnum::Accept {
+                res = diesel::update(query).set(friendship::accepted.eq(true)).execute(conn);
+            } else {
+                res = diesel::delete(query).execute(conn);
+            }
+            if res.is_err() {
+                return ChattyResponse::InternalError;
+            }
+            return ChattyResponse::Ok;
+        } else {
+            let error = query.unwrap_err();
+            match error {
+                Error::NotFound => {
+                    return ChattyResponse::BadRequest(None);
+                }
+                _ => {
+                    return ChattyResponse::InternalError;
+                }
+            }
+        };
+    }
+}
+
+#[derive(PartialEq, Eq)]
+#[derive(Deserialize)]
+#[serde(rename_all="snake_case")]
+pub enum EditFriendshipEnum {
+    Cancel,
+    Remove,
+    Accept,
+    Refuse,
 }
 
 // gooffy ah ah this will fail github actions.
