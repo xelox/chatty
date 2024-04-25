@@ -19,10 +19,10 @@ export type SchemaPeer = SchemaUserInfo & {
 };
 
 export const user_data = writable<SchemaUserInfo | null>(null);
-export const friend_list = writable<SchemaPeer[]>([]);
 
 export type SchemaPeerList = {[key: string]: SchemaPeer};
 
+export const friend_list = writable<SchemaPeerList>({});
 export const pending_friends_out = writable<SchemaPeerList>({});
 export const pending_friends_in = writable<SchemaPeerList>({});
 
