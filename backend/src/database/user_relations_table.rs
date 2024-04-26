@@ -16,7 +16,6 @@ use crate::structs::chatty_response::ChattyResponse;
 use crate::database::schema;
 use super::users_table::User;
 
-
 // The complete User-Relation struct.
 #[derive(Queryable, Selectable, Insertable, Identifiable)]
 #[derive(Serialize)]
@@ -32,8 +31,6 @@ pub struct UserRelation {
     created_at: SystemTime,
     accepted_at: Option<SystemTime>,
 }
-
-
 
 #[derive(Insertable)]
 #[diesel(table_name = schema::user_relations)]
