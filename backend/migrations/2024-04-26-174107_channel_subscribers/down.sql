@@ -1,3 +1,3 @@
 -- This file should undo anything in `up.sql`
 
-DROP TABLE "friendship"
+DROP TABLE channel_subscribers;
