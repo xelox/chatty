@@ -1,9 +1,9 @@
-use crate::database::models::{UserRelation, UserRelationPair, RelationAndUser};
-use crate::database::{self, models::User, schema};
+use crate::database;
+use crate::database::users_table::{AuthValidationResult, User};
+use crate::database::user_relations_table::{RelationAndUser, UserRelationPair, UserRelation};
 use crate::server_state::ServerState;
 use crate::structs::chatty_response::{chatty_json_response, ChattyResponse};
 use crate::structs::checked_string::CheckedString;
-use crate::structs::client::{AuthValidationResult, Client};
 use crate::structs::notification::Notification;
 use crate::structs::socket_signal::Signal;
 use axum::extract::{Json, Path, State};
@@ -28,7 +28,7 @@ pub async fn post_message( State(_state): State<Arc<ServerState>>, Json(_payload
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FriendRequestForm {
-    to: Uuid,
+    to: CheckedString,
 }
 
 #[debug_handler()]
@@ -37,14 +37,10 @@ pub async fn send_friend_request( session: Session<SessionPgPool>, State(state):
         return ChattyResponse::Unauthorized;
     };
 
-    use diesel::prelude::*;
-    use schema::users::dsl::*;
-    let conn = &mut database::establish_connection();
-
-    let query: Result<User, _> = users.find(payload.to).first(conn);
+    let query = User::query_user_by_username(&payload.to);
 
     match query {
-        Ok(target) => {
+        Some(target) => {
             let Some(req_id) = UserRelation::create(
                 UserRelationPair::new(&sender, &target.id),
                 &sender,
@@ -54,7 +50,7 @@ pub async fn send_friend_request( session: Session<SessionPgPool>, State(state):
 
             let n = Notification::new_friend_req(&target.id, &sender, &req_id);
 
-            if let Some(live_target) = state.get_client(&target.username).await {
+            if let Some(live_target) = state.get_client(&target.id).await {
                 live_target
                     .send_socket_order(Arc::new([Signal::Notification(n)]))
                     .await;
@@ -67,7 +63,7 @@ pub async fn send_friend_request( session: Session<SessionPgPool>, State(state):
 }
 
 pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
-    let Some(target) = session.get::<Uuid>("client_id") else {
+    let Some(target) = session.get::<Uuid>("user_id") else {
         return ChattyResponse::Unauthorized.into_response();
     };
     let Some(relations) = UserRelation::query_user_relations(&target) else {
@@ -93,9 +89,9 @@ pub struct FriendshipInteraction {
 }
 
 
-use database::models::EditFriendshipEnum;
+use database::user_relations_table::EditFriendshipEnum;
 pub async fn edit_relation(Path(action): Path<EditFriendshipEnum>, session: Session<SessionPgPool>, Json(form): Json<FriendshipInteraction>) -> ChattyResponse {
-    let Some(request_maker) = session.get::<Uuid>("client_id") else {
+    let Some(request_maker) = session.get::<Uuid>("user_id") else {
         return ChattyResponse::Unauthorized;
     };
     UserRelation::edit_relation(&request_maker, form.relation_id, action)
@@ -108,10 +104,10 @@ pub struct AuthForm {
     password: String,
 }
 pub async fn signup(session: Session<SessionPgPool>, Json(form): Json<AuthForm>) -> ChattyResponse {
-    let valid = Client::create_new_acc(&form.username, &form.password);
-    if valid {
+    let res = User::create_user(&form.username, &form.password);
+    if let Some(id) = res {
         session.set_store(true);
-        session.set("client_unique_name", form.username);
+        session.set("user_id", id);
         ChattyResponse::Ok
     } else {
         ChattyResponse::BadRequest(Some(String::from("Username is taken")))
@@ -119,11 +115,11 @@ pub async fn signup(session: Session<SessionPgPool>, Json(form): Json<AuthForm>)
 }
 
 pub async fn signin(session: Session<SessionPgPool>, Json(form): Json<AuthForm>) -> ChattyResponse {
-    let result = Client::validate_password(&form.username, &form.password);
+    let result = User::validate_password(&form.username, &form.password);
     match result {
-        AuthValidationResult::Valid => {
+        AuthValidationResult::Valid(id) => {
             session.set_store(true);
-            session.set("client_unique_name", form.username);
+            session.set("user_id", id);
             ChattyResponse::Ok
         }
         AuthValidationResult::IncorrectPassword => {
@@ -133,4 +129,9 @@ pub async fn signin(session: Session<SessionPgPool>, Json(form): Json<AuthForm>)
             ChattyResponse::BadRequest(Some(String::from("Incorrect username")))
         }
     }
+}
+
+pub async fn logout(session: Session<SessionPgPool>) -> ChattyResponse {
+    session.clear();
+    ChattyResponse::Ok
 }

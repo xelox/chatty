@@ -3,8 +3,6 @@ use serde::Serialize;
 use uuid::{NoContext, Timestamp, Uuid};
 use crate::config::HOSTNAME;
 
-use super::checked_string::CheckedString;
-
 #[derive(Serialize, Clone)]
 pub struct Notification {
     id: Uuid,

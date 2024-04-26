@@ -1,71 +1,33 @@
-use crate::database::{self, models::{self, User}, schema::{self, users::username}};
-use diesel::{RunQueryDsl, SelectableHelper};
-use uuid::Uuid;
-
 use std::sync::Arc;
 use axum::extract::ws::WebSocket;
 use futures_locks::{Mutex, RwLock};
+use uuid::Uuid;
 
-use super::{checked_string::CheckedString, socket_signal::{Signal, SignalList}};
+use crate::database::users_table::User;
+
+use super::socket_signal::{Signal, SignalList};
 
 #[derive(Clone)]
 pub struct Client {
     socket: Option<Mutex<WebSocket>>,
-    unique_name: Arc<String>,
+    user_model: Arc<User>,
     chats: RwLock<Vec<String>>, //TODO: chats class
     status: RwLock<String>, //TODO: status class
 }
 
 impl Client {
-    pub fn init_existing(unique_name: String, socket: WebSocket) -> Client {
-        return Client{
-            unique_name: Arc::new(unique_name),
+    pub fn init(id: &Uuid, socket: WebSocket) -> Option<Client> {
+        let query = User::query_user(id);
+        let Some(user) = query else {
+            return None;
+        };
+
+        return Some(Client {
+            user_model: Arc::new(user),
             socket: Some(Mutex::new(socket)),
             chats: RwLock::new(Vec::new()),
             status: RwLock::new(String::from("online")),
-        }
-    }
-
-    pub fn create_new_acc(unique_name: &CheckedString, password: &String) -> bool {
-        let conn = &mut database::establish_connection();
-        let password_hash = password_auth::generate_hash(&password);
-
-        let res: Result<User, _> = diesel::insert_into(schema::users::table)
-            .values(&models::NewUser{
-                username: &unique_name.to_string(),
-                display_name: None,
-                password_hash: &password_hash,
-            })
-            .returning(models::User::as_returning())
-            .get_result(conn);
-
-        return res.is_ok();
-    }
-
-    pub fn validate_password(unique_name_: &CheckedString, password: &String) -> AuthValidationResult {
-        use schema::users;
-        use diesel::prelude::*;
-        let conn = &mut database::establish_connection();
-
-        let user_search: Result<User, _> = users::table
-            .filter(users::username.eq(unique_name_))
-            .first(conn);
-
-        match user_search {
-            Ok(user) => {
-                match password_auth::verify_password(&password, &user.password_hash) {
-                    Ok(()) => {
-                        AuthValidationResult::Valid
-                    }
-                    _ => {
-                        AuthValidationResult::IncorrectPassword
-                    }
-                }
-            }
-            _ => {
-                AuthValidationResult::IncorrectUniqueName
-            }
-        }
+        });
     }
 
     pub async fn send_socket_order(&self, signals: Arc<[Signal]>) {
@@ -79,8 +41,3 @@ impl Client {
 }
 
 
-pub enum AuthValidationResult {
-    Valid,
-    IncorrectUniqueName,
-    IncorrectPassword,
-}

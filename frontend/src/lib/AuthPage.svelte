@@ -5,7 +5,7 @@ import notification_manager from "../notification_manager";
 import { requests_manager, type RequestOptions } from "../requests_manager";
 import type { Notification } from "../stores/inbox";
 
-let unique_name = ""
+let username = ""
 let password = ""
 let unique_name_label_focus = false;
 let password_label_focus = false;
@@ -13,7 +13,7 @@ let password_label_focus = false;
 const validate = (): boolean => {
   let valid = true;
   // TODO: propper username validation.
-  if (unique_name === "") {
+  if (username === "") {
     const notification: Notification = {
       ts: Number(new Date()),
       content: "Username can not be empty",
@@ -44,7 +44,7 @@ const signup = () => {
     }
   }
   requests_manager.post("/api/signup", {
-    unique_name, password,
+    username, password,
   }, options)
 }
 
@@ -57,7 +57,7 @@ const signin = () => {
     }
   }
   requests_manager.post("/api/signin", {
-    unique_name, password,
+    username, password,
   }, options)
 }
 
@@ -67,8 +67,8 @@ const signin = () => {
   <div class="outer_wrap">
     <h2>Log In</h2>
     <div class="input_wrap">
-      <span  class={`label ${unique_name_label_focus || unique_name !== "" ? 'small_label' : ''}`}>Unique Name</span>
-      <input bind:value={unique_name} type="text" 
+      <span  class={`label ${unique_name_label_focus || username !== "" ? 'small_label' : ''}`}>Unique Name</span>
+      <input bind:value={username} type="text" 
         on:focusin={()=>{ unique_name_label_focus = true; }}
         on:focusout={()=>{ unique_name_label_focus = false; }}
       >

@@ -3,7 +3,8 @@ use diesel::prelude::*;
 use dotenvy::dotenv;
 use std::env;
 
-pub mod models;
+pub mod users_table;
+pub mod user_relations_table;
 pub mod schema;
 
 pub fn establish_connection() -> PgConnection {

@@ -17,17 +17,17 @@ export let url = ""
 </script>
 
 <main>
-  <!-- {#if $user_data} -->
+  {#if $user_data}
     <div class="top_zone">
       <Header></Header>
     </div>
-  <!-- {/if} -->
+  {/if}
   <div class="bottom_zone">
-      <!-- {#if $user_data} -->
+      {#if $user_data}
     <div class="left_zone">
       <LeftNav/>
     </div>
-      <!-- {/if} -->
+      {/if}
     <div class="middle_zone">
       <Router {url}>
         <Route path="/app/chat"> <ChatApp/> </Route>

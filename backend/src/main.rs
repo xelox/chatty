@@ -1,6 +1,6 @@
 use axum::{
     middleware,
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use axum_session::{SessionConfig, SessionLayer, SessionPgPool, SessionStore};
@@ -39,6 +39,7 @@ async fn main() {
         .route("/api/post_message", post(api::post_message))
         .route("/api/send_friend_request", post(api::send_friend_request))
         .route("/api/friendship/:action", post(api::edit_relation))
+        .route("/api/logout", get(api::logout))
         .layer(ServiceBuilder::new().layer(middleware::from_fn(middlewares::validate_auth)))
         .route("/app/auth", get(serve_app::serve_app))
         .route("/api/signin", post(api::signin))

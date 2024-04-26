@@ -8,11 +8,12 @@ use axum::{
 };
 
 use axum_session::{Session, SessionPgPool};
+use uuid::Uuid;
 
 pub async fn validate_auth(session: Session<SessionPgPool>, uri: Uri, request: Request, next: Next) -> Result<Response, StatusCode> {
-    match session.get::<String>("client_unique_name") {
-        Some(client_unique_name) => {
-            println!("User: {}", client_unique_name);
+    match session.get::<Uuid>("user_id") {
+        Some(id) => {
+            println!("User: {}", id);
             Ok(next.run(request).await) 
         },
         _ => {
