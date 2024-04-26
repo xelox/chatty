@@ -1,7 +1,7 @@
 import { writable } from "svelte/store"
 
 export type SchemaUserInfo = {
-  unique_name: string,
+  username: string,
   pfp_url?: string,
   display_name: string | null,
   status?: string,

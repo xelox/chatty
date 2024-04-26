@@ -52,11 +52,12 @@ diesel::table! {
 diesel::table! {
     users (id) {
         id -> Uuid,
+        #[max_length = 50]
         username -> Varchar,
         #[max_length = 254]
         email -> Nullable<Varchar>,
         #[max_length = 50]
-        display_name -> Varchar,
+        display_name -> Nullable<Varchar>,
         #[max_length = 97]
         password_hash -> Bpchar,
         created_at -> Timestamp,

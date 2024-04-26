@@ -2,7 +2,7 @@
 import { Router, Route } from 'svelte-routing'
 import ChatApp from './lib/chat/ChatApp.svelte';
 import AuthPage from './lib/AuthPage.svelte';
-import AddFriend from './lib/add_friend/main.svelte';
+import FriendRequestUi from './lib/FriendRequestUi.svelte';
 import Header from './lib/Header.svelte';
 import Inbox from './lib/inbox/main.svelte';
 import search_query from './stores/search_query';
@@ -32,8 +32,7 @@ export let url = ""
       <Router {url}>
         <Route path="/app/chat"> <ChatApp/> </Route>
         <Route path="/app/auth"> <AuthPage/> </Route>
-        <Route path="/app/a/add_friend/:id" let:params> <AddFriend id={Number(params.id)}/> </Route>
-        <Route path="/app/a/add_friend"> <AddFriend id={null}/> </Route>
+        <Route path="/app/add_friend"> <FriendRequestUi/> </Route>
       </Router>
     </div>
   </div>

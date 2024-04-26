@@ -8,9 +8,9 @@ manipulate_path("");
 <main>
   {#each Object.entries($friend_list) as [relation_id, friend_item]}
     <div class="friend_item">
-      <span class="left"> <img src="" title="{friend_item.display_name ?? friend_item.unique_name}" alt=""> </span>
+      <span class="left"> <img src="" title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
       <div class="right">
-        <span class="display_name">{friend_item.display_name ?? friend_item.unique_name}</span>
+        <span class="display_name">{friend_item.display_name ?? friend_item.username}</span>
       </div>
     </div>
   {/each}

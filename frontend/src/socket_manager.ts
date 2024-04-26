@@ -1,5 +1,5 @@
 import notification_manager from "./notification_manager";
-import {friend_list, pending_friends_in, pending_friends_out, user_data, type SchemaPeer, type SchemaPeerList, type SchemaUserInfo } from "./stores/data";
+import {friend_list, pending_friends_in, pending_friends_out, user_data, type SchemaPeerList } from "./stores/data";
 import type { Notification } from "./stores/inbox";
 class SocketManager {
   private socket: WebSocket | null = null;
@@ -7,7 +7,8 @@ class SocketManager {
   public initialize_client = async (): Promise<boolean> => {
     type response_schema = {
       user_info: {
-        unique_name: string,
+        id: string,
+        username: string,
         display_name: string | null,
       },
       relations: {
@@ -19,7 +20,7 @@ class SocketManager {
           accepted: boolean,
         }
         user: {
-          unique_name: string,
+          username: string,
           display_name: string | null,
         }
       }[]
@@ -38,7 +39,7 @@ class SocketManager {
       for (const item of json.relations) {
         if (item.relation.accepted) {
           friends_list_[item.relation.id] = {...item.user, relation_id: item.relation.id}
-        } else if (item.relation.sender === json.user_info.unique_name) {
+        } else if (item.relation.sender === json.user_info.id) {
           pending_friends_out_[item.relation.id] = {...item.user, relation_id: item.relation.id}
         } else {
           pending_friends_in_[item.relation.id] = {...item.user, relation_id: item.relation.id}
