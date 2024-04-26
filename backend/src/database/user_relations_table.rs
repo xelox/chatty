@@ -170,7 +170,7 @@ impl UserRelation {
     }
 }
 
-// NOTE: This is only a construct use to serialize data to send to the user.
+// construct used to serialize data sent to the user.
 #[derive(Serialize)]
 #[derive(Debug)]
 pub struct RelationAndUser {
