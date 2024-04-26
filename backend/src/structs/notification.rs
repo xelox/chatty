@@ -12,11 +12,11 @@ pub struct Notification {
     timestamp: u128,
     actions: Arc<[String]>,
     content: String,
-    target: CheckedString,
+    target: Uuid,
 }
 
 impl Notification {
-    pub fn new_friend_req(target: CheckedString, sender_unique_name: &CheckedString, req_id: &Uuid) -> Notification {
+    pub fn new_friend_req(target: &Uuid, sender_unique_name: &Uuid, req_id: &Uuid) -> Notification {
         let id = Uuid::new_v7(Timestamp::now(NoContext));
         let kind = String::from("friend_req");
         let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
@@ -29,7 +29,7 @@ impl Notification {
             timestamp,
             actions,
             content,
-            target,
+            target: *target,
         };
     }
 

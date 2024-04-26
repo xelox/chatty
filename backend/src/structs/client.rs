@@ -1,5 +1,6 @@
-use crate::database::{self, models::{self, User}, schema};
+use crate::database::{self, models::{self, User}, schema::{self, users::username}};
 use diesel::{RunQueryDsl, SelectableHelper};
+use uuid::Uuid;
 
 use std::sync::Arc;
 use axum::extract::ws::WebSocket;
@@ -31,7 +32,7 @@ impl Client {
 
         let res: Result<User, _> = diesel::insert_into(schema::users::table)
             .values(&models::NewUser{
-                unique_name: &unique_name.to_string(),
+                username: &unique_name.to_string(),
                 display_name: None,
                 password_hash: &password_hash,
             })
@@ -42,12 +43,12 @@ impl Client {
     }
 
     pub fn validate_password(unique_name_: &CheckedString, password: &String) -> AuthValidationResult {
-        use schema::users::dsl::*;
+        use schema::users;
         use diesel::prelude::*;
         let conn = &mut database::establish_connection();
 
-        let user_search: Result<User, _> = users
-            .find(unique_name_)
+        let user_search: Result<User, _> = users::table
+            .filter(users::username.eq(unique_name_))
             .first(conn);
 
         match user_search {

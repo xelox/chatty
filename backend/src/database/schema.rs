@@ -5,7 +5,7 @@ diesel::table! {
         id -> Uuid,
         user_id -> Uuid,
         channel_id -> Uuid,
-        subscribed_at -> Int8,
+        subscribed_at -> Timestamp,
     }
 }
 
@@ -16,8 +16,8 @@ diesel::table! {
         channel_name -> Varchar,
         #[max_length = 255]
         channel_description -> Nullable<Varchar>,
-        created_at -> Int8,
-        last_activity -> Int8,
+        created_at -> Timestamp,
+        last_activity -> Timestamp,
         subscribers_count -> Int4,
     }
 }
@@ -32,8 +32,8 @@ diesel::table! {
         attachments -> Array<Nullable<Text>>,
         mentions -> Array<Nullable<Uuid>>,
         reactions -> Nullable<Jsonb>,
-        sent_at -> Int8,
-        updated_at -> Int8,
+        sent_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -44,7 +44,7 @@ diesel::table! {
         b -> Uuid,
         sender -> Uuid,
         accepted -> Bool,
-        created_at -> Nullable<Timestamp>,
+        created_at -> Timestamp,
         accepted_at -> Nullable<Timestamp>,
     }
 }

@@ -1,4 +1,9 @@
+use std::time::SystemTime;
+
 use diesel::associations::Identifiable;
+use diesel::debug_query;
+use diesel::pg::Pg;
+use diesel::query_builder::DebugQuery;
 use diesel::JoinOnDsl;
 use diesel::QueryDsl;
 use diesel::RunQueryDsl;
@@ -15,6 +20,7 @@ use crate::database;
 use crate::structs::chatty_response::ChattyResponse;
 use crate::structs::checked_string::CheckedString;
 use crate::database::schema;
+use crate::structs::checked_string::Email;
 
 #[derive(Queryable, Selectable, ValidGrouping)]
 #[derive(Clone, Debug)]
@@ -22,16 +28,21 @@ use crate::database::schema;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[derive(Serialize)]
 pub struct User {
-    pub unique_name: CheckedString,
+    pub id: Uuid,
+    pub username: CheckedString,
+    pub email: Option<Email>,
+    pub display_name: String,
+
     #[serde(skip_serializing)]
     pub password_hash: String,
-    pub display_name: Option<String>,
+    pub created_at: SystemTime,
+    pub last_online: SystemTime,
 }
 
 impl User {
     /// Needed only for sending the use information about themselves.
     /// TODO: could cache this result on the session store and reduce querys count?
-    pub fn query_user(target: &CheckedString) -> Option<User> {
+    pub fn query_user(target: &Uuid) -> Option<User> {
         use schema::users;
         let conn = &mut database::establish_connection();
         let query: Result<User, _> = users::table
@@ -49,7 +60,7 @@ impl User {
 #[derive(Insertable)]
 #[diesel(table_name = schema::users)]
 pub struct NewUser<'a> {
-    pub unique_name: &'a str,
+    pub username: &'a str,
     pub password_hash: &'a str,
     pub display_name: Option<String>,
 }
@@ -57,57 +68,71 @@ pub struct NewUser<'a> {
 #[derive(Queryable, Selectable, Insertable, Identifiable)]
 #[derive(Serialize)]
 #[derive(Clone, Debug)]
-#[diesel(table_name = schema::friendship)]
+#[diesel(table_name = schema::user_relations)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct Friendship {
+pub struct UserRelation {
     id: Uuid,
-    a: String,
-    b: String,
-    sender: CheckedString,
+    a: Uuid,
+    b: Uuid,
+    sender: Uuid,
     accepted: bool,
+    created_at: SystemTime,
+    accepted_at: Option<SystemTime>,
 }
 
-pub struct FriendshipTargets {
-    a: String,
-    b: String,
-}
 
 #[derive(Serialize)]
 #[derive(Debug)]
 pub struct RelationAndUser {
-    pub relation: Friendship,
+    pub relation: UserRelation,
     pub user: User,
 }
 
-impl FriendshipTargets {
-    pub fn new(target_a: &CheckedString, target_b: &CheckedString) -> FriendshipTargets {
+pub struct UserRelationPair<'a> {
+    a: &'a Uuid,
+    b: &'a Uuid,
+}
+
+impl<'a> UserRelationPair<'a> {
+    pub fn new(target_a: &'a Uuid, target_b: &'a Uuid) -> UserRelationPair<'a> {
         if target_a > target_b {
-            return FriendshipTargets { a: target_b.to_string(), b: target_a.to_string() };
+            return UserRelationPair { a: target_b, b: target_a };
         }
-        return FriendshipTargets {a: target_a.to_string(), b: target_b.to_string()};
+        return UserRelationPair {a: target_a, b: target_b };
     }
 
-    fn unpack(&self) -> (String, String) {
-        (self.a.clone(), self.b.clone())
+    fn unpack(&self) -> (&Uuid, &Uuid) {
+        (self.a, self.b)
     }
 } 
 
-impl Friendship {
-    pub fn create(targets: FriendshipTargets, sender_: &CheckedString) -> Option<Uuid> {
+#[derive(Insertable)]
+#[diesel(table_name = schema::user_relations)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewUserRelation<'a> {
+    id: &'a Uuid,
+    a: &'a Uuid,
+    b: &'a Uuid,
+    sender: &'a Uuid,
+}
+
+impl UserRelation {
+    pub fn create(targets: UserRelationPair, sender_: &Uuid) -> Option<Uuid> {
         let (a_, b_) = targets.unpack();
         let ts = uuid::Timestamp::now(NoContext);
         let id_ = Uuid::new_v7(ts);
-        let r = Friendship {
-            id: id_,
+
+
+        let r = NewUserRelation {
+            id: &id_,
             a: a_,
             b: b_,
-            sender: sender_.clone(),
-            accepted: false
+            sender: sender_
         };
 
-        use schema::friendship::dsl::*;
+        use schema::user_relations::dsl::*;
         let conn = &mut database::establish_connection();
-        let query = diesel::insert_into(friendship)
+        let query = diesel::insert_into(user_relations)
             .values(&r)
             .execute(conn);
 
@@ -115,20 +140,19 @@ impl Friendship {
         else { None }
     }
 
-    pub fn query_user_relations(target: &CheckedString) -> Option<Vec<RelationAndUser>> {
-    use schema::friendship;
-    use schema::users;
-    let conn = &mut database::establish_connection();
-    let query: Result<Vec<(User, Friendship)>, diesel::result::Error> = friendship::table
-        .inner_join( users::table.on(
-            users::unique_name
-                .eq(friendship::b)
-                .or(users::unique_name.eq(friendship::a))
-                .and(users::unique_name.ne(target))
-        ))
-        .select((users::all_columns, friendship::all_columns))
-        .filter(friendship::a.eq(&target)).or_filter(friendship::b.eq(&target))
-        .load(conn);
+    pub fn query_user_relations(target: &Uuid) -> Option<Vec<RelationAndUser>> {
+        use schema::user_relations;
+        use schema::users;
+        let conn = &mut database::establish_connection();
+        let query: Result<Vec<(User, UserRelation)>, diesel::result::Error> = user_relations::table
+            .inner_join(users::table.on(
+                users::id.eq(user_relations::b)
+                    .or(users::id.eq(user_relations::a))
+                    .and(users::id.ne(target))
+            ))
+            .select((users::all_columns, user_relations::all_columns))
+            .filter(user_relations::a.eq(target)).or_filter(user_relations::b.eq(target))
+            .load(conn);
 
         if let Ok(result) = query {
             let mapped_result = result.into_iter().map(|item| {
@@ -141,19 +165,19 @@ impl Friendship {
         }
     }
 
-    pub fn edit_relation(request_maker: CheckedString, id: Uuid, method: EditFriendshipEnum) -> ChattyResponse {
+    pub fn edit_relation(request_maker: &Uuid, id: Uuid, method: EditFriendshipEnum) -> ChattyResponse {
         use diesel::result::Error;
-        use schema::friendship;
+        use schema::user_relations;
         let conn = &mut database::establish_connection();
-        let query: Result<Friendship, Error> = friendship::table
+        let query: Result<UserRelation, Error> = user_relations::table
             .find(id)
-            .select(friendship::all_columns)
+            .select(user_relations::all_columns)
             .first(conn);
         if let Ok(relation) = query {
 
             match method {
                 EditFriendshipEnum::Cancel => {
-                    if relation.sender != request_maker {
+                    if relation.sender != *request_maker {
                         return  ChattyResponse::Unauthorized;
                     }
                     if relation.accepted {
@@ -170,7 +194,7 @@ impl Friendship {
                     }
                 },
                 EditFriendshipEnum::Accept => {
-                    if request_maker == relation.sender {
+                    if *request_maker == relation.sender {
                         return ChattyResponse::Unauthorized
                     }
                     if relation.accepted {
@@ -180,7 +204,7 @@ impl Friendship {
                     }
                 },
                 EditFriendshipEnum::Refuse => {
-                    if request_maker == relation.sender {
+                    if *request_maker == relation.sender {
                         return ChattyResponse::BadRequest(
                             Some("Can't refuse a friendship you sent yourself.".to_string())
                         );
@@ -193,10 +217,10 @@ impl Friendship {
                 }
             }
 
-            let query = friendship::table.find(id);
+            let query = user_relations::table.find(id);
             let res: Result<_, Error>;
             if method == EditFriendshipEnum::Accept {
-                res = diesel::update(query).set(friendship::accepted.eq(true)).execute(conn);
+                res = diesel::update(query).set(user_relations::accepted.eq(true)).execute(conn);
             } else {
                 res = diesel::delete(query).execute(conn);
             }
@@ -226,11 +250,4 @@ pub enum EditFriendshipEnum {
     Remove,
     Accept,
     Refuse,
-}
-
-// gooffy ah ah this will fail github actions.
-#[test]
-fn query_user_relations() {
-    let target = CheckedString::new(String::from("test")).unwrap();
-    assert!(Friendship::query_user_relations(&target).is_some());
 }

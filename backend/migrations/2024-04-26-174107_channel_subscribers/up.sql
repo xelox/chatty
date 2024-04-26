@@ -13,7 +13,7 @@ CREATE TABLE channel_subscribers (
       REFERENCES channels(id)
       ON DELETE CASCADE,
 
-  subscribed_at BIGINT NOT NULL DEFAULT EXTRACT(epoch from CURRENT_TIMESTAMP)::BIGINT
+  subscribed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX channel_subscriber_user_key ON channel_subscribers(user_id);
