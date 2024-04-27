@@ -20,6 +20,7 @@ class SocketManager {
           accepted: boolean,
         }
         user: {
+          id: string,
           username: string,
           display_name: string | null,
         }

@@ -3,7 +3,8 @@ import {friend_list, type SchemaChannel, active_channel} from '../../stores/data
 
 export let manipulate_path: (s: string) => void;
 manipulate_path("");
-const open_channel = (channel: SchemaChannel) => {
+const open_channel = (channel: SchemaChannel, friend_name: string) => {
+  manipulate_path(friend_name);
   active_channel.set(channel);
 }
 </script>
@@ -14,7 +15,7 @@ const open_channel = (channel: SchemaChannel) => {
       channel_id: relation_id,
       channel_name: relation_id,
       messages: {}
-    })}}>
+    }, friend_item.username)}}>
       <span class="left"> <img src="" title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{friend_item.display_name ?? friend_item.username}</span>

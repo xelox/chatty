@@ -17,9 +17,11 @@ export type SchemaChannel = {
 };
 
 export type SchemaMessage = {
-  message_id: string,
+  id: string,
   sender_id: string, 
+  channel_id: string,
   content: string,
+  is_sent?: boolean
 }
 
 export type SchemaChannelList = {
