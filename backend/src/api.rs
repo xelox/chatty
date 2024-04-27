@@ -1,4 +1,5 @@
 use crate::database;
+use crate::database::message_table::{Message, NewMessage};
 use crate::database::users_table::{AuthValidationResult, User};
 use crate::database::user_relations_table::{RelationAndUser, UserRelationPair, UserRelation};
 use crate::server_state::ServerState;
@@ -14,16 +15,11 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::sync::Arc;
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct MessageJSON {
-    attachments: Vec<String>,
-    author_id: String,
-    channel_id: String,
-    content: String,
-}
-
-pub async fn post_message( State(_state): State<Arc<ServerState>>, Json(_payload): Json<MessageJSON>,) -> ChattyResponse {
-    ChattyResponse::Ok
+pub async fn send_message(session: Session<SessionPgPool>, State(_state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>,) -> ChattyResponse {
+    // let Some(sender) = session.get::<Uuid>("user_id") else {
+    //     return ChattyResponse::Unauthorized;
+    // };
+    Message::store(&mut payload)
 }
 
 #[derive(Debug, Deserialize, Serialize)]

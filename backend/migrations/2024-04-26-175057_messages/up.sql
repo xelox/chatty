@@ -1,5 +1,8 @@
 -- Your SQL goes here
 
+CREATE DOMAIN NON_NULL_TEXT AS TEXT NOT NULL;
+CREATE DOMAIN NON_NULL_UUID AS UUID NOT NULL;
+
 CREATE TABLE messages (
   id UUID NOT NULL PRIMARY KEY,
 
@@ -14,8 +17,8 @@ CREATE TABLE messages (
       ON DELETE CASCADE,
 
   content VARCHAR(2000) NOT NULL,
-  attachments TEXT[] NOT NULL DEFAULT '{}'::TEXT[],
-  mentions UUID[] NOT NULL DEFAULT '{}'::UUID[],
+  attachments NON_NULL_TEXT[] NOT NULL DEFAULT '{}'::NON_NULL_TEXT[],
+  mentions NON_NULL_UUID[] NOT NULL DEFAULT '{}'::NON_NULL_UUID[],
   reactions JSONB,
 
   sent_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -31,7 +34,7 @@ RETURNS TRIGGER AS $$
 BEGIN
   UPDATE channels
   SET last_activity = NEW.sent_at
-  WHERE channel_id = NEW.channel_id;
+  WHERE id = NEW.channel_id;
   RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;

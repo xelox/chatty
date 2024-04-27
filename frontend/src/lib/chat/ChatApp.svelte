@@ -1,24 +1,37 @@
 <script lang="ts">
+import { requests_manager, type RequestOptions } from "../../requests_manager";
+import { active_channel, user_data } from "../../stores/data"
 
-type message = {
-  body: string,
-  author: string,
-  id: string
-}
+let input_content = "";
 
-let messages: message[] = [];
-
-// TODO: call send message api endpoint.
-const try_send_message = (e: Event) => {
-  let new_message = (e.target as HTMLInputElement).value;
-}
+    // TODO: call send message api endpoint.
+    const try_send_message = (e: KeyboardEvent) => {
+      if (e.key == 'Enter') {
+        let content = (e.target as HTMLInputElement).value;
+        if ($active_channel) {
+          const opts: RequestOptions = {
+            succeed_action: () => {
+              console.log("YAYYY!");
+              input_content = "";
+            },
+            notify_fail: true
+          }
+          requests_manager.post("/api/send_message", {
+            sender_id: $user_data.id,
+            channel_id: $active_channel.channel_id,
+            content
+          }, opts);
+        }
+      }
+      return e;
+    }
 </script>
 
 <main>
   <div class="chat_wrapper">
     <div class="messages_wrapper">
     </div>
-    <input type="text" class='input' placeholder="Chatty chatty chattttt..." on:change={try_send_message}>
+    <input type="text" class='input' placeholder="Chatty chatty chattttt..." on:keypress={try_send_message} bind:value={input_content}>
   </div>
 </main>
 

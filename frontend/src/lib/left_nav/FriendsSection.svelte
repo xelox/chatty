@@ -1,18 +1,25 @@
 <script lang="ts">
-import {friend_list} from '../../stores/data'
+import {friend_list, type SchemaChannel, active_channel} from '../../stores/data'
 
 export let manipulate_path: (s: string) => void;
 manipulate_path("");
+const open_channel = (channel: SchemaChannel) => {
+  active_channel.set(channel);
+}
 </script>
 
 <main>
   {#each Object.entries($friend_list) as [relation_id, friend_item]}
-    <div class="friend_item">
+    <button class="friend_item" on:click={()=>{open_channel({
+      channel_id: relation_id,
+      channel_name: relation_id,
+      messages: {}
+    })}}>
       <span class="left"> <img src="" title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{friend_item.display_name ?? friend_item.username}</span>
       </div>
-    </div>
+    </button>
   {/each}
 </main>
 

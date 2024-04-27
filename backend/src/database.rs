@@ -6,6 +6,7 @@ use std::env;
 pub mod users_table;
 pub mod user_relations_table;
 pub mod schema;
+pub mod message_table;
 
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();

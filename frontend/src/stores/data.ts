@@ -1,6 +1,7 @@
 import { writable } from "svelte/store"
 
 export type SchemaUserInfo = {
+  id: string,
   username: string,
   pfp_url?: string,
   display_name: string | null,
@@ -8,16 +9,27 @@ export type SchemaUserInfo = {
 };
 
 export type SchemaChannel = {
-  channel_id: number,
+  channel_id: string,
   channel_name: string,
-  last_message: string,
+  messages: {
+    [message_id: string]: SchemaMessage 
+  }
 };
+
+export type SchemaMessage = {
+  message_id: string,
+  sender_id: string, 
+  content: string,
+}
+
+export type SchemaChannelList = {
+  [key: string]: SchemaChannel,
+}
 
 export type SchemaPeer = SchemaUserInfo & { 
   last_message?: string,
   relation_id: string,
 };
-
 
 export type SchemaPeerList = {[key: string]: SchemaPeer};
 
@@ -25,6 +37,7 @@ export const user_data = writable<SchemaUserInfo | null>(null);
 export const friend_list = writable<SchemaPeerList>({});
 export const pending_friends_out = writable<SchemaPeerList>({});
 export const pending_friends_in = writable<SchemaPeerList>({});
+export const active_channel = writable<SchemaChannel | null>(null);
 
 export const erase = () => {
   user_data.set(null);

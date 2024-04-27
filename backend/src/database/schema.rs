@@ -1,5 +1,15 @@
 // @generated automatically by Diesel CLI.
 
+pub mod sql_types {
+    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "non_null_text"))]
+    pub struct NonNullText;
+
+    #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "non_null_uuid"))]
+    pub struct NonNullUuid;
+}
+
 diesel::table! {
     channel_subscribers (user_id, channel_id) {
         user_id -> Uuid,
@@ -22,14 +32,18 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::NonNullText;
+    use super::sql_types::NonNullUuid;
+
     messages (id) {
         id -> Uuid,
         sender_id -> Uuid,
         channel_id -> Uuid,
         #[max_length = 2000]
         content -> Varchar,
-        attachments -> Array<Nullable<Text>>,
-        mentions -> Array<Nullable<Uuid>>,
+        attachments -> Array<Nullable<NonNullText>>,
+        mentions -> Array<Nullable<NonNullUuid>>,
         reactions -> Nullable<Jsonb>,
         sent_at -> Timestamp,
         updated_at -> Timestamp,
