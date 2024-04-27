@@ -1,4 +1,4 @@
-use crate::database;
+use crate::database::channel_subscribers_table::ChannelSubscribers;
 use crate::database::message_table::{Message, NewMessage};
 use crate::database::users_table::{AuthValidationResult, User};
 use crate::database::user_relations_table::{RelationAndUser, UserRelationPair, UserRelation};
@@ -15,10 +15,20 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::sync::Arc;
 
-pub async fn send_message(session: Session<SessionPgPool>, State(_state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>,) -> ChattyResponse {
-    // let Some(sender) = session.get::<Uuid>("user_id") else {
-    //     return ChattyResponse::Unauthorized;
-    // };
+pub async fn send_message(session: Session<SessionPgPool>, State(_state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>) -> ChattyResponse {
+    let Some(allowed_channels) = session.get::<Vec<Uuid>>("channels") else {
+        return ChattyResponse::InternalError;
+    };
+    if allowed_channels.binary_search(&payload.channel_id).is_err() {
+        let query = ChannelSubscribers::sorded_subscribed_channels(&payload.sender_id);
+        let Some(allwed_channels) = query else {
+            return ChattyResponse::InternalError;
+        };
+        if allwed_channels.binary_search(&payload.channel_id).is_err() {
+            return ChattyResponse::Unauthorized;
+        }
+        session.set("channels", allwed_channels);
+    }
     Message::store(&mut payload)
 }
 
@@ -85,7 +95,7 @@ pub struct FriendshipInteraction {
 }
 
 
-use database::user_relations_table::EditFriendshipEnum;
+use crate::database::user_relations_table::EditFriendshipEnum;
 pub async fn edit_relation(Path(action): Path<EditFriendshipEnum>, session: Session<SessionPgPool>, Json(form): Json<FriendshipInteraction>) -> ChattyResponse {
     let Some(request_maker) = session.get::<Uuid>("user_id") else {
         return ChattyResponse::Unauthorized;
@@ -116,6 +126,11 @@ pub async fn signin(session: Session<SessionPgPool>, Json(form): Json<AuthForm>)
         AuthValidationResult::Valid(id) => {
             session.set_store(true);
             session.set("user_id", id);
+            let query = ChannelSubscribers::sorded_subscribed_channels(&id);
+            let Some(channels) = query else {
+                return ChattyResponse::InternalError;
+            };
+            session.set("channels", channels);
             ChattyResponse::Ok
         }
         AuthValidationResult::IncorrectPassword => {

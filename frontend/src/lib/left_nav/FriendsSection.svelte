@@ -10,7 +10,7 @@ const open_channel = (channel: SchemaChannel) => {
 
 <main>
   {#each Object.entries($friend_list) as [relation_id, friend_item]}
-    <button class="friend_item" on:click={()=>{open_channel({
+    <button class="friend_item" style="background: {$active_channel?.channel_id == relation_id ? 'var(--base)' : ''};" on:click={()=>{open_channel({
       channel_id: relation_id,
       channel_name: relation_id,
       messages: {}
@@ -41,13 +41,14 @@ const open_channel = (channel: SchemaChannel) => {
 }
 .friend_item {
   font-family: "maple";
-  padding: 2px 10px 2px 10px;
-  margin: 0;
+  padding: 4px;
   display: flex;
   flex-direction: row;
   gap: 4px;
+  border-radius: 4px;
+  width: 100%;
 }
 main {
-  padding-top: 10px;
+  padding: 10px 4px 10px 4px;
 }
 </style>

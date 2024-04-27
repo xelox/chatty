@@ -39,10 +39,10 @@ pub struct Message {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewMessage {
     #[serde(skip_deserializing)]
-    id: Uuid,
-    sender_id: Uuid,
-    channel_id: Uuid,
-    content: String
+    pub id: Uuid,
+    pub sender_id: Uuid,
+    pub channel_id: Uuid,
+    pub content: String
 }
 
 impl Message {
