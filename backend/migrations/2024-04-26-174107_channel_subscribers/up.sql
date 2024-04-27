@@ -24,12 +24,12 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         UPDATE channels
-        SET member_count = member_count + 1
-        WHERE channel_id = NEW.channel_id;
+        SET subscribers_count = subscribers_count + 1
+        WHERE id = NEW.channel_id;
     ELSIF TG_OP = 'DELETE' THEN
         UPDATE channels
-        SET member_count = member_count - 1
-        WHERE channel_id = OLD.channel_id;
+        SET subscribers_count = subscribers_count - 1
+        WHERE id = OLD.channel_id;
     END IF;
     RETURN NULL;
 END;

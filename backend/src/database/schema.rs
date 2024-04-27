@@ -11,7 +11,7 @@ diesel::table! {
 diesel::table! {
     channels (id) {
         id -> Uuid,
-        #[max_length = 25]
+        #[max_length = 255]
         channel_name -> Varchar,
         #[max_length = 255]
         channel_description -> Nullable<Varchar>,

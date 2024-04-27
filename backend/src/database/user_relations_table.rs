@@ -150,6 +150,8 @@ impl UserRelation {
                 res = diesel::delete(query).execute(conn);
             }
             if res.is_err() {
+                let err = res.unwrap_err();
+                dbg!(err);
                 return ChattyResponse::InternalError;
             }
             return ChattyResponse::Ok;
