@@ -1,8 +1,6 @@
 -- Your SQL goes here
 
 CREATE TABLE channel_subscribers (
-  id UUID NOT NULL PRIMARY KEY,
-
   user_id UUID NOT NULL,
     FOREIGN KEY(user_id) 
       REFERENCES users(id)
@@ -12,6 +10,8 @@ CREATE TABLE channel_subscribers (
     FOREIGN KEY(channel_id) 
       REFERENCES channels(id)
       ON DELETE CASCADE,
+
+  PRIMARY KEY(user_id, channel_id),
 
   subscribed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

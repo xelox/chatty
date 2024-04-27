@@ -1,8 +1,7 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    channel_subscribers (id) {
-        id -> Uuid,
+    channel_subscribers (user_id, channel_id) {
         user_id -> Uuid,
         channel_id -> Uuid,
         subscribed_at -> Timestamp,
