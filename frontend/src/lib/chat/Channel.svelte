@@ -3,8 +3,8 @@ import type { SchemaChannel, SchemaMessageList, SchemaMessage } from "../../stor
 import event_manager from '../../event_manager';
 import { onDestroy } from "svelte";
 import Message from './Message.svelte';
-    import { user_data } from "../../stores/data";
-    import { uuidv4, uuidv7 } from "uuidv7";
+import { user_data } from "../../stores/data";
+import { uuidv4 } from "uuidv7";
 
 export let channel_info: SchemaChannel;
 const messages: SchemaMessageList = {};
@@ -37,14 +37,37 @@ const handle_keypress = (e: KeyboardEvent) => {
     const user_id = $user_data?.id;
     if (!user_id) return;
     const message: SchemaMessage = {
-      id: uuidv7(),
+      id: uuidv4(),
       channel_id: channel_info.id,
       content: input_text,
       sender_id: user_id,
       is_sent: false,
     }
     event_manager.dispatch("message_add", message);
-  } else if (e.key == 'Enter') {
+    input_text = "";
+    return;
+  }
+}
+
+let mention_search: string | null = null;
+
+const handle_input = (e: Event) => {
+  mention_search = null;
+  const cursor_index = (e.target as HTMLTextAreaElement).selectionStart;
+  let mention_start = input_text.lastIndexOf('@', cursor_index);
+  if (mention_start === -1) {
+    return;
+  }
+
+  let mention_end = input_text.indexOf(' ', mention_start);
+  if (mention_end === -1) {
+    mention_end = input_text.length;
+  }
+
+  const mention = input_text.substring(mention_start, mention_end);
+  if (mention.length > 0 && cursor_index >= mention_start && cursor_index <= mention_end) {
+    mention_search = mention;
+    return;
   }
 }
 
@@ -57,7 +80,10 @@ const handle_keypress = (e: KeyboardEvent) => {
     {/each}
   </div>
   <div class="input_wrap">
-    <textarea bind:value={input_text} on:keypress={handle_keypress}></textarea>
+    {#if mention_search}
+      <p>{mention_search}</p>
+    {/if}
+    <textarea bind:value={input_text} on:input={handle_input} on:keypress={handle_keypress}></textarea>
   </div>
 </main>
 
@@ -74,7 +100,7 @@ main {
   padding: 10px;
 }
 textarea {
-  background: none;
+  background: var(--base);
   resize: none;
   color: var(--text);
   width: calc(100% - 8px);
