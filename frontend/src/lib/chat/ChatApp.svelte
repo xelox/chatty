@@ -1,87 +1,56 @@
 <script lang="ts">
-import { uuidv7 } from "uuidv7";
-import { requests_manager, type RequestOptions } from "../../requests_manager";
-import { active_channel, user_data, type SchemaMessage } from "../../stores/data"
+import { onDestroy } from 'svelte';
+import { channels_store, type SchemaChannelList, active_channel } from '../../stores/messages';
+import Channel from './Channel.svelte';
+    import { uuidv4 } from 'uuidv7';
 
-let input_content = "";
+let channels: SchemaChannelList = {};
+const unsubscribe = channels_store.subscribe(channels_ => {
+  channels = channels_;
+});
 
-const try_send_message = (e: KeyboardEvent) => {
-  if (e.key == 'Enter') {
-    let content = (e.target as HTMLInputElement).value;
-    if ($active_channel) {
-      let id = uuidv7();
-      let message: SchemaMessage = {
-        id,
-        sender_id: $user_data!.id,
-        channel_id: $active_channel.channel_id,
-        content
-      }
-      active_channel.update(store => {
-        store!.messages[id] = message;
-        return store;
-      })
-      const opts: RequestOptions = {
-        succeed_action: () => {
-          input_content = "";
-          active_channel.update(store => {
-            store!.messages[id].is_sent = true;
-            return store;
-          })
-        },
-        notify_fail: true
-      }
-      requests_manager.post("/api/send_message", message, opts);
+const channels_test: string[] = [];
+for (let i = 0; i < 10; i++) {
+  const id = uuidv4();
+  channels_test.push(id);
+  channels[id] = {
+    id: id,
+    channel_name: id,
+  }
+}
+let idx = 0;
+
+$active_channel = channels_test[idx];
+
+document.addEventListener("keypress", (e: KeyboardEvent) => {
+  if (e.key == "`") {
+    idx += 1; 
+    if (idx >= channels_test.length) {
+      idx = 0;
     }
+    $active_channel = channels_test[idx];
   }
   return e;
-}
+})
+
+onDestroy(() => {
+  unsubscribe();
+})
 </script>
 
 <main>
-  <div class="chat_wrapper">
-    <div class="messages_wrapper">
-      {#if $active_channel}
-        {#each Object.values($active_channel.messages) as message}
-          <div class="message_element {!message.is_sent ? 'unsent_message' : ''}">
-            <p>{message.sender_id}</p>
-            <p>{message.content}</p>
-          </div>
-        {/each}
-      {/if}
+  {#each Object.values(channels) as channel_info }  
+    <div class="channel_wrapper" style="display: {$active_channel == channel_info.id ? "block" : "none"};">
+      <Channel {channel_info}/>
     </div>
-    <input type="text" class='input' placeholder="Chatty chatty chattttt..." on:keypress={try_send_message} bind:value={input_content}>
-  </div>
+  {/each}
 </main>
 
 <style>
-.unsent_message {
-  opacity: 0.8;
+main{
+  height: 100%;
 }
-
-.messages_wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-.input {
-  margin: 4px;
-  border-radius: 4px;
-  padding: 4px;
-  background: var(--surface0);
-  border: none;
-  margin: 20px;
-  padding: 10px;
-  color: var(--vividtext);
-}
-.chat_wrapper {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-main {
-  background: var(--base);
-  display: flex;
-  flex-direction: column;
+.channel_wrapper {
   height: 100%;
 }
 </style>
