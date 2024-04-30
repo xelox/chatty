@@ -5,6 +5,7 @@ import { onDestroy } from "svelte";
 import Message from './Message.svelte';
 import { user_data } from "../../stores/data";
 import { uuidv4 } from "uuidv7";
+    import MentionTool from "./MentionTool.svelte";
 
 export let channel_info: SchemaChannel;
 const messages: SchemaMessageList = {};
@@ -81,7 +82,7 @@ const handle_input = (e: Event) => {
   </div>
   <div class="input_wrap">
     {#if mention_search}
-      <p>{mention_search}</p>
+      <MentionTool mention_search={mention_search}/>
     {/if}
     <textarea bind:value={input_text} on:input={handle_input} on:keypress={handle_keypress}></textarea>
   </div>

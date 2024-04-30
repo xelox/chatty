@@ -10,7 +10,7 @@ export type SchemaUserInfo = {
 
 export type SchemaPeer = SchemaUserInfo & { 
   last_message?: string,
-  relation_id: string,
+  relation_id: string | null,
 };
 
 export type SchemaPeerList = {[key: string]: SchemaPeer};
