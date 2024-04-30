@@ -33,7 +33,7 @@ onDestroy(() => {
 let input_text = "";
 
 const handle_keypress = (e: KeyboardEvent) => {
-  if (e.key == 'Enter') {
+  if (e.key == 'Enter' && !e.shiftKey && !e.ctrlKey) {
     const user_id = $user_data?.id;
     if (!user_id) return;
     const message: SchemaMessage = {
@@ -44,6 +44,7 @@ const handle_keypress = (e: KeyboardEvent) => {
       is_sent: false,
     }
     event_manager.dispatch("message_add", message);
+  } else if (e.key == 'Enter') {
   }
 }
 
@@ -56,7 +57,7 @@ const handle_keypress = (e: KeyboardEvent) => {
     {/each}
   </div>
   <div class="input_wrap">
-    <input type="text" bind:value={input_text} on:keypress={handle_keypress}>
+    <textarea bind:value={input_text} on:keypress={handle_keypress}></textarea>
   </div>
 </main>
 
@@ -72,7 +73,10 @@ main {
 .input_wrap {
   padding: 10px;
 }
-input {
+textarea {
+  background: none;
+  resize: none;
+  color: var(--text);
   width: calc(100% - 8px);
   border: 1px solid var(--overlay0);
   padding: 4px;
