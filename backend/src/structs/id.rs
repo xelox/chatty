@@ -1,4 +1,4 @@
-use std::{fmt::Display, sync::OnceLock, time::{SystemTime, UNIX_EPOCH}, u128};
+use std::{fmt::Display, sync::OnceLock, time::{SystemTime, UNIX_EPOCH}};
 
 use diesel::{deserialize::{FromSql, FromSqlRow}, expression::AsExpression, pg::Pg, serialize::ToSql, sql_types::BigInt};
 use futures_locks::RwLock;
@@ -16,16 +16,20 @@ pub struct ChattyId {
 
 impl ChattyId {
     pub async fn gen() -> ChattyId {
+        //with the following config, the generator will break on July 6th 2704 at 08:21:15.
+        //Please future developers, keep that in mind!!
         const CHATTY_EPOCH: u64 = 1704067200; // 2024-01-01 00:00
+        const TS_PART_SLOWING: u64 = 5; // the "timestamp" will increment by 1 every 4 seconds
+
         static RNG: OnceLock<RwLock<rand::rngs::OsRng>> = OnceLock::new();
         let rng = RNG.get_or_init(|| RwLock::new(rand::rngs::OsRng));
 
         let Ok(ts) = SystemTime::now().duration_since(UNIX_EPOCH) else {
-            unreachable!();
+            println!("It looks like time seriously went backwords.");
+            std::process::exit(-1);
         };
 
-        let ts_part = ts.as_secs() - CHATTY_EPOCH;
-
+        let ts_part = (ts.as_secs() - CHATTY_EPOCH) / TS_PART_SLOWING;
         let random_part = rng.write().await.next_u32() as u64;
 
         ChattyId { id: ts_part << 32 | random_part }
@@ -106,6 +110,6 @@ async fn id_generation() {
         futures.push(spawn(ChattyId::gen()));
     }
     for handle in futures {
-        let id = handle.await.unwrap();
+        let _ = handle.await.unwrap();
     }
 }
