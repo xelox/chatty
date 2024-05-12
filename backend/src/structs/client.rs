@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use axum::extract::ws::WebSocket;
 use futures_locks::{Mutex, RwLock};
-use uuid::Uuid;
+use crate::structs::id::ChattyId;
 
 use crate::database::users_table::User;
 
@@ -15,7 +15,7 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn init(id: &Uuid, socket: WebSocket) -> Option<Client> {
+    pub fn init(id: &ChattyId, socket: WebSocket) -> Option<Client> {
         let query = User::query_user(id);
         let Some(user) = query else {
             return None;

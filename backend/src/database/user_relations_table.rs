@@ -10,11 +10,11 @@ use diesel::prelude::Insertable;
 use diesel::Selectable;
 use serde::Deserialize;
 use serde::Serialize;
-use uuid::{NoContext, Uuid};
 use crate::database;
 use crate::structs::chatty_response::ChattyResponse;
 use crate::database::schema;
 use super::users_table::User;
+use crate::structs::id::ChattyId;
 
 // The complete User-Relation struct.
 #[derive(Queryable, Selectable, Insertable, Identifiable)]
@@ -23,10 +23,10 @@ use super::users_table::User;
 #[diesel(table_name = schema::user_relations)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct UserRelation {
-    id: Uuid,
-    a: Uuid,
-    b: Uuid,
-    sender: Uuid,
+    id: ChattyId,
+    a: ChattyId,
+    b: ChattyId,
+    sender: ChattyId,
     accepted: bool,
     created_at: SystemTime,
     accepted_at: Option<SystemTime>,
@@ -36,22 +36,21 @@ pub struct UserRelation {
 #[diesel(table_name = schema::user_relations)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 struct NewUserRelation<'a> {
-    id: &'a Uuid,
-    a: &'a Uuid,
-    b: &'a Uuid,
-    sender: &'a Uuid,
+    id: &'a ChattyId,
+    a: &'a ChattyId,
+    b: &'a ChattyId,
+    sender: &'a ChattyId,
 }
 
 impl UserRelation {
-    pub fn create(targets: UserRelationPair, sender_: &Uuid) -> Option<Uuid> {
+    pub async fn create(targets: UserRelationPair, sender_: &ChattyId) -> Option<ChattyId> {
         let (a_, b_) = targets.unpack();
-        let ts = uuid::Timestamp::now(NoContext);
-        let id_ = Uuid::new_v7(ts);
+        let id_ = ChattyId::gen().await;
 
         let r = NewUserRelation {
             id: &id_,
-            a: a_,
-            b: b_,
+            a: &a_,
+            b: &b_,
             sender: sender_
         };
 
@@ -65,7 +64,7 @@ impl UserRelation {
         else { None }
     }
 
-    pub fn query_user_relations(target: &Uuid) -> Option<Vec<RelationAndUser>> {
+    pub fn query_user_relations(target: &ChattyId) -> Option<Vec<RelationAndUser>> {
         use schema::user_relations;
         use schema::users;
         let conn = &mut database::establish_connection();
@@ -90,7 +89,7 @@ impl UserRelation {
         }
     }
 
-    pub fn edit_relation(request_maker: &Uuid, id: Uuid, method: EditFriendshipEnum) -> ChattyResponse {
+    pub fn edit_relation(request_maker: &ChattyId, id: ChattyId, method: EditFriendshipEnum) -> ChattyResponse {
         use diesel::result::Error;
         use schema::user_relations;
         let conn = &mut database::establish_connection();
@@ -178,20 +177,20 @@ pub struct RelationAndUser {
 }
 
 // Enforce a < b when creating a friendship/relation.
-pub struct UserRelationPair<'a> {
-    a: &'a Uuid,
-    b: &'a Uuid,
+pub struct UserRelationPair {
+    a: ChattyId,
+    b: ChattyId,
 }
 
-impl<'a> UserRelationPair<'a> {
-    pub fn new(target_a: &'a Uuid, target_b: &'a Uuid) -> UserRelationPair<'a> {
+impl UserRelationPair {
+    pub fn new(target_a: ChattyId, target_b: ChattyId) -> UserRelationPair {
         if target_a > target_b {
             return UserRelationPair { a: target_b, b: target_a };
         }
         return UserRelationPair {a: target_a, b: target_b };
     }
 
-    fn unpack(&self) -> (&Uuid, &Uuid) {
+    fn unpack(&self) -> (ChattyId, ChattyId) {
         (self.a, self.b)
     }
 } 

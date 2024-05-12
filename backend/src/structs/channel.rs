@@ -1,11 +1,10 @@
 use futures_locks::RwLock;
-use uuid::Uuid;
-use super::client::Client;
+use super::{client::Client, id::ChattyId};
 use crate::database::channel_table::ChannelTable;
 
 pub struct Channel {
     info: ChannelTable,
-    id: Uuid,
+    id: ChattyId,
     clients: RwLock<Vec<Client>>,
 }
 

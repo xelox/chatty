@@ -1,21 +1,21 @@
 use std::{fs::OpenOptions, io::{self, Seek, Write}, sync::Arc, time::{SystemTime, UNIX_EPOCH}};
 use serde::Serialize;
-use uuid::{NoContext, Timestamp, Uuid};
 use crate::config::HOSTNAME;
+use crate::structs::id::ChattyId;
 
 #[derive(Serialize, Clone)]
 pub struct Notification {
-    id: Uuid,
+    id: ChattyId,
     kind: String,
     timestamp: u128,
     actions: Arc<[String]>,
     content: String,
-    target: Uuid,
+    target: ChattyId,
 }
 
 impl Notification {
-    pub fn new_friend_req(target: &Uuid, sender_unique_name: &Uuid, req_id: &Uuid) -> Notification {
-        let id = Uuid::new_v7(Timestamp::now(NoContext));
+    pub async fn new_friend_req(target: &ChattyId, sender_unique_name: &ChattyId, req_id: &ChattyId) -> Notification {
+        let id = ChattyId::gen().await;
         let kind = String::from("friend_req");
         let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
         let actions = Arc::new([format!("{HOSTNAME}/api/accept_friend_request/{req_id}")]);

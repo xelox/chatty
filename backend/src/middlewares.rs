@@ -6,12 +6,12 @@ use axum::{
         IntoResponse, Redirect, Response
     }
 };
-
 use axum_session::{Session, SessionPgPool};
-use uuid::Uuid;
+
+use crate::structs::id::ChattyId;
 
 pub async fn validate_auth(session: Session<SessionPgPool>, uri: Uri, request: Request, next: Next) -> Result<Response, StatusCode> {
-    match session.get::<Uuid>("user_id") {
+    match session.get::<ChattyId>("user_id") {
         Some(id) => {
             println!("User: {}", id);
             Ok(next.run(request).await) 

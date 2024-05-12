@@ -4,10 +4,11 @@ use diesel::prelude::Insertable;
 use diesel::deserialize::Queryable;
 use diesel::Selectable;
 use serde::Serialize;
-use uuid::Uuid;
-use crate::database::schema;
 
-// id -> Uuid,
+use crate::database::schema;
+use crate::structs::id::ChattyId;
+
+// id -> ChattyId,
 // #[max_length = 255]
 // channel_name -> Varchar,
 // #[max_length = 255]
@@ -23,7 +24,7 @@ use crate::database::schema;
 #[diesel(table_name = schema::channels)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ChannelTable {
-    id: Uuid,
+    id: ChattyId,
     channel_name: String,
     channel_description: Option<String>,
     created_at: SystemTime,

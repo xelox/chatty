@@ -4,11 +4,11 @@ use diesel::deserialize::Queryable;
 use diesel::Selectable;
 use diesel::expression::ValidGrouping;
 use serde::Serialize;
-use uuid::Uuid;
 use crate::database;
 use crate::structs::checked_string::CheckedString;
 use crate::database::schema;
 use crate::structs::checked_string::Email;
+use crate::structs::id::ChattyId;
 
 
 
@@ -18,7 +18,7 @@ use crate::structs::checked_string::Email;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[derive(Serialize)]
 pub struct User {
-    pub id: Uuid,
+    pub id: ChattyId,
     pub username: CheckedString,
     pub email: Option<Email>,
     pub display_name: Option<String>,
@@ -32,7 +32,7 @@ pub struct User {
 impl User {
     /// Needed only for sending the use information about themselves.
     /// TODO: could cache this result on the session store and reduce querys count?
-    pub fn query_user(target: &Uuid) -> Option<User> {
+    pub fn query_user(target: &ChattyId) -> Option<User> {
         use diesel::prelude::*;
         use schema::users;
         let conn = &mut database::establish_connection();
@@ -62,12 +62,12 @@ impl User {
         }
     }
 
-    pub fn create_user(unique_name: &CheckedString, password: &String) -> Option<Uuid> {
+    pub async fn create_user(unique_name: &CheckedString, password: &String) -> Option<ChattyId> {
         use diesel::prelude::*;
         use schema::users;
         let conn = &mut database::establish_connection();
         let password_hash = password_auth::generate_hash(&password);
-        let id = Uuid::now_v7();
+        let id = ChattyId::gen().await;
 
         let res: Result<User, _> = diesel::insert_into(schema::users::table)
             .values(NewUser{
@@ -117,14 +117,14 @@ impl User {
 #[derive(Insertable)]
 #[diesel(table_name = schema::users)]
 struct NewUser<'a> {
-    pub id: &'a Uuid, 
+    pub id: &'a ChattyId, 
     pub username: &'a str,
     pub password_hash: &'a str,
     pub display_name: Option<&'a String>,
 }
 
 pub enum AuthValidationResult {
-    Valid(Uuid),
+    Valid(ChattyId),
     IncorrectUniqueName,
     IncorrectPassword,
 }

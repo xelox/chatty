@@ -12,11 +12,11 @@ use axum::response::{IntoResponse, Response};
 use axum_macros::debug_handler;
 use axum_session::{Session, SessionPgPool};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use std::sync::Arc;
+use crate::structs::id::ChattyId;
 
 pub async fn send_message(session: Session<SessionPgPool>, State(_state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>) -> ChattyResponse {
-    let Some(allowed_channels) = session.get::<Vec<Uuid>>("channels") else {
+    let Some(allowed_channels) = session.get::<Vec<ChattyId>>("channels") else {
         return ChattyResponse::InternalError;
     };
     if allowed_channels.binary_search(&payload.channel_id).is_err() {
@@ -29,7 +29,7 @@ pub async fn send_message(session: Session<SessionPgPool>, State(_state): State<
         }
         session.set("channels", allwed_channels);
     }
-    Message::store(&mut payload)
+    Message::store(&mut payload).await
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -39,22 +39,20 @@ pub struct FriendRequestForm {
 
 #[debug_handler()]
 pub async fn send_friend_request( session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>,) -> ChattyResponse {
-    let Some(sender) = session.get::<Uuid>("user_id") else {
+    let Some(sender_id) = session.get::<ChattyId>("user_id") else {
         return ChattyResponse::Unauthorized;
     };
 
-    let query = User::query_user_by_username(&payload.to);
-
-    match query {
+    match User::query_user_by_username(&payload.to) {
         Some(target) => {
             let Some(req_id) = UserRelation::create(
-                UserRelationPair::new(&sender, &target.id),
-                &sender,
-            ) else {
+                UserRelationPair::new(sender_id, target.id),
+                &sender_id,
+            ).await else {
                 return ChattyResponse::InternalError;
             };
 
-            let n = Notification::new_friend_req(&target.id, &sender, &req_id);
+            let n = Notification::new_friend_req(&target.id, &sender_id, &req_id).await;
 
             if let Some(live_target) = state.get_client(&target.id).await {
                 live_target
@@ -69,7 +67,7 @@ pub async fn send_friend_request( session: Session<SessionPgPool>, State(state):
 }
 
 pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
-    let Some(target) = session.get::<Uuid>("user_id") else {
+    let Some(target) = session.get::<ChattyId>("user_id") else {
         return ChattyResponse::Unauthorized.into_response();
     };
     let Some(relations) = UserRelation::query_user_relations(&target) else {
@@ -91,13 +89,13 @@ pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
 
 #[derive(Deserialize)]
 pub struct FriendshipInteraction {
-    relation_id: Uuid,
+    relation_id: ChattyId,
 }
 
 
 use crate::database::user_relations_table::EditFriendshipEnum;
 pub async fn edit_relation(Path(action): Path<EditFriendshipEnum>, session: Session<SessionPgPool>, Json(form): Json<FriendshipInteraction>) -> ChattyResponse {
-    let Some(request_maker) = session.get::<Uuid>("user_id") else {
+    let Some(request_maker) = session.get::<ChattyId>("user_id") else {
         return ChattyResponse::Unauthorized;
     };
     UserRelation::edit_relation(&request_maker, form.relation_id, action)
@@ -110,7 +108,7 @@ pub struct AuthForm {
     password: String,
 }
 pub async fn signup(session: Session<SessionPgPool>, Json(form): Json<AuthForm>) -> ChattyResponse {
-    let res = User::create_user(&form.username, &form.password);
+    let res = User::create_user(&form.username, &form.password).await;
     if let Some(id) = res {
         session.set_store(true);
         session.set("user_id", id);

@@ -2,34 +2,21 @@ use std::{collections::HashMap, time::SystemTime};
 use diesel::{deserialize::Queryable, pg::Pg, prelude::Insertable};
 use crate::{database::{self, schema}, structs::chatty_response::ChattyResponse};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use crate::structs::id::ChattyId;
 
-
-// messages (id) {
-//     id -> Uuid,
-//     sender_id -> Uuid,
-//     channel_id -> Uuid,
-//     #[max_length = 2000]
-//     content -> Varchar,
-//     attachments -> Array<Nullable<Text>>,
-//     mentions -> Array<Nullable<Uuid>>,
-//     reactions -> Nullable<Jsonb>,
-//     sent_at -> Timestamp,
-//     updated_at -> Timestamp,
-// }
 
 #[derive(Queryable)]
 #[derive(Serialize)]
 #[diesel(table_name = schema::messages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Message {
-    pub id: Uuid,
-    pub sender_id: Uuid,
-    pub channel_id: Uuid,
+    pub id: ChattyId,
+    pub sender_id: ChattyId,
+    pub channel_id: ChattyId,
     pub content: String,
     pub attachments: Vec<String>,
-    pub mentions: Vec<Uuid>,
-    pub reactions: Option<HashMap<String, Vec<Uuid>>>,
+    pub mentions: Vec<ChattyId>,
+    pub reactions: Option<HashMap<String, Vec<ChattyId>>>,
     pub sent_at: SystemTime,
     pub updated_at: SystemTime,
 }
@@ -39,19 +26,19 @@ pub struct Message {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewMessage {
     #[serde(skip_deserializing)]
-    pub id: Uuid,
-    pub sender_id: Uuid,
-    pub channel_id: Uuid,
+    pub id: ChattyId,
+    pub sender_id: ChattyId,
+    pub channel_id: ChattyId,
     pub content: String
 }
 
 impl Message {
     /// WARNING dosen't ensure that the sender is authorized!
-    pub fn store(message: &mut NewMessage) -> ChattyResponse {
+    pub async fn store(message: &mut NewMessage) -> ChattyResponse {
         use schema::messages;
         use diesel::prelude::*;
 
-        let id = Uuid::now_v7();
+        let id = ChattyId::gen().await;
         message.id = id;
         
         let conn = &mut database::establish_connection();

@@ -3,14 +3,14 @@ use std::sync::Arc;
 use axum::extract::ws::Message;
 use serde::Serialize;
 
-use super::notification::Notification;
+use super::{id::ChattyId, notification::Notification};
 
 #[derive(Serialize)]
 pub struct MessageItem {
     sender: String,
-    channel: uuid::Uuid,
+    channel: ChattyId,
     timestamp: u64,
-    id: uuid::Uuid,
+    id: ChattyId,
 }
 
 #[derive(Serialize)]
@@ -18,7 +18,7 @@ pub struct FriendReqItem {
     sender: String,
     receiver: String,
     timestamp: u64,
-    id: uuid::Uuid,
+    id: ChattyId,
 }
 
 #[derive(Serialize)]
