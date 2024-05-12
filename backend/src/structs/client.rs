@@ -11,7 +11,6 @@ use super::socket_signal::{Signal, SignalList};
 pub struct Client {
     socket: Option<Mutex<WebSocket>>,
     user_model: Arc<User>,
-    chats: RwLock<Vec<String>>, //TODO: chats class
     status: RwLock<String>, //TODO: status class
 }
 
@@ -25,7 +24,6 @@ impl Client {
         return Some(Client {
             user_model: Arc::new(user),
             socket: Some(Mutex::new(socket)),
-            chats: RwLock::new(Vec::new()),
             status: RwLock::new(String::from("online")),
         });
     }
