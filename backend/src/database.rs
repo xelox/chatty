@@ -8,6 +8,7 @@ pub mod user_relations_table;
 pub mod schema;
 pub mod message_table;
 pub mod channel_subscribers_table;
+pub mod channel_table;
 
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();
