@@ -1,21 +1,21 @@
 -- Your SQL goes here
 
 CREATE TABLE user_relations (
-  id UUID NOT NULL PRIMARY KEY,
+  id BIGINT NOT NULL PRIMARY KEY,
 
-  a UUID NOT NULL, 
+  a BIGINT NOT NULL, 
     FOREIGN KEY (a) 
       REFERENCES users(id)
       ON DELETE CASCADE,
 
-  b UUID NOT NULL, 
+  b BIGINT NOT NULL, 
     FOREIGN KEY (b) 
       REFERENCES users(id)
       ON DELETE CASCADE,
 
   UNIQUE(a, b),
 
-  sender UUID NOT NULL,
+  sender BIGINT NOT NULL,
     FOREIGN KEY (sender) 
       REFERENCES users(id)
       ON DELETE CASCADE,

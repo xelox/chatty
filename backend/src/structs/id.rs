@@ -3,8 +3,6 @@ use std::{fmt::Display, sync::OnceLock, time::{SystemTime, UNIX_EPOCH}};
 use futures_locks::RwLock;
 use rand::RngCore;
 
-const CHATTY_EPOCH: u64 = 1704067200; // 2024-01-01 00:00
-
 #[derive(Debug)]
 #[derive(PartialEq, Eq)]
 pub struct ChattyId {
@@ -13,6 +11,7 @@ pub struct ChattyId {
 
 impl ChattyId {
     pub async fn gen() -> Option<ChattyId> {
+        const CHATTY_EPOCH: u64 = 1704067200; // 2024-01-01 00:00
         static RNG: OnceLock<RwLock<rand::rngs::OsRng>> = OnceLock::new();
         let rng = RNG.get_or_init(|| RwLock::new(rand::rngs::OsRng));
 

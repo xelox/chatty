@@ -1,12 +1,12 @@
 -- Your SQL goes here
 
 CREATE TABLE channel_subscribers (
-  user_id UUID NOT NULL,
+  user_id BIGINT NOT NULL,
     FOREIGN KEY(user_id) 
       REFERENCES users(id)
       ON DELETE CASCADE,
 
-  channel_id UUID NOT NULL,
+  channel_id BIGINT NOT NULL,
     FOREIGN KEY(channel_id) 
       REFERENCES channels(id)
       ON DELETE CASCADE,

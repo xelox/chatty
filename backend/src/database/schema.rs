@@ -2,25 +2,25 @@
 
 pub mod sql_types {
     #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "non_null_text"))]
-    pub struct NonNullText;
+    #[diesel(postgres_type(name = "non_null_bigint"))]
+    pub struct NonNullBigint;
 
     #[derive(diesel::query_builder::QueryId, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "non_null_uuid"))]
-    pub struct NonNullUuid;
+    #[diesel(postgres_type(name = "non_null_text"))]
+    pub struct NonNullText;
 }
 
 diesel::table! {
     channel_subscribers (user_id, channel_id) {
-        user_id -> Uuid,
-        channel_id -> Uuid,
+        user_id -> Int8,
+        channel_id -> Int8,
         subscribed_at -> Timestamp,
     }
 }
 
 diesel::table! {
     channels (id) {
-        id -> Uuid,
+        id -> Int8,
         #[max_length = 255]
         channel_name -> Varchar,
         #[max_length = 255]
@@ -34,16 +34,16 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use super::sql_types::NonNullText;
-    use super::sql_types::NonNullUuid;
+    use super::sql_types::NonNullBigint;
 
     messages (id) {
-        id -> Uuid,
-        sender_id -> Uuid,
-        channel_id -> Uuid,
+        id -> Int8,
+        sender_id -> Int8,
+        channel_id -> Int8,
         #[max_length = 2000]
         content -> Varchar,
         attachments -> Array<Nullable<NonNullText>>,
-        mentions -> Array<Nullable<NonNullUuid>>,
+        mentions -> Array<Nullable<NonNullBigint>>,
         reactions -> Nullable<Jsonb>,
         sent_at -> Timestamp,
         updated_at -> Timestamp,
@@ -52,10 +52,10 @@ diesel::table! {
 
 diesel::table! {
     user_relations (id) {
-        id -> Uuid,
-        a -> Uuid,
-        b -> Uuid,
-        sender -> Uuid,
+        id -> Int8,
+        a -> Int8,
+        b -> Int8,
+        sender -> Int8,
         accepted -> Bool,
         created_at -> Timestamp,
         accepted_at -> Nullable<Timestamp>,
@@ -64,7 +64,7 @@ diesel::table! {
 
 diesel::table! {
     users (id) {
-        id -> Uuid,
+        id -> Int8,
         #[max_length = 50]
         username -> Varchar,
         #[max_length = 254]

@@ -1,7 +1,7 @@
 -- Your SQL goes here
 
 CREATE TABLE users (
-  id UUID NOT NULL PRIMARY KEY,
+  id BIGINT NOT NULL PRIMARY KEY,
   username VARCHAR NOT NULL UNIQUE,
   email VARCHAR(254) UNIQUE,
   display_name VARCHAR(50) NOT NULL DEFAULT '',

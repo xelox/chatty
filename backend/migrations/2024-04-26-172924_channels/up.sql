@@ -1,7 +1,7 @@
 -- Your SQL goes here
 
 CREATE TABLE channels (
-  id UUID NOT NULL PRIMARY KEY,
+  id BIGINT NOT NULL PRIMARY KEY,
   channel_name VARCHAR(255) NOT NULL,
   channel_description VARCHAR(255),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
