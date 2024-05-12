@@ -6,6 +6,7 @@ import Message from './Message.svelte';
 import { user_data } from "../../stores/data";
 import { uuidv4 } from "uuidv7";
     import MentionTool from "./MentionTool.svelte";
+    import CustomTextarea from "./CustomTextarea.svelte";
 
 export let channel_info: SchemaChannel;
 const messages: SchemaMessageList = {};
@@ -84,7 +85,7 @@ const handle_input = (e: Event) => {
     {#if mention_search}
       <MentionTool mention_search={mention_search}/>
     {/if}
-    <textarea bind:value={input_text} on:input={handle_input} on:keypress={handle_keypress}></textarea>
+    <CustomTextarea/>
   </div>
 </main>
 
