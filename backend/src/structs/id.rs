@@ -1,7 +1,7 @@
 use std::{fmt::Display, sync::OnceLock, time::{SystemTime, UNIX_EPOCH}};
 
 use diesel::{deserialize::{FromSql, FromSqlRow}, expression::AsExpression, pg::Pg, serialize::ToSql, sql_types::BigInt};
-use futures_locks::RwLock;
+use futures_locks::Mutex;
 use rand::RngCore;
 use serde::{de::{Error, Unexpected, Visitor}, Deserialize, Serialize};
 
@@ -21,8 +21,8 @@ impl ChattyId {
         const CHATTY_EPOCH: u64 = 1704067200; // 2024-01-01 00:00
         const TS_PART_SLOWING: u64 = 5; // the "timestamp" will increment by 1 every 4 seconds
 
-        static RNG: OnceLock<RwLock<rand::rngs::OsRng>> = OnceLock::new();
-        let rng = RNG.get_or_init(|| RwLock::new(rand::rngs::OsRng));
+        static RNG: OnceLock<Mutex<rand::rngs::OsRng>> = OnceLock::new();
+        let rng = RNG.get_or_init(|| Mutex::new(rand::rngs::OsRng));
 
         let Ok(ts) = SystemTime::now().duration_since(UNIX_EPOCH) else {
             println!("It looks like time seriously went backwords.");
@@ -30,7 +30,7 @@ impl ChattyId {
         };
 
         let ts_part = (ts.as_secs() - CHATTY_EPOCH) / TS_PART_SLOWING;
-        let random_part = rng.write().await.next_u32() as u64;
+        let random_part = rng.lock().await.next_u32() as u64;
 
         ChattyId { id: ts_part << 32 | random_part }
     }
