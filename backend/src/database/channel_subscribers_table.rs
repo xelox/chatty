@@ -1,11 +1,9 @@
-
-use std::time::SystemTime;
-
 use diesel::deserialize::Queryable;
 use serde::Serialize;
 
 use crate::database::{self, schema};
 use crate::structs::id::ChattyId;
+use crate::structs::ts::TimeStamp;
 
 #[derive(Queryable)]
 #[derive(Serialize)]
@@ -14,7 +12,7 @@ use crate::structs::id::ChattyId;
 pub struct ChannelSubscribers {
     user_id: ChattyId,
     channel_id: ChattyId,
-    subscribed_at: SystemTime
+    subscribed_at: TimeStamp
 }
 
 impl ChannelSubscribers {

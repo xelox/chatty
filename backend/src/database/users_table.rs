@@ -1,4 +1,3 @@
-use std::time::SystemTime;
 use diesel::prelude::Insertable;
 use diesel::deserialize::Queryable;
 use diesel::Selectable;
@@ -9,6 +8,7 @@ use crate::structs::checked_string::CheckedString;
 use crate::database::schema;
 use crate::structs::checked_string::Email;
 use crate::structs::id::ChattyId;
+use crate::structs::ts::TimeStamp;
 
 
 
@@ -25,8 +25,8 @@ pub struct User {
 
     #[serde(skip_serializing)]
     pub password_hash: String,
-    pub created_at: SystemTime,
-    pub last_online: SystemTime,
+    pub created_at: TimeStamp,
+    pub last_online: TimeStamp,
 }
 
 impl User {

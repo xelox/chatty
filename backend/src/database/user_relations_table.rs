@@ -1,4 +1,3 @@
-use std::time::SystemTime;
 use diesel::associations::Identifiable;
 use diesel::JoinOnDsl;
 use diesel::QueryDsl;
@@ -13,6 +12,7 @@ use serde::Serialize;
 use crate::database;
 use crate::structs::chatty_response::ChattyResponse;
 use crate::database::schema;
+use crate::structs::ts::TimeStamp;
 use super::users_table::User;
 use crate::structs::id::ChattyId;
 
@@ -28,8 +28,8 @@ pub struct UserRelation {
     b: ChattyId,
     sender: ChattyId,
     accepted: bool,
-    created_at: SystemTime,
-    accepted_at: Option<SystemTime>,
+    created_at: TimeStamp,
+    accepted_at: Option<TimeStamp>,
 }
 
 #[derive(Insertable)]

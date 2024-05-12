@@ -1,6 +1,6 @@
-use std::{collections::HashMap, time::SystemTime};
+use std::collections::HashMap;
 use diesel::{deserialize::Queryable, pg::Pg, prelude::Insertable};
-use crate::{database::{self, schema}, structs::chatty_response::ChattyResponse};
+use crate::{database::{self, schema}, structs::{chatty_response::ChattyResponse, ts::TimeStamp}};
 use serde::{Deserialize, Serialize};
 use crate::structs::id::ChattyId;
 
@@ -17,8 +17,8 @@ pub struct Message {
     pub attachments: Vec<String>,
     pub mentions: Vec<ChattyId>,
     pub reactions: Option<HashMap<String, Vec<ChattyId>>>,
-    pub sent_at: SystemTime,
-    pub updated_at: SystemTime,
+    pub sent_at: TimeStamp,
+    pub updated_at: TimeStamp,
 }
 
 #[derive(Deserialize, Insertable)]

@@ -1,5 +1,3 @@
-use std::time::SystemTime;
-
 use diesel::prelude::Insertable;
 use diesel::deserialize::Queryable;
 use diesel::Selectable;
@@ -7,6 +5,7 @@ use serde::Serialize;
 
 use crate::database::schema;
 use crate::structs::id::ChattyId;
+use crate::structs::ts::TimeStamp;
 
 // id -> ChattyId,
 // #[max_length = 255]
@@ -27,7 +26,7 @@ pub struct ChannelTable {
     id: ChattyId,
     channel_name: String,
     channel_description: Option<String>,
-    created_at: SystemTime,
-    last_activity: SystemTime,
+    created_at: TimeStamp,
+    last_activity: TimeStamp,
     subscribers_count: i32,
 }
