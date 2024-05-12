@@ -24,3 +24,4 @@ diesel-derive-enum = "2.1.0"
 axum-macros = "0.4.1"
 regex = "1.10.4"
 duplicate = "1.0.0"
+rand = {version="0.8.5", features = ["std"]}

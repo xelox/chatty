@@ -1,6 +1,6 @@
 use axum::{
     middleware,
-    routing::{delete, get, post},
+    routing::{get, post},
     Router,
 };
 use axum_session::{SessionConfig, SessionLayer, SessionPgPool, SessionStore};

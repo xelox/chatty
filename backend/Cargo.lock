@@ -351,6 +351,7 @@ dependencies = [
  "duplicate",
  "futures-locks",
  "password-auth",
+ "rand",
  "regex",
  "serde",
  "serde_json",
