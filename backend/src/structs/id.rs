@@ -1,9 +1,12 @@
-use std::{fmt::Display, sync::OnceLock, time::{SystemTime, UNIX_EPOCH}};
+use std::{env, fmt::Display, sync::OnceLock, time::{SystemTime, UNIX_EPOCH}};
 
 use diesel::{deserialize::{FromSql, FromSqlRow}, expression::AsExpression, pg::Pg, serialize::ToSql, sql_types::BigInt};
 use futures_locks::Mutex;
-use rand::RngCore;
 use serde::{de::{Error, Unexpected, Visitor}, Deserialize, Serialize};
+
+const TS_BITS: u32 = 0x34;
+const NODE_ID_BITS: u32 = 10;
+const SEQUENCE_BITS: u32 = 20;
 
 #[derive(Hash)]
 #[derive(Clone, Debug, Copy)]
@@ -14,25 +17,80 @@ pub struct ChattyId {
     id: u64,
 }
 
-impl ChattyId {
-    pub async fn gen() -> ChattyId {
-        //with the following config, the generator will break on July 6th 2704 at 08:21:15.
-        //Please future developers, keep that in mind!!
-        const CHATTY_EPOCH: u64 = 1704067200; // 2024-01-01 00:00
-        const TS_PART_SLOWING: u64 = 5; // the "timestamp" will increment by 1 every 4 seconds
+struct Sequencer {
+    clock: u64,
+    seq: u32,
+}
 
-        static RNG: OnceLock<Mutex<rand::rngs::OsRng>> = OnceLock::new();
-        let rng = RNG.get_or_init(|| Mutex::new(rand::rngs::OsRng));
-
+impl Sequencer {
+    fn new() -> Sequencer {
         let Ok(ts) = SystemTime::now().duration_since(UNIX_EPOCH) else {
             println!("It looks like time seriously went backwords.");
             std::process::exit(-1);
         };
 
-        let ts_part = (ts.as_secs() - CHATTY_EPOCH) / TS_PART_SLOWING;
-        let random_part = rng.lock().await.next_u32() as u64;
+        Sequencer{clock: ts.as_secs(), seq: 0 }
+    }
+    
+    fn next(&mut self) -> u64 {
+        const CHATTY_EPOCH: u64 = 1704067200; // 2024-01-01 00:00
 
-        ChattyId { id: ts_part << 32 | random_part }
+        static NODE_ID: OnceLock::<u32> = OnceLock::new();
+        let node_id = NODE_ID.get_or_init(|| {
+            let Ok(node_id) = env::var("CHATTY_NODE_ID") else {
+                println!("Chatty Node ID needs to be set.");
+                std::process::exit(-2);
+            };
+            let Ok(node_id) = node_id.parse::<u32>() else {
+                println!("Chatty Node ID needs to be a u32");
+                std::process::exit(-2);
+            };
+            const MAX_NODE_ID: u32 = 2u32.pow(NODE_ID_BITS) - 1;
+            if node_id > MAX_NODE_ID {
+                println!("Chatty Node ID needs to be smaller or equeal to {MAX_NODE_ID}");
+                std::process::exit(-2);
+            }
+            node_id
+        });
+        
+        let Ok(ts) = SystemTime::now().duration_since(UNIX_EPOCH) else {
+            println!("It looks like time seriously went backwords.");
+            std::process::exit(-1);
+        };
+
+        let ts = ts.as_secs() - CHATTY_EPOCH;
+        
+
+        const MAX_SEQUENCE: u32 = 2u32.pow(SEQUENCE_BITS) - 1;
+        self.seq += 1;
+
+        if self.seq > MAX_SEQUENCE {
+            self.clock += 1;
+            self.seq = 0;
+        }
+
+        if ts > self.clock {
+            self.clock = ts;
+            self.seq = 0;
+        }
+
+        if self.clock > 2u64.pow(TS_BITS) - 1 {
+            println!("It has been too long a time, it's time to move on.");
+            std::process::exit(-69);
+        }
+
+        let new_id: u64 = (self.clock << (NODE_ID_BITS + SEQUENCE_BITS)) | ((*node_id as u64) << SEQUENCE_BITS) | self.seq as u64;
+
+        new_id
+    }
+}
+
+impl ChattyId {
+    pub async fn gen() -> ChattyId {
+        static SEQUENCER: OnceLock<Mutex<Sequencer>> = OnceLock::new();
+        let sequencer = SEQUENCER.get_or_init(|| Mutex::new(Sequencer::new()));
+
+        ChattyId { id: sequencer.lock().await.next() }
     }
 }
 
@@ -104,12 +162,21 @@ where
 
 #[tokio::test]
 async fn id_generation() {
+    env::set_var("CHATTY_NODE_ID", "7");
     use tokio::spawn;
     let mut futures = Vec::new();
-    for _ in 0..50 {
+
+    for _ in 0..10 {
         futures.push(spawn(ChattyId::gen()));
     }
     for handle in futures {
         let _ = handle.await.unwrap();
     }
+
+    // TODO: more in depth testing.
+}
+
+#[test]
+fn serialize_test() {
+    // TODO: 
 }
