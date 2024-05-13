@@ -7,6 +7,7 @@ use serde::{de::{Error, Unexpected, Visitor}, Deserialize, Serialize};
 const TS_BITS: u32 = 0x34;
 const NODE_ID_BITS: u32 = 10;
 const SEQUENCE_BITS: u32 = 20;
+const CHATTY_EPOCH: u64 = 1704067200; // 2024-01-01 00:00
 
 #[derive(Hash)]
 #[derive(Clone, Debug, Copy)]
@@ -29,12 +30,10 @@ impl Sequencer {
             std::process::exit(-1);
         };
 
-        Sequencer{clock: ts.as_secs(), seq: 0 }
+        Sequencer{clock: ts.as_secs() - CHATTY_EPOCH, seq: 0 }
     }
     
     fn next(&mut self) -> u64 {
-        const CHATTY_EPOCH: u64 = 1704067200; // 2024-01-01 00:00
-
         static NODE_ID: OnceLock::<u32> = OnceLock::new();
         let node_id = NODE_ID.get_or_init(|| {
             let Ok(node_id) = env::var("CHATTY_NODE_ID") else {
