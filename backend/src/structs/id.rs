@@ -5,7 +5,8 @@ use futures_locks::Mutex;
 use serde::{de::{Error, Unexpected, Visitor}, Deserialize, Serialize};
 
 const CHATTY_EPOCH: u64 = 1704067200; // 2024-01-01 00:00
-//
+type IdType = u64;
+
 const TS_BITS: u32 = 34;
 const NODE_ID_BITS: u32 = 10;
 const SEQUENCE_BITS: u32 = 20;
@@ -20,7 +21,7 @@ const MAX_SEQUENCE: u32 = 2u32.pow(SEQUENCE_BITS) - 1;
 #[derive(AsExpression, FromSqlRow)]
 #[diesel(sql_type = BigInt)]
 pub struct ChattyId {
-    id: u64,
+    id: IdType,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -148,7 +149,7 @@ impl Display for ChattyId {
 
 impl FromSql<BigInt, Pg> for ChattyId {
     fn from_sql(bytes: <Pg as diesel::backend::Backend>::RawValue<'_>) -> diesel::deserialize::Result<Self> {
-        <i64 as FromSql<BigInt, Pg>>::from_sql(bytes).map(|s| Self{id: s as u64})
+        <i64 as FromSql<BigInt, Pg>>::from_sql(bytes).map(|s| Self{id: s as IdType})
     }
 }
 
@@ -247,6 +248,12 @@ fn pack_unpack() {
     assert_ne!(pass_1.unpack(), None);
     let pass_1_id = pass_1.unpack().unwrap();
     assert_eq!(pass_1_id.pack(), pass_1);
+}
+
+#[test]
+fn bits_usage() {
+    let internal_type_size = std::mem::size_of::<IdType>() * 8;
+    assert_eq!(internal_type_size, (TS_BITS + NODE_ID_BITS + SEQUENCE_BITS) as usize);
 }
 
 #[test]
