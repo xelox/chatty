@@ -8,12 +8,10 @@ pub struct Channel {
 }
 
 impl Channel {
-    async fn load(id: ChattyId, state: ServerState) -> Option<Channel> {
-        let Some(members) = ChannelTable::list_members_ids(id) else {
-            return None;
-        };
+    pub async fn load(id: ChattyId, state: &ServerState) -> Channel {
+        let members = ChannelTable::list_members_ids(id).unwrap();
         let clients = state.get_clients_subset(members).await;
-        Some(Channel { clients })
+        Channel { clients }
     }
 
     pub fn connect(&mut self, client: Client) {

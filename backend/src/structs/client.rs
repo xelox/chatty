@@ -11,6 +11,7 @@ use super::socket_signal::{Signal, SignalList};
 pub struct Client {
     socket: Mutex<WebSocket>,
     user_model: Arc<User>,
+    channels_subscribed_to: RwLock<Vec<ChattyId>>,
     status: RwLock<String>, //TODO: status class
 }
 
@@ -21,9 +22,15 @@ impl Client {
             return None;
         };
 
+        let query = user.query_channels();
+        let Some(channels) = query else {
+            return None;
+        };
+
         return Some(Client {
-            user_model: Arc::new(user),
             socket: Mutex::new(socket),
+            user_model: Arc::new(user),
+            channels_subscribed_to: RwLock::new(channels),
             status: RwLock::new(String::from("online")),
         });
     }
@@ -37,6 +44,10 @@ impl Client {
 
     pub fn get_id(&self) -> ChattyId {
         self.user_model.id
+    }
+
+    pub async fn list_subscribed_channels(&self) -> Vec<ChattyId> {
+        self.channels_subscribed_to.read().await.to_vec()
     }
 }
 

@@ -47,6 +47,25 @@ impl User {
         }
     }
 
+    pub fn query_channels(&self) -> Option<Vec<ChattyId>> {
+        use diesel::prelude::*;
+        use schema::users;
+        use schema::channel_subscribers;
+        let conn = &mut database::establish_connection();
+        let query: Result<Vec<ChattyId>, _> = users::table.inner_join(
+            channel_subscribers::table.on(
+                channel_subscribers::user_id.eq(users::id)
+            ))
+            .filter(users::id.eq(self.id))
+            .select(channel_subscribers::channel_id)
+            .load(conn);
+
+        match query {
+            Ok(ids) => Some(ids),
+            Err(_) => None
+        }
+    }
+
     pub fn query_user_by_username(target: &CheckedString) -> Option<User> {
         use diesel::prelude::*;
         use schema::users;
