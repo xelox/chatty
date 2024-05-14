@@ -28,4 +28,18 @@ impl ServerState {
         let clients_map = self.clients_map.read().await;
         return clients_map.get(&id).cloned();
     }
+
+    pub async fn get_clients_subset(&self, ids: Vec<ChattyId>) -> HashMap<ChattyId, Client> {
+        let mut map = HashMap::new();
+        let clients_map = self.clients_map.read().await;
+
+        for id in ids {
+            let result = clients_map.get(&id);    
+            if let Some(client) = result {
+                map.insert(id, client.clone());
+            }
+        }
+
+        map
+    }
 }

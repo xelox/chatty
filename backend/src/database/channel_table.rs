@@ -3,20 +3,10 @@ use diesel::deserialize::Queryable;
 use diesel::Selectable;
 use serde::Serialize;
 
-use crate::database::schema;
+use crate::database::{self, schema};
 use crate::structs::id::ChattyId;
 use crate::structs::ts::TimeStamp;
 
-// id -> ChattyId,
-// #[max_length = 255]
-// channel_name -> Varchar,
-// #[max_length = 255]
-// channel_description -> Nullable<Varchar>,
-// created_at -> Timestamp,
-// last_activity -> Timestamp,
-// subscribers_count -> Int4,
-//
-// The complete User-Relation struct.
 #[derive(Queryable, Selectable, Insertable)]
 #[derive(Serialize)]
 #[derive(Clone, Debug)]
@@ -29,4 +19,25 @@ pub struct ChannelTable {
     created_at: TimeStamp,
     last_activity: TimeStamp,
     subscribers_count: i32,
+}
+
+impl ChannelTable {
+    pub fn list_members_ids(channel_id: ChattyId) -> Option<Vec<ChattyId>> {
+        use diesel::prelude::*;
+        use schema::users;
+        use schema::channel_subscribers;
+
+        let conn = &mut database::establish_connection();
+        let query: Result<Vec<ChattyId>, _> = channel_subscribers::table.inner_join(users::table.on(
+            users::id.eq(channel_subscribers::user_id)
+        ))
+            .select(users::id)
+            .filter(channel_subscribers::channel_id.eq(channel_id))
+            .load(conn);
+
+        match query {
+            Ok(users) => Some(users),
+            Err(_) => None
+        }
+    }
 }

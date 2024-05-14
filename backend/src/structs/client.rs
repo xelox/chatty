@@ -9,7 +9,7 @@ use super::socket_signal::{Signal, SignalList};
 
 #[derive(Clone)]
 pub struct Client {
-    socket: Option<Mutex<WebSocket>>,
+    socket: Mutex<WebSocket>,
     user_model: Arc<User>,
     status: RwLock<String>, //TODO: status class
 }
@@ -23,18 +23,20 @@ impl Client {
 
         return Some(Client {
             user_model: Arc::new(user),
-            socket: Some(Mutex::new(socket)),
+            socket: Mutex::new(socket),
             status: RwLock::new(String::from("online")),
         });
     }
 
     pub async fn send_socket_order(&self, signals: Arc<[Signal]>) {
-        if let Some(socket_mutex) = &self.socket {
-            let mut socket = socket_mutex.lock().await;
-            if let Some(message) = SignalList::new(signals).to_message() {
-                let _ = socket.send(message).await;
-            }
+        let mut socket = self.socket.lock().await;
+        if let Some(message) = SignalList::new(signals).to_message() {
+            let _ = socket.send(message).await;
         }
+    }
+
+    pub fn get_id(&self) -> ChattyId {
+        self.user_model.id
     }
 }
 
