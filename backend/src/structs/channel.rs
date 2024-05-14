@@ -4,7 +4,6 @@ use super::{client::Client, id::ChattyId};
 use crate::{database::channel_table::ChannelTable, server_state::ServerState};
 
 pub struct Channel {
-    id: ChattyId,
     clients: HashMap<ChattyId, Client>,
 }
 
@@ -14,7 +13,7 @@ impl Channel {
             return None;
         };
         let clients = state.get_clients_subset(members).await;
-        Some(Channel { id, clients })
+        Some(Channel { clients })
     }
 
     pub fn connect(&mut self, client: Client) {
