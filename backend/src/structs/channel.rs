@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
-use super::{client::Client, id::ChattyId};
-use crate::{database::channel_table::ChannelTable, server_state::ServerState};
+use super::{client::Client, id::ChattyId, socket_signal::Signal};
+use crate::{database::{channel_table::ChannelTable, message_table::Message}, server_state::ServerState};
 
 pub struct Channel {
     clients: HashMap<ChattyId, Client>,
@@ -20,5 +20,14 @@ impl Channel {
 
     pub fn disconnect(&mut self, client_id: &ChattyId) {
         self.clients.remove(client_id);
+    }
+
+    pub async fn broadcast_message(&self, message: Message) {
+        let order = Arc::new([Signal::Message(message)]);
+        let mut futures = Vec::new();
+        for client in self.clients.values() {
+            futures.push(client.send_socket_order(order.clone()));
+        }
+        futures::future::join_all(futures).await;
     }
 }

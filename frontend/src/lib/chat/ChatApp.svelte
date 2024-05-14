@@ -2,7 +2,7 @@
 import { onDestroy } from 'svelte';
 import { channels_store, type SchemaChannelList, active_channel } from '../../stores/messages';
 import Channel from './Channel.svelte';
-    import { uuidv4 } from 'uuidv7';
+import { uuidv4 } from 'uuidv7';
 
 let channels: SchemaChannelList = {};
 const unsubscribe = channels_store.subscribe(channels_ => {

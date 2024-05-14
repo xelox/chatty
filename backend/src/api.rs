@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use crate::structs::id::ChattyId;
 
-pub async fn send_message(session: Session<SessionPgPool>, State(_state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>) -> ChattyResponse {
+pub async fn send_message(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>) -> ChattyResponse {
     let Some(allowed_channels) = session.get::<Vec<ChattyId>>("channels") else {
         return ChattyResponse::InternalError;
     };
@@ -29,7 +29,12 @@ pub async fn send_message(session: Session<SessionPgPool>, State(_state): State<
         }
         session.set("channels", allwed_channels);
     }
-    Message::store(&mut payload).await
+
+    let message = Message::store(&mut payload).await;
+    match message {
+        Some(message) => state.broadcast_message(message).await,
+        None => ChattyResponse::InternalError
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]

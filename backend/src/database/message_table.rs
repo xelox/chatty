@@ -1,12 +1,23 @@
-use std::collections::HashMap;
-use diesel::{deserialize::Queryable, pg::Pg, prelude::Insertable};
+use std::{collections::HashMap, usize};
+use diesel::{deserialize::{FromSqlRow, Queryable}, expression::AsExpression, prelude::Insertable, sql_types::Jsonb};
 use crate::{database::{self, schema}, structs::{chatty_response::ChattyResponse, ts::TimeStamp}};
 use serde::{Deserialize, Serialize};
 use crate::structs::id::ChattyId;
 
+// id -> Int8,
+// sender_id -> Int8,
+// channel_id -> Int8,
+// #[max_length = 2000]
+// content -> Varchar,
+// attachments -> Array<Nullable<Text>>,
+// mentions -> Array<Nullable<Int8>>,
+// reactions -> Nullable<Jsonb>,
+// sent_at -> Timestamp,
+// updated_at -> Timestamp,
 
-#[derive(Queryable)]
+#[derive(Debug)]
 #[derive(Serialize)]
+#[derive(Queryable)]
 #[diesel(table_name = schema::messages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Message {
@@ -14,11 +25,8 @@ pub struct Message {
     pub sender_id: ChattyId,
     pub channel_id: ChattyId,
     pub content: String,
-    pub attachments: Vec<String>,
-    pub mentions: Vec<ChattyId>,
-    pub reactions: Option<HashMap<String, Vec<ChattyId>>>,
     pub sent_at: TimeStamp,
-    pub updated_at: TimeStamp,
+    pub updated_at: Option<TimeStamp>,
 }
 
 #[derive(Deserialize, Insertable)]
@@ -34,7 +42,7 @@ pub struct NewMessage {
 
 impl Message {
     /// WARNING dosen't ensure that the sender is authorized!
-    pub async fn store(message: &mut NewMessage) -> ChattyResponse {
+    pub async fn store(message: &mut NewMessage) -> Option<Message> {
         use schema::messages;
         use diesel::prelude::*;
 
@@ -42,23 +50,13 @@ impl Message {
         message.id = id;
         
         let conn = &mut database::establish_connection();
-        let query = diesel::insert_into(messages::table)
+        let query: Result<Message, diesel::result::Error> = diesel::insert_into(messages::table)
             .values(&*message)
-            .execute(conn);
+            .get_result(conn);
 
-        if query.is_ok() {
-            ChattyResponse::Ok
-        } else {
-            let err = query.unwrap_err();
-            let query = diesel::insert_into(messages::table)
-                .values(&*message);
-            let query_str = diesel::debug_query::<Pg, _>(&query).to_string();
-            dbg!(err);
-            println!("{query_str}");
-            ChattyResponse::InternalError
+        match query {
+            Ok(message) => Some(message),
+            Err(_) => None
         }
     }
 }
-
-// INSERT INTO "messages" ("id", "sender_id", "channel_id", "content") 
-// VALUES ('018f2043-e662-7c89-a10c-a5bdd3ee237d', '018f203c-b923-7632-99f9-4f7b5361c073', '018f203c-d149-7529-8489-1b2f0c2318d7', 'test');

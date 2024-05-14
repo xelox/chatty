@@ -349,6 +349,7 @@ dependencies = [
  "diesel_migrations",
  "dotenvy",
  "duplicate",
+ "futures",
  "futures-locks",
  "password-auth",
  "rand",

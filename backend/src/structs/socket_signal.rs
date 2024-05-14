@@ -1,17 +1,11 @@
 use std::sync::Arc;
 
-use axum::extract::ws::Message;
+use axum::extract::ws::{self};
 use serde::Serialize;
 
-use super::{id::ChattyId, notification::Notification};
+use crate::database::message_table::Message;
 
-#[derive(Serialize)]
-pub struct MessageItem {
-    sender: String,
-    channel: ChattyId,
-    timestamp: u64,
-    id: ChattyId,
-}
+use super::{id::ChattyId, notification::Notification};
 
 #[derive(Serialize)]
 pub struct FriendReqItem {
@@ -30,7 +24,7 @@ pub struct FriendListItem {
 
 #[derive(Serialize)]
 pub enum Signal {
-    Message(MessageItem),
+    Message(Message),
     Notification(Notification),
     FriendReq(FriendReqItem),
     FriendListChanged(FriendListItem),
@@ -46,9 +40,9 @@ impl SignalList {
         SignalList {signals}
     }
 
-    pub fn to_message(&self) -> Option<Message> {
+    pub fn to_message(&self) -> Option<ws::Message> {
         if let Ok(json) = serde_json::to_string(self) {
-            Some(Message::Text(json))
+            Some(ws::Message::Text(json))
         } else {
             None
         }
