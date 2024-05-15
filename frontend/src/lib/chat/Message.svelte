@@ -2,6 +2,7 @@
 import type { SchemaMessage } from "../../stores/messages";
 import Tag from './Tag.svelte';
 import SvelteMarkdown from "svelte-markdown";
+import UserIdWrap from "./UserIdWrap.svelte";
 export let message: SchemaMessage;
 
 type MessageFragment = {
@@ -26,9 +27,7 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 </script>
 
 <main class="{message.is_sent ? '' : 'unsent'}">
-  <p class="sender_tag">
-    {message.sender_id} 
-  </p>
+  <UserIdWrap id={message.sender_id}/>
   <p class="content">
     {#each content_segments as segment}
       {#if segment.kind === 'text'}

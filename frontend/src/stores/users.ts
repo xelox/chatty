@@ -1,11 +1,7 @@
 import { writable } from "svelte/store";
 import { type SchemaPeerList, type SchemaPeer } from "./data";
 
-
-// const { subscribe, update } = writable<SchemaPeerList>({})
 const { subscribe, update } = writable<SchemaPeerList>({})
-
-
 
 const update_peers = (users: SchemaPeer[]) => {
   update(list=>{
@@ -16,7 +12,7 @@ const update_peers = (users: SchemaPeer[]) => {
   })
 }
 
-const delete_peers = (user_ids: number[]) => {
+const delete_peers = (user_ids: string[]) => {
   update(list => {
     for (const id of user_ids) {
       delete list[id];

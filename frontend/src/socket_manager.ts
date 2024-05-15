@@ -3,6 +3,8 @@ import notification_manager from "./notification_manager";
 import {friend_list, pending_friends_in, pending_friends_out, user_data, type SchemaPeer, type SchemaPeerList,  } from "./stores/data";
 import type { Notification } from "./stores/inbox";
 import { channels_store, type SchemaChannel, type SchemaMessage } from "./stores/messages";
+import users from "./stores/users";
+
 class SocketManager {
   private socket: WebSocket | null = null;
 
@@ -38,8 +40,10 @@ class SocketManager {
       const friends_list_: SchemaPeerList = {}
       const pending_friends_out_: SchemaPeerList = {}
       const pending_friends_in_: SchemaPeerList = {}
+      const known_users: SchemaPeer[] = [json.user_info];
 
       for (const item of json.relations) {
+        known_users.push(item.user);
         if (item.relation.accepted) {
           friends_list_[item.relation.id] = {...item.user, relation_id: item.relation.id}
           channels_store.add_channel({ id: item.relation.id, channel_name: `${item.user.username}` });
@@ -50,6 +54,9 @@ class SocketManager {
         }
       }
 
+
+      
+      users.update_peers(known_users);
       friend_list.set(friends_list_);
       pending_friends_in.set(pending_friends_in_);
       pending_friends_out.set(pending_friends_out_);
