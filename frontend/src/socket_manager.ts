@@ -1,7 +1,8 @@
+import event_manager from "./event_manager";
 import notification_manager from "./notification_manager";
-import {friend_list, pending_friends_in, pending_friends_out, user_data, type SchemaPeerList,  } from "./stores/data";
+import {friend_list, pending_friends_in, pending_friends_out, user_data, type SchemaPeer, type SchemaPeerList,  } from "./stores/data";
 import type { Notification } from "./stores/inbox";
-import { channels_store, type SchemaChannel } from "./stores/messages";
+import { channels_store, type SchemaChannel, type SchemaMessage } from "./stores/messages";
 class SocketManager {
   private socket: WebSocket | null = null;
 
@@ -84,11 +85,15 @@ class SocketManager {
   }
 
   private onmessage = (e: MessageEvent) => {
-    notification_manager.notify({
-      ts: Number(new Date()),
-      content: `socket message: ${e.data}`,
-      source: 'System'
-    }, 'system');
+    const e_json: { signals: any[] } = JSON.parse(e.data);
+
+    for (const s of e_json.signals) {
+      if (s.message) return this.handle_message(s.message);
+    }
+  }
+
+  private handle_message = (s: SchemaMessage) => {
+    event_manager.dispatch("message_add", s);
   }
   
   private onclose = () => {

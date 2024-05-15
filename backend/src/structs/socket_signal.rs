@@ -23,6 +23,7 @@ pub struct FriendListItem {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all(serialize = "snake_case"))]
 pub enum Signal {
     Message(Message),
     Notification(Notification),
