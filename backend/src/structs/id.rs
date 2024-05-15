@@ -1,6 +1,6 @@
 use std::{env, fmt::Display, sync::OnceLock, time::{SystemTime, UNIX_EPOCH}, u32};
 
-use diesel::{deserialize::{FromSql, FromSqlRow}, expression::AsExpression, pg::Pg, serialize::ToSql, sql_types::BigInt};
+use diesel::{deserialize::{self, FromSql, FromSqlRow}, expression::AsExpression, pg::Pg, serialize::ToSql, sql_types::BigInt};
 use futures_locks::Mutex;
 use serde::{de::{Error, Unexpected, Visitor}, Deserialize, Serialize};
 
@@ -177,18 +177,18 @@ where
         impl<'de> Visitor<'de> for TVisitor {
             type Value = ChattyId;
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("Failed to deserialize chatty id")    
+                formatter.write_str("a number")    
             }
 
             fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
-                where
-                E: serde::de::Error, {
+            where
+            E: serde::de::Error, {
                 Ok(ChattyId{id: v})
             }
 
             fn visit_u128<E>(self, v: u128) -> Result<Self::Value, E>
-        where
-                E: serde::de::Error, {
+            where
+            E: serde::de::Error, {
                 match u64::try_from(v) {
                     Ok(id) => Ok(ChattyId{id}),
                     Err(_) => Err(Error::invalid_value(Unexpected::Str(&v.to_string()), &self))
@@ -256,7 +256,27 @@ fn bits_usage() {
     assert_eq!(internal_type_size, (TS_BITS + NODE_ID_BITS + SEQUENCE_BITS) as usize);
 }
 
-#[test]
-fn serialize_test() {
-    // TODO: 
+#[tokio::test]
+async fn serialize_test() {
+    let id = ChattyId::gen().await;
+    let serialized_str = serde_json::to_string(&id);
+    assert!(serialized_str.is_ok(), "Serializing fails.");
+    let deserialized_id = serde_json::from_str::<ChattyId>(&serialized_str.unwrap());
+    assert!(deserialized_id.is_ok(), "Deserializing fails.");
+    assert_eq!(deserialized_id.unwrap(), id, "ID -> JSON -> ID fails equality check.");
+
+    #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+    struct Test {
+        name: String,
+        id: ChattyId,
+    }
+
+    let real_usage_test_instance = Test { name: "John Snow".to_string(), id };
+    let real_usage_test_str = format!("{{\"name\":\"John Snow\",\"id\":{id}}}");
+
+    let serr: Test = serde_json::from_str(&real_usage_test_str).unwrap();
+    let deserr = serde_json::to_string(&real_usage_test_instance).unwrap();
+
+    assert_eq!(serr, real_usage_test_instance);
+    assert_eq!(deserr, real_usage_test_str);
 }

@@ -64,7 +64,6 @@ pub async fn send_friend_request( session: Session<SessionPgPool>, State(state):
                     .send_socket_order(Arc::new([Signal::Notification(n)]))
                     .await;
             }
-            // TODO: store the notification.
             ChattyResponse::Ok
         }
         _ => ChattyResponse::BadRequest(Some(String::from("User does not exist"))),
