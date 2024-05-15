@@ -1,6 +1,7 @@
+use core::panic;
 use std::{env, fmt::Display, sync::OnceLock, time::{SystemTime, UNIX_EPOCH}, u32};
 
-use diesel::{deserialize::{self, FromSql, FromSqlRow}, expression::AsExpression, pg::Pg, serialize::ToSql, sql_types::BigInt};
+use diesel::{deserialize::{FromSql, FromSqlRow}, expression::AsExpression, pg::Pg, serialize::ToSql, sql_types::BigInt};
 use futures_locks::Mutex;
 use serde::{de::{Error, Unexpected, Visitor}, Deserialize, Serialize};
 
@@ -164,7 +165,7 @@ impl Serialize for ChattyId
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer {
-        serializer.serialize_u64(*(&self.id))
+        serializer.serialize_str(self.id.to_string().as_str())
     }
 }
 
@@ -180,29 +181,24 @@ where
                 formatter.write_str("a number")    
             }
 
-            fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
             where
             E: serde::de::Error, {
-                Ok(ChattyId{id: v})
-            }
-
-            fn visit_u128<E>(self, v: u128) -> Result<Self::Value, E>
-            where
-            E: serde::de::Error, {
-                match u64::try_from(v) {
+                match v.parse::<u64>() {
                     Ok(id) => Ok(ChattyId{id}),
                     Err(_) => Err(Error::invalid_value(Unexpected::Str(&v.to_string()), &self))
                 }
             }
         }
 
-        deserializer.deserialize_u64(TVisitor)
+        deserializer.deserialize_str(TVisitor)
     }
 }
 
 #[tokio::test]
 async fn id_generation() {
     env::set_var("CHATTY_NODE_ID", "7");
+
     use tokio::spawn;
     let mut futures = Vec::new();
 
@@ -212,12 +208,12 @@ async fn id_generation() {
     for handle in futures {
         let _ = handle.await.unwrap();
     }
-
-    // TODO: more in depth testing.
 }
 
 #[test] 
 fn pack_unpack() {
+    env::set_var("CHATTY_NODE_ID", "7");
+
     let fail_1 = PackedId {
         ts: u64::MAX,
         node_id: 1,
@@ -258,6 +254,8 @@ fn bits_usage() {
 
 #[tokio::test]
 async fn serialize_test() {
+    env::set_var("CHATTY_NODE_ID", "7");
+
     let id = ChattyId::gen().await;
     let serialized_str = serde_json::to_string(&id);
     assert!(serialized_str.is_ok(), "Serializing fails.");
@@ -272,7 +270,7 @@ async fn serialize_test() {
     }
 
     let real_usage_test_instance = Test { name: "John Snow".to_string(), id };
-    let real_usage_test_str = format!("{{\"name\":\"John Snow\",\"id\":{id}}}");
+    let real_usage_test_str = format!("{{\"name\":\"John Snow\",\"id\":\"{id}\"}}");
 
     let serr: Test = serde_json::from_str(&real_usage_test_str).unwrap();
     let deserr = serde_json::to_string(&real_usage_test_instance).unwrap();

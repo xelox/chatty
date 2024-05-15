@@ -17,6 +17,7 @@ use crate::structs::id::ChattyId;
 
 pub async fn send_message(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>) -> ChattyResponse {
     let Some(allowed_channels) = session.get::<Vec<ChattyId>>("channels") else {
+        println!("No channels set");
         return ChattyResponse::InternalError;
     };
     if allowed_channels.binary_search(&payload.channel_id).is_err() {
@@ -71,16 +72,16 @@ pub async fn send_friend_request( session: Session<SessionPgPool>, State(state):
 }
 
 pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
-    let Some(target) = session.get::<ChattyId>("user_id") else {
+    let Some(id) = session.get::<ChattyId>("user_id") else {
         return ChattyResponse::Unauthorized.into_response();
     };
-    let Some(relations) = UserRelation::query_user_relations(&target) else {
+    let Some(relations) = UserRelation::query_user_relations(&id) else {
         return ChattyResponse::InternalError.into_response();
     };
-    let Some(user_info) = User::query_user(&target) else {
+    let Some(user_info) = User::query_user(&id) else {
         return ChattyResponse::InternalError.into_response();
     };
-    #[derive(Serialize)]
+    #[derive(Serialize, Debug)]
     struct CompleteResult {
         relations: Vec<RelationAndUser>,
         user_info: User,
@@ -88,6 +89,7 @@ pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
     let complete_result = CompleteResult {
         relations, user_info
     };
+    dbg!(&serde_json::to_string(&complete_result));
     return chatty_json_response(complete_result);
 }
 

@@ -5,6 +5,7 @@ import { onDestroy } from "svelte";
 import Message from './Message.svelte';
 import { user_data } from "../../stores/data";
 import MentionTool from "./MentionTool.svelte";
+    import { requests_manager } from "../../requests_manager";
 
 export let channel_info: SchemaChannel;
 const messages: SchemaMessageList = {};
@@ -37,13 +38,12 @@ const handle_keypress = (e: KeyboardEvent) => {
     const user_id = $user_data?.id;
     if (!user_id) return;
     const message: SchemaMessage = {
-      id: 0,
+      id: "0",
       channel_id: channel_info.id,
       content: input_text,
       sender_id: user_id,
-      is_sent: false,
     }
-    event_manager.dispatch("message_add", message);
+    requests_manager.post("/api/send_message", message);
     input_text = "";
     return;
   }
@@ -83,7 +83,7 @@ const handle_input = (e: Event) => {
     {#if mention_search}
       <MentionTool mention_search={mention_search}/>
     {/if}
-    <textarea on:input={handle_input}></textarea>
+    <textarea bind:value={input_text} on:keypress={handle_keypress}></textarea>
   </div>
 </main>
 

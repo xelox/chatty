@@ -32,12 +32,12 @@ pub struct User {
 impl User {
     /// Needed only for sending the use information about themselves.
     /// TODO: could cache this result on the session store and reduce querys count?
-    pub fn query_user(target: &ChattyId) -> Option<User> {
+    pub fn query_user(id: &ChattyId) -> Option<User> {
         use diesel::prelude::*;
         use schema::users;
         let conn = &mut database::establish_connection();
         let query: Result<User, _> = users::table
-            .find(target)
+            .find(id)
             .first(conn);
 
         if let Ok(user) = query {

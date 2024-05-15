@@ -1,7 +1,7 @@
 import { writable } from "svelte/store"
 
 export type SchemaUserInfo = {
-  id: number,
+  id: string,
   username: string,
   pfp_url?: string,
   display_name: string | null,
@@ -10,10 +10,10 @@ export type SchemaUserInfo = {
 
 export type SchemaPeer = SchemaUserInfo & { 
   last_message?: string,
-  relation_id: number,
+  relation_id: string,
 };
 
-export type SchemaPeerList = {[key: number]: SchemaPeer};
+export type SchemaPeerList = {[key: string]: SchemaPeer};
 
 export const user_data = writable<SchemaUserInfo | null>(null);
 export const friend_list = writable<SchemaPeerList>({});

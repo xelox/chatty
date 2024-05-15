@@ -1,7 +1,7 @@
 <script lang="ts">
 import { requests_manager, type RequestOptions } from "../../requests_manager";
 import { pending_friends_in, pending_friends_out } from "../../stores/data";
-const interact = (interaction: "cancel" | "accept" | "refuse", relation_id: number) => {
+const interact = (interaction: "cancel" | "accept" | "refuse", relation_id: string) => {
   const options: RequestOptions = {
     succeed_action: () => {
       if (interaction === "accept" || interaction === "refuse") {

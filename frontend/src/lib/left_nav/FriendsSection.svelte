@@ -4,7 +4,7 @@ import {active_channel, type SchemaChannel} from '../../stores/messages';
 
 export let manipulate_path: (s: string) => void;
 manipulate_path("");
-const open_channel = (channel_id: number, friend_name: string) => {
+const open_channel = (channel_id: string, friend_name: string) => {
   manipulate_path(friend_name);
   active_channel.set(channel_id);
 }
