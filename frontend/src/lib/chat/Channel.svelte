@@ -39,7 +39,7 @@ const handle_keypress = (e: KeyboardEvent) => {
     const user_id = $user_data?.id;
     if (!user_id) return;
     const message: SchemaMessage = {
-      id: uuidv4(),
+      id: 0,
       channel_id: channel_info.id,
       content: input_text,
       sender_id: user_id,
@@ -85,7 +85,7 @@ const handle_input = (e: Event) => {
     {#if mention_search}
       <MentionTool mention_search={mention_search}/>
     {/if}
-    <CustomTextarea/>
+    <textarea on:input={handle_input}></textarea>
   </div>
 </main>
 

@@ -13,21 +13,6 @@ let segments_index = 0;
 let cursor = 0;
 
 const handle_keypress = (e: KeyboardEvent) => {
-  if (e.key === 'Backspace') {
-    text = text.slice(0, -1);
-    if (cursor > 0) cursor--;
-  }
-  
-  else if (e.key === 'Enter') {
-    segments.push({
-      type: 'br'
-    });
-  }
-  else if (/^.$/.exec(e.key)) {
-    text += e.key;
-    cursor++;
-  }
-  return;
 }
 
 </script>

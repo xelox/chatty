@@ -11,8 +11,8 @@ const open_channel = (channel: SchemaChannel, friend_name: string) => {
 </script>
 
 <main>
-  {#each Object.entries($friend_list) as [relation_id, friend_item]}
-    <button class="friend_item" style="background: {$active_channel == relation_id ? 'var(--base)' : ''};">
+  {#each Object.values($friend_list) as friend_item}
+    <button class="friend_item" style="background: {$active_channel == friend_item.relation_id ? 'var(--base)' : ''};">
       <span class="left"> <img src="" title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{friend_item.display_name ?? friend_item.username}</span>

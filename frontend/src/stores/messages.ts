@@ -1,24 +1,24 @@
 import { writable, derived } from "svelte/store";
 
 export type SchemaMessage = {
-  id: string,
-  sender_id: string, 
-  channel_id: string,
+  id: number,
+  sender_id: number, 
+  channel_id: number,
   content: string,
   is_sent?: boolean
 }
 
 export type SchemaMessageList = {
-  [message_id: string]: SchemaMessage,
+  [message_id: number]: SchemaMessage,
 }
 
 export type SchemaChannel = {
-  id: string,
+  id: number,
   channel_name: string,
 };
 
 export type SchemaChannelList = {
-  [channel_id: string]: SchemaChannel,
+  [channel_id: number]: SchemaChannel,
 }
 
 const create_channels_store = () => {
@@ -43,4 +43,4 @@ const create_channels_store = () => {
 }
 
 export const channels_store = create_channels_store();
-export const active_channel = writable<string | null>(null);
+export const active_channel = writable<number | null>(null);

@@ -9,30 +9,6 @@ const unsubscribe = channels_store.subscribe(channels_ => {
   channels = channels_;
 });
 
-const channels_test: string[] = [];
-for (let i = 0; i < 10; i++) {
-  const id = uuidv4();
-  channels_test.push(id);
-  channels[id] = {
-    id: id,
-    channel_name: id,
-  }
-}
-let idx = 0;
-
-$active_channel = channels_test[idx];
-
-document.addEventListener("keypress", (e: KeyboardEvent) => {
-  if (e.key == "`") {
-    idx += 1; 
-    if (idx >= channels_test.length) {
-      idx = 0;
-    }
-    $active_channel = channels_test[idx];
-  }
-  return e;
-})
-
 onDestroy(() => {
   unsubscribe();
 })

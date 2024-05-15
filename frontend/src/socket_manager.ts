@@ -7,20 +7,20 @@ class SocketManager {
   public initialize_client = async (): Promise<boolean> => {
     type response_schema = {
       user_info: {
-        id: string,
+        id: number,
         username: string,
         display_name: string | null,
       },
       relations: {
         relation:{
-          id: string,
-          a: string,
-          b: string,
-          sender: string,
+          id: number,
+          a: number,
+          b: number,
+          sender: number,
           accepted: boolean,
         }
         user: {
-          id: string,
+          id: number,
           username: string,
           display_name: string | null,
         }

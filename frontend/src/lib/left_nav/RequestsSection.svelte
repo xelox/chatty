@@ -1,7 +1,7 @@
 <script lang="ts">
 import { requests_manager, type RequestOptions } from "../../requests_manager";
 import { pending_friends_in, pending_friends_out } from "../../stores/data";
-const interact = (interaction: "cancel" | "accept" | "refuse", relation_id: string) => {
+const interact = (interaction: "cancel" | "accept" | "refuse", relation_id: number) => {
   const options: RequestOptions = {
     succeed_action: () => {
       if (interaction === "accept" || interaction === "refuse") {
@@ -37,26 +37,26 @@ set_section("inbound");
     </div>
   </div>
   {#if section === "inbound"}
-  {#each Object.entries($pending_friends_in) as [relation_id, item]}
+  {#each Object.values($pending_friends_in) as item}
     <div class="friend_item">
       <span class="left"> <img src="" title="{item.display_name ?? item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{item.display_name ?? item.username}</span>
         <div class="interations_wrap">
-        <button on:click={()=>interact("accept", relation_id)}>Accept</button>
-        <button on:click={()=>interact("refuse", relation_id)}>Refuse</button>
+        <button on:click={()=>interact("accept", item.relation_id)}>Accept</button>
+        <button on:click={()=>interact("refuse", item.relation_id)}>Refuse</button>
         </div>
       </div>
     </div>
   {/each}
   {:else if section === "outbound"}
-  {#each Object.entries($pending_friends_out) as [relation_id, item]}
+  {#each Object.values($pending_friends_out) as item}
     <div class="friend_item">
       <span class="left"> <img src="" title="{item.display_name ?? item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{item.display_name ?? item.username}</span>
         <div class="interations_wrap">
-        <button on:click={()=>interact("cancel", relation_id)}>Cancel</button>
+        <button on:click={()=>interact("cancel", item.relation_id)}>Cancel</button>
         </div>
       </div>
     </div>
