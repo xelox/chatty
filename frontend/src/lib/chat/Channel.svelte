@@ -4,9 +4,7 @@ import event_manager from '../../event_manager';
 import { onDestroy } from "svelte";
 import Message from './Message.svelte';
 import { user_data } from "../../stores/data";
-import { uuidv4 } from "uuidv7";
-    import MentionTool from "./MentionTool.svelte";
-    import CustomTextarea from "./CustomTextarea.svelte";
+import MentionTool from "./MentionTool.svelte";
 
 export let channel_info: SchemaChannel;
 const messages: SchemaMessageList = {};

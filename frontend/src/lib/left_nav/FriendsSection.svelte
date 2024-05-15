@@ -4,15 +4,15 @@ import {active_channel, type SchemaChannel} from '../../stores/messages';
 
 export let manipulate_path: (s: string) => void;
 manipulate_path("");
-const open_channel = (channel: SchemaChannel, friend_name: string) => {
+const open_channel = (channel_id: number, friend_name: string) => {
   manipulate_path(friend_name);
-  active_channel.set(channel.id);
+  active_channel.set(channel_id);
 }
 </script>
 
 <main>
   {#each Object.values($friend_list) as friend_item}
-    <button class="friend_item" style="background: {$active_channel == friend_item.relation_id ? 'var(--base)' : ''};">
+    <button class="friend_item" style="background: {$active_channel == friend_item.relation_id ? 'var(--base)' : ''};" on:click={()=>{open_channel(friend_item.relation_id, friend_item.username)}}>
       <span class="left"> <img src="" title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{friend_item.display_name ?? friend_item.username}</span>

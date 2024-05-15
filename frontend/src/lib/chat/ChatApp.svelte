@@ -2,7 +2,6 @@
 import { onDestroy } from 'svelte';
 import { channels_store, type SchemaChannelList, active_channel } from '../../stores/messages';
 import Channel from './Channel.svelte';
-import { uuidv4 } from 'uuidv7';
 
 let channels: SchemaChannelList = {};
 const unsubscribe = channels_store.subscribe(channels_ => {
@@ -16,7 +15,7 @@ onDestroy(() => {
 
 <main>
   {#each Object.values(channels) as channel_info }  
-    <div class="channel_wrapper" style="display: {$active_channel == channel_info.id ? "block" : "none"};">
+    <div class="channel_wrapper" style="display: {$active_channel === channel_info.id ? "block" : "none"};">
       <Channel {channel_info}/>
     </div>
   {/each}
