@@ -36,6 +36,7 @@ async fn main() {
     let app = Router::new()
         .route("/ws", get(web_socket_manager::handler))
         .route("/app/*any", get(serve_app::serve_app))
+        .route("/api/load_messages/:channel_id/:ts", get(api::load_messages))
         .route("/api/send_message", post(api::send_message))
         .route("/api/send_friend_request", post(api::send_friend_request))
         .route("/api/friendship/:action", post(api::edit_relation))
