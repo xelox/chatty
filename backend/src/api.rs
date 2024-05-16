@@ -99,6 +99,7 @@ pub async fn load_messages(session: Session<SessionPgPool>, Path((channel_id, ts
 
     if channels.binary_search(&channel_id).is_err() {
         return ChattyResponse::Unauthorized;
+        // TODO: Normalized permission validation as a middleware. 
     };
 
     Message::load_from_ts(&channel_id, &ts);
