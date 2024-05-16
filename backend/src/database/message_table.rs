@@ -1,19 +1,9 @@
-use std::{collections::HashMap, usize};
-use diesel::{deserialize::{FromSqlRow, Queryable}, expression::AsExpression, prelude::Insertable, sql_types::Jsonb};
-use crate::{database::{self, schema}, structs::{chatty_response::ChattyResponse, ts::TimeStamp}};
+use diesel::{deserialize::Queryable, prelude::Insertable};
+use crate::{database::{self, schema}, structs::ts::TimeStamp};
 use serde::{Deserialize, Serialize};
 use crate::structs::id::ChattyId;
 
-// id -> Int8,
-// sender_id -> Int8,
-// channel_id -> Int8,
-// #[max_length = 2000]
-// content -> Varchar,
-// attachments -> Array<Nullable<Text>>,
-// mentions -> Array<Nullable<Int8>>,
-// reactions -> Nullable<Jsonb>,
-// sent_at -> Timestamp,
-// updated_at -> Timestamp,
+const MESSAGE_LOAD_LIMIT: i64 = 50;
 
 #[derive(Debug)]
 #[derive(Serialize)]
@@ -57,6 +47,25 @@ impl Message {
         match query {
             Ok(message) => Some(message),
             Err(_) => None
+        }
+    }
+
+    pub fn load_from_ts(channel_id: &ChattyId, ts: &TimeStamp) -> Option<Vec<Message>> {
+        use schema::messages;
+        use diesel::prelude::*;
+
+        let conn = &mut database::establish_connection();
+        let query: Result<Vec<Message>, _> = messages::table
+            .filter(messages::channel_id.eq(channel_id))
+            .filter(messages::sent_at.le(ts))
+            .limit(MESSAGE_LOAD_LIMIT)
+            .order(messages::sent_at.asc())
+            .select(messages::all_columns)
+            .load(conn);
+
+        match query {
+            Ok(messages) => Some(messages),
+            _ => None
         }
     }
 }

@@ -7,9 +7,9 @@ use crate::structs::chatty_response::{chatty_json_response, ChattyResponse};
 use crate::structs::checked_string::CheckedString;
 use crate::structs::notification::Notification;
 use crate::structs::socket_signal::Signal;
+use crate::structs::ts::TimeStamp;
 use axum::extract::{Json, Path, State};
 use axum::response::{IntoResponse, Response};
-use axum_macros::debug_handler;
 use axum_session::{Session, SessionPgPool};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -43,7 +43,6 @@ pub struct FriendRequestForm {
     to: CheckedString,
 }
 
-#[debug_handler()]
 pub async fn send_friend_request( session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<FriendRequestForm>,) -> ChattyResponse {
     let Some(sender_id) = session.get::<ChattyId>("user_id") else {
         return ChattyResponse::Unauthorized;
@@ -91,6 +90,20 @@ pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
     };
     dbg!(&serde_json::to_string(&complete_result));
     return chatty_json_response(complete_result);
+}
+
+pub async fn load_messages(session: Session<SessionPgPool>, Path((channel_id, ts)): Path<(ChattyId, TimeStamp)>) -> ChattyResponse {
+    let Some(channels) = session.get::<Vec<ChattyId>>("channels") else {
+        return ChattyResponse::InternalError;
+    };
+
+    if channels.binary_search(&channel_id).is_err() {
+        return ChattyResponse::Unauthorized;
+    };
+
+    Message::load_from_ts(&channel_id, &ts);
+
+    ChattyResponse::Ok
 }
 
 #[derive(Deserialize)]
