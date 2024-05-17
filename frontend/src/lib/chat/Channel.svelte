@@ -1,11 +1,11 @@
 <script lang='ts'>
 import type { SchemaChannel, SchemaMessageList, SchemaMessage } from "../../stores/messages";
 import event_manager from '../../event_manager';
-import { onDestroy } from "svelte";
+import { onDestroy, onMount } from "svelte";
 import Message from './Message.svelte';
 import { user_data } from "../../stores/data";
 import MentionTool from "./MentionTool.svelte";
-    import { requests_manager } from "../../requests_manager";
+    import { requests_manager, type RequestOptions } from "../../requests_manager";
 
 export let channel_info: SchemaChannel;
 const messages: SchemaMessageList = {};
@@ -24,6 +24,16 @@ unsubscribe_callbacks.push(
     delete messages[message.id];
   })
 );
+
+onMount(() => {
+  let ts = new Date().getTime();
+  const opts: RequestOptions = {
+    succeed_action: (messages) => {
+      console.log(messages); 
+    }
+  }
+  requests_manager.get(`/api/load_messages/${channel_info.id}/${ts}`, opts);
+})
 
 onDestroy(() => {
   for (const unsubscribe of unsubscribe_callbacks) {

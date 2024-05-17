@@ -88,23 +88,25 @@ pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
     let complete_result = CompleteResult {
         relations, user_info
     };
-    dbg!(&serde_json::to_string(&complete_result));
     return chatty_json_response(complete_result);
 }
 
-pub async fn load_messages(session: Session<SessionPgPool>, Path((channel_id, ts)): Path<(ChattyId, TimeStamp)>) -> ChattyResponse {
+pub async fn load_messages(session: Session<SessionPgPool>, Path((channel_id, ts)): Path<(ChattyId, TimeStamp)>) -> Response {
     let Some(channels) = session.get::<Vec<ChattyId>>("channels") else {
-        return ChattyResponse::InternalError;
+        return ChattyResponse::InternalError.into_response();
     };
 
     if channels.binary_search(&channel_id).is_err() {
-        return ChattyResponse::Unauthorized;
+        return ChattyResponse::Unauthorized.into_response();
         // TODO: Normalized permission validation as a middleware. 
     };
 
-    Message::load_from_ts(&channel_id, &ts);
+    let result = Message::load_from_ts(&channel_id, &ts);
 
-    ChattyResponse::Ok
+    match result {
+        Some(messages) => chatty_json_response(messages),
+        None => ChattyResponse::InternalError.into_response()
+    }
 }
 
 #[derive(Deserialize)]
