@@ -8,7 +8,7 @@ import MentionTool from "./MentionTool.svelte";
     import { requests_manager, type RequestOptions } from "../../requests_manager";
 
 export let channel_info: SchemaChannel;
-const messages: SchemaMessageList = {};
+let messages: SchemaMessageList = {};
 
 const unsubscribe_callbacks: (()=>void)[] = [];
 unsubscribe_callbacks.concat(
@@ -28,8 +28,9 @@ unsubscribe_callbacks.push(
 onMount(() => {
   let ts = new Date().getTime();
   const opts: RequestOptions = {
-    succeed_action: (messages) => {
-      console.log(messages); 
+    succeed_action: (messages_raw) => {
+      const loaded_messages: SchemaMessageList = JSON.parse(messages_raw);
+      messages = loaded_messages;
     }
   }
   requests_manager.get(`/api/load_messages/${channel_info.id}/${ts}`, opts);
