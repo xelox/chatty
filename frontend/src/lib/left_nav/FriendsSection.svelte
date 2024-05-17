@@ -1,10 +1,13 @@
 <script lang="ts">
 import {friend_list} from '../../stores/data'
-import {active_channel, type SchemaChannel} from '../../stores/messages';
+import {active_channel, channels_store, type SchemaChannel} from '../../stores/messages';
 
 export let manipulate_path: (s: string) => void;
 manipulate_path("");
 const open_channel = (channel_id: string, friend_name: string) => {
+  if (!$channels_store[channel_id]) {
+    channels_store.add_channel({ id: channel_id, channel_name: friend_name });
+  }
   manipulate_path(friend_name);
   active_channel.set(channel_id);
 }

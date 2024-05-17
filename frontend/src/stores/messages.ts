@@ -18,11 +18,12 @@ export type SchemaChannel = {
 };
 
 export type SchemaChannelList = {
-  [channel_id: string]: SchemaChannel,
+  [key: string]: SchemaChannel,
 }
 
 const create_channels_store = () => {
-  const { update, subscribe } = writable<SchemaChannelList>({});
+  const store = writable<SchemaChannelList>({});
+  const { update, subscribe } = store;
   const add_channel = (channel: SchemaChannel) => {
     update(channels => {
       channels[channel.id] = channel;
@@ -38,7 +39,7 @@ const create_channels_store = () => {
   const update_channel = add_channel;
 
   return {
-    add_channel, update_channel, remove_channel, subscribe
+    add_channel, update_channel, remove_channel, subscribe, store
   };
 }
 

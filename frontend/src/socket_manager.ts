@@ -46,7 +46,6 @@ class SocketManager {
         known_users.push(item.user);
         if (item.relation.accepted) {
           friends_list_[item.relation.id] = {...item.user, relation_id: item.relation.id}
-          channels_store.add_channel({ id: item.relation.id, channel_name: `${item.user.username}` });
         } else if (item.relation.sender === json.user_info.id) {
           pending_friends_out_[item.relation.id] = {...item.user, relation_id: item.relation.id}
         } else {
