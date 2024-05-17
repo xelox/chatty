@@ -1,34 +1,40 @@
 <script lang='ts'>
-  import { navigate } from "svelte-routing";
-  import search_query from "../stores/search_query"
-  import {erase} from "../stores/data"
-    import { requests_manager, type RequestOptions} from "../requests_manager";
+import { navigate } from "svelte-routing";
+import search_query from "../stores/search_query"
+import { erase } from "../stores/data"
+import { requests_manager, type RequestOptions} from "../requests_manager";
+import { header_height } from "../stores/ui";
 
-  const nav_click = (to: {url?: string, overlay?: string}) => {
-    const url = to.url ?? `${window.location.href.split('?')[0]}`;
-    const query_params = new URLSearchParams(window.location.search);
-    if(to.overlay !== undefined) {
-      if(query_params.get('active_overlay') === to.overlay) to.overlay = 'none';
-      query_params.set('active_overlay', to.overlay);
-    }
-    navigate(`${url}?${query_params.toString()}`);
-    search_query.set(Object.fromEntries(query_params.entries()));
+const nav_click = (to: {url?: string, overlay?: string}) => {
+  const url = to.url ?? `${window.location.href.split('?')[0]}`;
+  const query_params = new URLSearchParams(window.location.search);
+  if(to.overlay !== undefined) {
+    if(query_params.get('active_overlay') === to.overlay) to.overlay = 'none';
+    query_params.set('active_overlay', to.overlay);
   }
+  navigate(`${url}?${query_params.toString()}`);
+  search_query.set(Object.fromEntries(query_params.entries()));
+}
 
-  const logout = () => {
-    const opts: RequestOptions = {
-      succeed_action: () => {
-        erase();
-        nav_click({url: '/app/auth'});
-      },
-      notify_fail: true,
-    } 
+const logout = () => {
+  const opts: RequestOptions = {
+    succeed_action: () => {
+      erase();
+      nav_click({url: '/app/auth'});
+    },
+    notify_fail: true,
+  } 
 
-    requests_manager.get('/api/logout', opts);
-  }
+  requests_manager.get('/api/logout', opts);
+}
+
+let rect: DOMRect;
+$: if(rect) {
+  $header_height = rect.bottom;
+}
 </script>
 
-<main>
+<main bind:contentRect={rect}>
   <div class="group">
     <button class="btn" on:click={() => {nav_click({url: '/app/chat'})}}>
       <img class="btn_svg" src="/svg-files/Communication/comments-alt-2.svg" title="chat" alt="link to chat"/>

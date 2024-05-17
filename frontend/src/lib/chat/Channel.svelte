@@ -5,7 +5,8 @@ import { onDestroy, onMount } from "svelte";
 import Message from './Message.svelte';
 import { user_data } from "../../stores/data";
 import MentionTool from "./MentionTool.svelte";
-    import { requests_manager, type RequestOptions } from "../../requests_manager";
+import { requests_manager, type RequestOptions } from "../../requests_manager";
+import { header_height } from "../../stores/ui";
 
 export let channel_info: SchemaChannel;
 let messages: SchemaMessageList = {};
@@ -82,15 +83,17 @@ const handle_input = (e: Event) => {
   }
 }
 
+let input_height: number;
+let wrap_height: number;
 </script>
 
-<main>
-  <div class="messages_wrap">
+<main bind:clientHeight={wrap_height}>
+  <div class="messages_wrap" style="height: calc({wrap_height}px - {input_height}px);">
     {#each Object.values(messages) as message} 
       <Message {message}/>
     {/each}
   </div>
-  <div class="input_wrap">
+  <div class="input_wrap" bind:clientHeight={input_height}>
     {#if mention_search}
       <MentionTool mention_search={mention_search}/>
     {/if}
@@ -99,13 +102,15 @@ const handle_input = (e: Event) => {
 </main>
 
 <style>
-.messages_wrap {
-  flex: 1;
-}
 main {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: var(--base);
+}
+.messages_wrap {
+  flex-grow: 1;
+  overflow-y: auto;
 }
 .input_wrap {
   padding: 10px;

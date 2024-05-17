@@ -61,6 +61,7 @@ body {
   color: var(--text);
   font-family: 'Noto Sans';
   font-size: 14px;
+  overflow-y: hidden;
 }
 
 input, button {

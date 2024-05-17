@@ -37,26 +37,26 @@ set_section("inbound");
     </div>
   </div>
   {#if section === "inbound"}
-  {#each Object.values($pending_friends_in) as item}
+  {#each Object.entries($pending_friends_in) as [relation_id, item]}
     <div class="friend_item">
       <span class="left"> <img src="" title="{item.display_name ?? item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{item.display_name ?? item.username}</span>
         <div class="interations_wrap">
-        <button on:click={()=>interact("accept", item.relation_id)}>Accept</button>
-        <button on:click={()=>interact("refuse", item.relation_id)}>Refuse</button>
+        <button on:click={()=>interact("accept", relation_id)}>Accept</button>
+        <button on:click={()=>interact("refuse", relation_id)}>Refuse</button>
         </div>
       </div>
     </div>
   {/each}
   {:else if section === "outbound"}
-  {#each Object.values($pending_friends_out) as item}
+  {#each Object.entries($pending_friends_out) as [relation_id, item]}
     <div class="friend_item">
       <span class="left"> <img src="" title="{item.display_name ?? item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{item.display_name ?? item.username}</span>
         <div class="interations_wrap">
-        <button on:click={()=>interact("cancel", item.relation_id)}>Cancel</button>
+        <button on:click={()=>interact("cancel", relation_id)}>Cancel</button>
         </div>
       </div>
     </div>

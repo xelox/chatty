@@ -44,4 +44,4 @@ const create_channels_store = () => {
 }
 
 export const channels_store = create_channels_store();
-export const active_channel = writable<string | null>(null);
+export const active_channel = writable<string | null>("12567514614595584");

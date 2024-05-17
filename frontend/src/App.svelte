@@ -52,9 +52,9 @@ main{
 }
 .bottom_zone {
   display: flex;
-  flex: 1;
+  flex-grow: 1;
 }
 .middle_zone {
-  flex: 1; 
+  flex-grow: 1; 
 }
 </style>
