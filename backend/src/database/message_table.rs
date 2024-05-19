@@ -3,7 +3,7 @@ use crate::{database::{self, schema}, structs::ts::TimeStamp};
 use serde::{Deserialize, Serialize};
 use crate::structs::id::ChattyId;
 
-const MESSAGE_LOAD_LIMIT: i64 = 50;
+const MESSAGE_LOAD_LIMIT: i64 = 25;
 
 #[derive(Debug)]
 #[derive(Serialize)]
@@ -59,7 +59,7 @@ impl Message {
             .filter(messages::channel_id.eq(channel_id))
             .filter(messages::sent_at.le(ts))
             .limit(MESSAGE_LOAD_LIMIT)
-            .order(messages::sent_at.asc())
+            .order(messages::sent_at.desc())
             .select(messages::all_columns)
             .load(conn);
 

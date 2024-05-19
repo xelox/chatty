@@ -1,11 +1,13 @@
 import { writable, derived } from "svelte/store";
 
-export type SchemaMessage = {
-  id: string,
-  sender_id: string, 
+export type SchemaUpMessage = {
+  sender_id: string,
   channel_id: string,
   content: string,
-  is_sent?: boolean
+}
+export type SchemaMessage = SchemaUpMessage & {
+  id: string,
+  sent_at: number,
 }
 
 export type SchemaMessageList = {
