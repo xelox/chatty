@@ -48,6 +48,9 @@ $: if(rect) {
   </div>
 
   <div class="group">
+    <button class="btn" on:click={() => {nav_click({url: '/app/settings/profile'})}}>
+      <img class="btn_svg" src="/svg-files/Web and Technology/user.svg" title="inbox" alt="button to inbox"/>
+    </button>
     <button class="btn" on:click={logout}>
       <img class="btn_svg" src="/svg-files/Direction/exit.svg" title="inbox" alt="button to inbox"/>
     </button>
