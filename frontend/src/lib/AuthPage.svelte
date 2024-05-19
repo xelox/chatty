@@ -1,9 +1,9 @@
 <script lang="ts">
-import { navigate } from "svelte-routing";
 import socket_manager from "../socket_manager";
 import notification_manager from "../notification_manager";
 import { requests_manager, type RequestOptions } from "../requests_manager";
 import type { Notification } from "../stores/inbox";
+import { router } from "../stores/router";
 
 let username = ""
 let password = ""
@@ -39,7 +39,7 @@ const signup = () => {
   if (!validate()) return;
   const options: RequestOptions = {
     succeed_action: () => {
-      navigate("/app/chat", {replace: false});
+      router.route("/app/chat");
       socket_manager.initialize_client();
     }
   }
@@ -52,7 +52,7 @@ const signin = () => {
   if (!validate()) return;
   const options: RequestOptions = {
     succeed_action: () => {
-      navigate("/app/chat", {replace: false});
+      router.route("/app/chat");
       socket_manager.initialize_client();
     }
   }

@@ -1,20 +1,13 @@
 <script lang='ts'>
-import { navigate } from "svelte-routing";
 import search_query from "../stores/search_query"
 import { erase } from "../stores/data"
 import { requests_manager, type RequestOptions} from "../requests_manager";
 import { header_height } from "../stores/ui";
+import { router } from "../stores/router";
 
-const nav_click = (to: {url?: string, overlay?: string}) => {
-  const url = to.url ?? `${window.location.href.split('?')[0]}`;
-  const query_params = new URLSearchParams(window.location.search);
-  if(to.overlay !== undefined) {
-    if(query_params.get('active_overlay') === to.overlay) to.overlay = 'none';
-    query_params.set('active_overlay', to.overlay);
-  }
-  navigate(`${url}?${query_params.toString()}`);
-  search_query.set(Object.fromEntries(query_params.entries()));
-}
+const nav_click = (to: {url: string}) => {
+  router.route(to.url);
+};
 
 const logout = () => {
   const opts: RequestOptions = {
@@ -42,9 +35,9 @@ $: if(rect) {
     <button class="btn" on:click={() => {nav_click({url: '/app/add_friend'})}}>
       <img class="btn_svg" src="/svg-files/Interface and Sign/circle-plus.svg" title="add friend" alt="link to add friend page"/>
     </button>
-    <button class="btn" on:click={() => {nav_click({overlay: 'inbox'})}}>
-      <img class="btn_svg" src="/svg-files/Web and Technology/alarm.svg" title="inbox" alt="button to inbox"/>
-    </button>
+    <!-- <button class="btn" on:click={() => {nav_click({overlay: 'inbox'})}}> -->
+    <!--   <img class="btn_svg" src="/svg-files/Web and Technology/alarm.svg" title="inbox" alt="button to inbox"/> -->
+    <!-- </button> -->
   </div>
 
   <div class="group">
