@@ -16,5 +16,6 @@ onDestroy(u);
 <style>
 span{
   color: var(--blue);
+  font-weight: bold;
 }
 </style>
