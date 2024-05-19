@@ -40,9 +40,6 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 </main>
 
 <style>
-main {
-  padding: 4px;
-}
 .unsent {
   opacity: 0.8;
 }

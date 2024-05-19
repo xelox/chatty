@@ -42,4 +42,8 @@ function to_time_str(ts: number) {
   opacity: 0.8;
   font-size: var(--size-small);
 }
+
+main {
+  padding: 4px;
+}
 </style>

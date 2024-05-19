@@ -1,12 +1,11 @@
 <script lang='ts'>
-import type { MessageGroup, SchemaChannel, SchemaMessageList, SchemaMessage, SchemaUpMessage } from "../../stores/messages";
+import type { MessageGroup, SchemaChannel, SchemaMessage, SchemaUpMessage } from "../../stores/messages";
 import event_manager from '../../event_manager';
 import { afterUpdate, beforeUpdate, onDestroy, onMount } from "svelte";
-import Message from './Message.svelte';
 import { user_data } from "../../stores/data";
 import MentionTool from "./MentionTool.svelte";
 import { requests_manager, type RequestOptions } from "../../requests_manager";
-    import MessagesGroup from "./MessagesGroup.svelte";
+import MessagesGroup from "./MessagesGroup.svelte";
 
 export let channel_info: SchemaChannel;
 
@@ -26,12 +25,15 @@ unsubscribe_callbacks.push(
         const new_group: MessageGroup = {
           sender_id: message.sender_id,
           group_ts_start: message.sent_at,
-          messages: {[message.id]: message}
+          messages: {[message.id]: message},
+          group_ts_end: message.sent_at,
         };
         messages = [...messages, last_group, new_group];
         return;
       }
+
       last_group.messages[message.id] = message;
+      last_group.group_ts_end = message.sent_at;
       messages = [...messages, last_group];
       return;
     }
@@ -39,7 +41,8 @@ unsubscribe_callbacks.push(
     const new_group: MessageGroup = {
       sender_id: message.sender_id,
       group_ts_start: message.sent_at,
-      messages: {[message.id]: message}
+      messages: {[message.id]: message},
+      group_ts_end: message.sent_at,
     };
     messages = [...messages, new_group];
     return;
@@ -51,10 +54,9 @@ unsubscribe_callbacks.push(
     if (message.channel_id != channel_info.id) return;
     for (const group of messages) {
       if (group.sender_id !== message.sender_id) continue; 
-      const time_delta = group.group_ts_start - message.sent_at;
+      const time_delta = Math.abs(group.group_ts_start - message.sent_at);
       if (time_delta > 60_000 || time_delta < 0) continue;
       delete group.messages[message.id];
-      break;
     }
   })
 );
@@ -76,27 +78,32 @@ const load_messages = () => {
         const first_group = messages.shift();
         if (first_group) {
           const same_sender = first_group.sender_id === message.sender_id;
-          const time_delta = first_group.group_ts_start - message.sent_at;
-          if (!same_sender || time_delta < -60_000) {
+          const time_delta = first_group.group_ts_end - message.sent_at;
+          console.log(time_delta, same_sender, message.content);
+          if (!same_sender || time_delta > 60_000) {
             const new_group: MessageGroup = {
+              group_ts_end: message.sent_at,
               sender_id: message.sender_id,
               group_ts_start: message.sent_at,
               messages: {[message.id]: message}
             };
-            messages = [...messages, first_group, new_group];
+            messages = [new_group, first_group, ...messages];
             continue;
           }
+
           first_group.messages[message.id] = message;
-          messages = [...messages, first_group];
+          first_group.group_ts_start = message.sent_at;
+          messages = [first_group, ...messages];
           continue;
         }
 
         const new_group: MessageGroup = {
+          group_ts_end: message.sent_at,
           sender_id: message.sender_id,
           group_ts_start: message.sent_at,
           messages: {[message.id]: message}
         };
-        messages = [...messages, new_group];
+        messages = [new_group, ...messages];
         continue;
       }
 
