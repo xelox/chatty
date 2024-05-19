@@ -3,7 +3,7 @@ use crate::{database::{self, schema}, structs::ts::TimeStamp};
 use serde::{Deserialize, Serialize};
 use crate::structs::id::ChattyId;
 
-const MESSAGE_LOAD_LIMIT: i64 = 25;
+const MESSAGE_LOAD_LIMIT: i64 = 30;
 
 #[derive(Debug)]
 #[derive(Serialize)]

@@ -1,41 +1,61 @@
 <script lang='ts'>
-import type { SchemaChannel, SchemaMessageList, SchemaMessage, SchemaUpMessage } from "../../stores/messages";
+import type { MessageGroup, SchemaChannel, SchemaMessageList, SchemaMessage, SchemaUpMessage } from "../../stores/messages";
 import event_manager from '../../event_manager';
 import { afterUpdate, beforeUpdate, onDestroy, onMount } from "svelte";
 import Message from './Message.svelte';
 import { user_data } from "../../stores/data";
 import MentionTool from "./MentionTool.svelte";
 import { requests_manager, type RequestOptions } from "../../requests_manager";
+    import MessagesGroup from "./MessagesGroup.svelte";
 
 export let channel_info: SchemaChannel;
 
-let messages: SchemaMessageList = {};
+let messages: MessageGroup[] = [];
 let oldest_loaded_ts: null | number = null;
 
 const unsubscribe_callbacks: (()=>void)[] = [];
-unsubscribe_callbacks.concat(
+
+unsubscribe_callbacks.push(
   event_manager.subscribe("message_add", (message: SchemaMessage) => {
     if (message.channel_id != channel_info.id) return;
-    messages[message.id] = message;
+    const last_group = messages.pop();
+    if (last_group) {
+      const same_sender = last_group.sender_id === message.sender_id;
+      const time_delta = last_group.group_ts_start - message.sent_at;
+      if (!same_sender || time_delta > 60_000) {
+        const new_group: MessageGroup = {
+          sender_id: message.sender_id,
+          group_ts_start: message.sent_at,
+          messages: {[message.id]: message}
+        };
+        messages = [...messages, last_group, new_group];
+        return;
+      }
+      last_group.messages[message.id] = message;
+      messages = [...messages, last_group];
+      return;
+    }
+
+    const new_group: MessageGroup = {
+      sender_id: message.sender_id,
+      group_ts_start: message.sent_at,
+      messages: {[message.id]: message}
+    };
+    messages = [...messages, new_group];
+    return;
   })
 );
 
-function to_time_str(ts: number) {
-  const o = new Date(ts);
-  const day = o.getDate().toString().padStart(2, '0');;
-  const month = o.getMonth().toString().padStart(2, '0');;
-  const year = o.getFullYear();
-  const h = o.getHours().toString().padStart(2, '0');;
-  const m = o.getMinutes().toString().padStart(2, '0');;
-  const s = o.getSeconds().toString().padStart(2, '0');
-  const ms = o.getMilliseconds();
-  return `${year}/${month}/${day} ${h}:${m}:${s}.${ms}`;
-}
-
 unsubscribe_callbacks.push(
-  event_manager.subscribe("channel_delete", (message: SchemaMessage) => {
+  event_manager.subscribe("message_delete", (message: SchemaMessage) => {
     if (message.channel_id != channel_info.id) return;
-    delete messages[message.id];
+    for (const group of messages) {
+      if (group.sender_id !== message.sender_id) continue; 
+      const time_delta = group.group_ts_start - message.sent_at;
+      if (time_delta > 60_000 || time_delta < 0) continue;
+      delete group.messages[message.id];
+      break;
+    }
   })
 );
 
@@ -45,21 +65,46 @@ let fully_loaded = false;
 const load_messages = () => {
   if (fully_loaded) return;
   let ts = oldest_loaded_ts ?? new Date().getTime();
+
   const opts: RequestOptions = {
     succeed_action: (messages_raw) => {
       const loaded_messages: SchemaMessage[] = JSON.parse(messages_raw);
       if (loaded_messages.length === 0) return fully_loaded = true;
-
-      const tmp: SchemaMessageList = {};
-      for (const message of loaded_messages) {
-        tmp[message.id] = message;
-      }
       oldest_loaded_ts = loaded_messages[loaded_messages.length - 1].sent_at;
-      console.log(to_time_str(oldest_loaded_ts));
-      messages = {...messages, ...tmp};
+
+      for (const message of loaded_messages) {
+        const first_group = messages.shift();
+        if (first_group) {
+          const same_sender = first_group.sender_id === message.sender_id;
+          const time_delta = first_group.group_ts_start - message.sent_at;
+          if (!same_sender || time_delta < -60_000) {
+            const new_group: MessageGroup = {
+              sender_id: message.sender_id,
+              group_ts_start: message.sent_at,
+              messages: {[message.id]: message}
+            };
+            messages = [...messages, first_group, new_group];
+            continue;
+          }
+          first_group.messages[message.id] = message;
+          messages = [...messages, first_group];
+          continue;
+        }
+
+        const new_group: MessageGroup = {
+          sender_id: message.sender_id,
+          group_ts_start: message.sent_at,
+          messages: {[message.id]: message}
+        };
+        messages = [...messages, new_group];
+        continue;
+      }
+
+      
     }
   }
-  requests_manager.get(`/api/load_messages/${channel_info.id}/${ts}`, opts);
+
+requests_manager.get(`/api/load_messages/${channel_info.id}/${ts}`, opts);
 }
 
 onMount(() => {
@@ -136,8 +181,8 @@ let wrap_height: number;
 
 <main bind:clientHeight={wrap_height}>
   <div bind:this={messages_wrap_dom} on:scroll={handle_scroll} class="messages_wrap" style="height: calc({wrap_height}px - {input_height}px);">
-    {#each Object.values(messages).sort((a, b) => {return a.sent_at - b.sent_at}) as message (message.id)} 
-      <Message {message}/>
+    {#each messages.sort((a, b) => a.group_ts_start - b.group_ts_start) as group}
+      <MessagesGroup {group}/>
     {/each}
   </div>
   <div class="input_wrap" bind:clientHeight={input_height}>
@@ -158,7 +203,6 @@ main {
 .messages_wrap {
   flex-grow: 1;
   overflow-y: auto;
-  scroll-behavior: smooth;
 }
 .input_wrap {
   padding: 10px;

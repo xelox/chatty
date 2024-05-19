@@ -9,6 +9,11 @@ export type SchemaMessage = SchemaUpMessage & {
   id: string,
   sent_at: number,
 }
+export type MessageGroup = {
+  sender_id: string,
+  group_ts_start: number,
+  messages: SchemaMessageList
+}
 
 export type SchemaMessageList = {
   [message_id: string]: SchemaMessage,
