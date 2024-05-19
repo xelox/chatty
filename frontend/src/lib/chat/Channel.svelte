@@ -14,14 +14,16 @@ let oldest_loaded_ts: null | number = null;
 
 const unsubscribe_callbacks: (()=>void)[] = [];
 
+const GROUPING_DT = 60_000;
+
 unsubscribe_callbacks.push(
   event_manager.subscribe("message_add", (message: SchemaMessage) => {
     if (message.channel_id != channel_info.id) return;
     const last_group = messages.pop();
     if (last_group) {
       const same_sender = last_group.sender_id === message.sender_id;
-      const time_delta = last_group.group_ts_start - message.sent_at;
-      if (!same_sender || time_delta > 60_000) {
+      const time_delta =  message.sent_at - last_group.group_ts_start;
+      if (!same_sender || time_delta > GROUPING_DT) {
         const new_group: MessageGroup = {
           sender_id: message.sender_id,
           group_ts_start: message.sent_at,
@@ -55,7 +57,7 @@ unsubscribe_callbacks.push(
     for (const group of messages) {
       if (group.sender_id !== message.sender_id) continue; 
       const time_delta = Math.abs(group.group_ts_start - message.sent_at);
-      if (time_delta > 60_000 || time_delta < 0) continue;
+      if (time_delta > GROUPING_DT || time_delta < 0) continue;
       delete group.messages[message.id];
     }
   })
@@ -80,7 +82,7 @@ const load_messages = () => {
           const same_sender = first_group.sender_id === message.sender_id;
           const time_delta = first_group.group_ts_end - message.sent_at;
           console.log(time_delta, same_sender, message.content);
-          if (!same_sender || time_delta > 60_000) {
+          if (!same_sender || time_delta > GROUPING_DT) {
             const new_group: MessageGroup = {
               group_ts_end: message.sent_at,
               sender_id: message.sender_id,
