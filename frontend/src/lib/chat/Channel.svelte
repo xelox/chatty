@@ -190,7 +190,7 @@ let wrap_height: number;
 
 <main bind:clientHeight={wrap_height}>
   <div bind:this={messages_wrap_dom} on:scroll={handle_scroll} class="messages_wrap" style="height: calc({wrap_height}px - {input_height}px);">
-    {#each messages.sort((a, b) => a.group_ts_start - b.group_ts_start) as group}
+    {#each messages as group}
       <MessagesGroup {group}/>
     {/each}
   </div>
