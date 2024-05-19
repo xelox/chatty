@@ -59,8 +59,6 @@ class SocketManager {
       friend_list.set(friends_list_);
       pending_friends_in.set(pending_friends_in_);
       pending_friends_out.set(pending_friends_out_);
-
-      console.log(json)
     } catch (err) {
       // TODO: *maybe* more error handeling could be nicer here?
       let n: Notification = {

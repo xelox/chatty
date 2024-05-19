@@ -81,7 +81,6 @@ const load_messages = () => {
         if (first_group) {
           const same_sender = first_group.sender_id === message.sender_id;
           const time_delta = first_group.group_ts_end - message.sent_at;
-          console.log(time_delta, same_sender, message.content);
           if (!same_sender || time_delta > GROUPING_DT) {
             const new_group: MessageGroup = {
               group_ts_end: message.sent_at,
