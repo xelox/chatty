@@ -12,11 +12,13 @@ const pannels_list = {
 </script>
 
 <main>
-  {#each Object.entries(pannels_list) as [key, title]} 
-    <button class="pannel_btn" class:active_section={$router_state.settings_nav_section === key} on:click={()=>{ 
-      router.route(`/app/settings/${key}`);
-    }}>{title}</button>
-  {/each}
+  <div class="buttons_wrap">
+    {#each Object.entries(pannels_list) as [key, title]} 
+      <button class="pannel_btn" class:active_section={$router_state.settings_nav_section === key} on:click={()=>{ 
+        router.route(`/app/settings/${key}`);
+      }}>{title}</button>
+    {/each}
+  </div>
 </main>
 
 <style>
@@ -36,13 +38,19 @@ const pannels_list = {
   background: var(--surface1);
 }
 
+.buttons_wrap {
+  display: flex;
+  flex-direction: column;
+}
+
 main{
   display: flex;
   flex-direction: column;
+  justify-content: center;
   padding: 20px;
   background: var(--base);
   height: 100%;
   width: calc(100% - 40px);
-  border-right: 1px solid var(--overlay0);
+  height: calc(100% - 40px);
 }
 </style>

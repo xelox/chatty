@@ -1,9 +1,7 @@
 <script lang="ts">
 import { friend_list } from '../../stores/data'
-import { channels_store } from '../../stores/messages';
 import { router, router_state } from '../../stores/router';
 
-export let manipulate_path: (s: string) => void;
 const open_channel = (channel_id: string) => {
   router.route(`/app/chat/friends/${channel_id}`);
 }

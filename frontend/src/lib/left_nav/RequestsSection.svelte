@@ -20,11 +20,9 @@ const interact = (interaction: "cancel" | "accept" | "refuse", relation_id: stri
   }
   requests_manager.post(`/api/friendship/${interaction}`, {relation_id}, options)
 }
-export let manipulate_path: (s: string)=>void;
 let section: "inbound" | "outbound";
 const set_section = (s: "inbound" | "outbound") => {
   section = s;
-  manipulate_path(s);
 }
 set_section("inbound");
 </script>
