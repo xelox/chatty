@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onDestroy } from 'svelte';
-import { channels_store, type SchemaChannelList, active_channel } from '../../stores/messages';
+import { channels_store, type SchemaChannelList } from '../../stores/messages';
+import { router_state } from '../../stores/router';
 import Channel from './Channel.svelte';
 
 let channels: SchemaChannelList = {};
@@ -15,7 +16,7 @@ onDestroy(() => {
 
 <main>
   {#each Object.values(channels) as channel_info }  
-    <div class="channel_wrapper" style="display: {$active_channel === channel_info.id ? "block" : "none"};">
+    <div class="channel_wrapper" class:active_channel={channel_info.id === $router_state.active_channel}>
       <Channel {channel_info}/>
     </div>
   {/each}

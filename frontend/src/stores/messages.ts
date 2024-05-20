@@ -1,4 +1,5 @@
 import { writable, derived } from "svelte/store";
+import { requests_manager, type RequestOptions } from "../requests_manager";
 
 export type SchemaUpMessage = {
   sender_id: string,
@@ -32,11 +33,17 @@ export type SchemaChannelList = {
 const create_channels_store = () => {
   const store = writable<SchemaChannelList>({});
   const { update, subscribe } = store;
-  const add_channel = (channel: SchemaChannel) => {
-    update(channels => {
-      channels[channel.id] = channel;
-      return channels;
-    });
+  const add_channel = (channel_id: string) => {
+    const opts: RequestOptions = {
+      succeed_action: (res) => {
+        const channel: SchemaChannel = JSON.parse(res);
+        update(channels => {
+          channels[channel.id] = channel;
+          return channels;
+        });
+      }
+    }
+    requests_manager.get(`/api/channel_info/${channel_id}`, opts);
   }
   const remove_channel = ((channel: SchemaChannel) => {
     update(channels => {
@@ -52,4 +59,3 @@ const create_channels_store = () => {
 }
 
 export const channels_store = create_channels_store();
-export const active_channel = writable<string | null>("12567514614595584");

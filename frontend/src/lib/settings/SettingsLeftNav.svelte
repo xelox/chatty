@@ -9,16 +9,12 @@ const pannels_list = {
   notifications: "Notifications",
   keybinds: "Keybinds"
 };
-
-const on_click = (pannel_key: string) => {
-  router.route(`settings/${pannel_key}`);
-}
 </script>
 
 <main>
   {#each Object.entries(pannels_list) as [key, title]} 
     <button class="pannel_btn" on:click={()=>{ 
-      router.route(`settings/${key}`);
+      router.route(`/app/settings/${key}`);
     }}>{title}</button>
   {/each}
 </main>

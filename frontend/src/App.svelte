@@ -25,18 +25,18 @@ socket_manager.initialize_client();
   <div class="bottom_zone">
       {#if $router_state.show_left_nav}
         <div class="left_zone">
-          {#if $router_state.show_chat} <LeftNav/> {/if}
-          {#if $router_state.show_settings} <SettingsLeftNav/> {/if}
+          {#if $router_state.main_section === 'chat'} <LeftNav/> {/if}
+          {#if $router_state.main_section === 'settings'} <SettingsLeftNav/> {/if}
         </div>
       {/if}
     <div class="middle_zone">
-      {#if $router_state.show_chat} <ChatApp/> {/if}
-      {#if $router_state.show_friend_requester} <FriendRequestUi/> {/if}
-      {#if $router_state.show_settings} <Settings/> {/if}
+      {#if $router_state.main_section === 'chat'} <ChatApp/> {/if}
+      {#if $router_state.main_section === 'friend_req_tool'} <FriendRequestUi/> {/if}
+      {#if $router_state.main_section === 'settings'} <Settings/> {/if}
     </div>
   </div>
   {/if}
-  {#if $router_state.show_auth}
+  {#if $router_state.main_section === 'auth'}
     <AuthPage/>
   {/if}
 </main>

@@ -1,14 +1,14 @@
 <script lang="ts">
+import { router, router_state } from "../../stores/router";
 import FriendsSection from "./FriendsSection.svelte"
 import GuildsSection from "./GuildsSection.svelte"
 import RequestsSection from "./RequestsSection.svelte"
 
 type section_enum = "friends" | "guilds" | "requests";  
-let section: section_enum = "friends";
 let subpath: string = "";
 let path_extra: string | null = null;
-$: if(section) {
-  const args: string[] = [section];
+$: if($router_state.chat_nav_section) {
+  const args: string[] = [$router_state.chat_nav_section];
   if (path_extra) args.push(path_extra);
   subpath = "/" + args.join("/")
 }
@@ -21,16 +21,16 @@ const manipulate_path = (s: string) => {
 <main>
   <p class="subpath">{subpath}</p>
   <div class="buttons_wrap">
-    <button class="button" on:click={()=>{section = "friends"}} style="color: {section === "friends" ? "var(--yellow)" : ""}"> Friends </button>
-    <button class="button" on:click={()=>{section = "guilds"}} style="color: {section === "guilds" ? "var(--yellow)" : ""}"> Guilds </button>
-    <button class="button" on:click={()=>{section = "requests"}} style="color: {section === "requests" ? "var(--yellow)" : ""}"> Requests </button>
+    <button class="button" on:click={()=>{router.route("/app/chat/friends")}} class:active_section={$router_state.chat_nav_section === 'friends'}> Friends </button>
+    <button class="button" on:click={()=>{router.route("/app/chat/guilds")}} class:active_section={$router_state.chat_nav_section === 'guilds'}> Guilds </button>
+    <button class="button" on:click={()=>{router.route("/app/chat/requests")}} class:active_section={$router_state.chat_nav_section === 'requests'}> Requests </button>
   </div> 
   <div class="active_section_wrapper">
-    {#if section == "friends"}
+    {#if $router_state.chat_nav_section === "friends"}
       <FriendsSection {manipulate_path}/>
-    {:else if section == "guilds"}
+    {:else if $router_state.chat_nav_section === "guilds"}
       <GuildsSection {manipulate_path}/>
-    {:else if section == "requests"}
+    {:else if $router_state.chat_nav_section === "requests"}
       <RequestsSection {manipulate_path}/>
     {/if}
   </div>
@@ -66,5 +66,8 @@ main {
   border-top: none;
   height: 100%;
   min-width: 260px;
+}
+.active_section {
+  color: var(--yellow);
 }
 </style>

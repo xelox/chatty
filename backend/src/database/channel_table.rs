@@ -40,4 +40,19 @@ impl ChannelTable {
             Err(_) => None
         }
     }
+
+    pub fn get_info(channel_id: ChattyId) -> Option<ChannelTable> {
+        use diesel::prelude::*;
+        use schema::channels;
+        let conn = &mut database::establish_connection();
+
+        let query: Result<ChannelTable, _> = channels::table
+            .filter(channels::id.eq(channel_id))
+            .first(conn);
+
+        match query {
+            Ok(channel) => Some(channel),
+            _ => None
+        }
+    }
 }

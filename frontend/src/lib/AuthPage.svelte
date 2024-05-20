@@ -43,7 +43,7 @@ const signup = () => {
       socket_manager.initialize_client();
     }
   }
-  requests_manager.post("/api/signup", {
+  requests_manager.post("signup", {
     username, password,
   }, options)
 }

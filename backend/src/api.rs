@@ -1,4 +1,6 @@
+use crate::database;
 use crate::database::channel_subscribers_table::ChannelSubscribers;
+use crate::database::channel_table::ChannelTable;
 use crate::database::message_table::{Message, NewMessage};
 use crate::database::users_table::{AuthValidationResult, User};
 use crate::database::user_relations_table::{RelationAndUser, UserRelationPair, UserRelation};
@@ -67,6 +69,13 @@ pub async fn send_friend_request( session: Session<SessionPgPool>, State(state):
             ChattyResponse::Ok
         }
         _ => ChattyResponse::BadRequest(Some(String::from("User does not exist"))),
+    }
+}
+
+pub async fn channel_info(Path(channel_id): Path<ChattyId>) -> Response {
+    match ChannelTable::get_info(channel_id) {
+        Some(channel) => chatty_json_response(channel),
+        _ => ChattyResponse::InternalError.into_response()
     }
 }
 
