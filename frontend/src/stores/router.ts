@@ -43,14 +43,14 @@ const def: RouterState = {
 let update: (state: Partial<RouterState>) => void;
 
 export const router_state: Readable<RouterState> = readable(def, (_, u) => {
-  update = (state: Partial<RouterState>) => {
-    u((s: RouterState) => {
-      for (const [key, val] of Object.entries(state)) {
+  update = (new_state: Partial<RouterState>) => {
+    u((state: RouterState) => {
+      for (const [key, val] of Object.entries(new_state)) {
         if (val !== undefined) {
-          (s as any)[key] = val; // sadge typescript skill issue moment.
+          (state as any)[key] = val; // sadge typescript skill issue moment.
         }
       }
-      return s;
+      return state;
     })
   }
 });
@@ -67,7 +67,6 @@ channels_store.subscribe(store => {
 });
 
 r.on('chat/:section?/:channel_id?', (params) => {
-  console.log(params);
   if (!params) {
     return console.error("params must be defined");
   }
@@ -103,6 +102,9 @@ r.on('chat/:section?/:channel_id?', (params) => {
     if (!synced_channels[channel_id]) {
       channels_store.add_channel(channel_id);
     }
+  }
+  else {
+    u.active_channel = null;
   }
 
   update(u);

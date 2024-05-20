@@ -28,5 +28,9 @@ main{
 }
 .channel_wrapper {
   height: 100%;
+  display: none;
+}
+.active_channel {
+  display: block;
 }
 </style>
