@@ -24,8 +24,7 @@ onDestroy(() => {
 
 <style>
 main{
-  height: calc(100% - 8px);
-  padding: 4px;
+  height: 100%;
 }
 .channel_wrapper {
   height: 100%;

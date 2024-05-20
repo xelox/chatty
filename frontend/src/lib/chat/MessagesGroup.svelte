@@ -30,8 +30,10 @@ function to_time_str(ts: number) {
 </script>
 
 <main>
-  <UserIdWrap id={group.sender_id}/>
-  <span class='time'>{to_time_str(group.group_ts_start)}</span>
+  <div class="head">
+    <UserIdWrap id={group.sender_id}/>
+    <span class='time'>{to_time_str(group.group_ts_start)}</span>
+  </div>
   {#each Object.values(group.messages).sort((a, b) => {return a.sent_at - b.sent_at}) as message (message.id)} 
     <Message {message}/>
   {/each}
@@ -42,8 +44,10 @@ function to_time_str(ts: number) {
   opacity: 0.8;
   font-size: var(--size-small);
 }
-
+.head{
+  padding: 2px 8px 2px 8px;
+}
 main {
-  padding: 4px;
+  margin-bottom: 10px;
 }
 </style>

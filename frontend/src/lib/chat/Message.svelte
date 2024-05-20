@@ -27,19 +27,24 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 });
 </script>
 
-<main class="{message.id ? '' : 'unsent'}">
-  <p class="content">
-    {#each content_segments as segment}
-      {#if segment.kind === 'text'}
-        <SvelteMarkdown source={segment.content}/>
-      {:else}
-        <Tag tag_type={segment.kind} id={segment.content}/>
-      {/if}
-    {/each}
-  </p>
+<main class='content' class:unsent={message.id}>
+  {#each content_segments as segment}
+    {#if segment.kind === 'text'}
+      <SvelteMarkdown source={segment.content}/>
+    {:else}
+      <Tag tag_type={segment.kind} id={segment.content}/>
+    {/if}
+  {/each}
 </main>
 
 <style>
+.content{
+  white-space: pre-line;
+  padding: 2px 8px 2px 8px;
+}
+main:hover {
+  background: var(--surface0);
+}
 .unsent {
   opacity: 0.8;
 }
