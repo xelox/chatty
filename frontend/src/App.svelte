@@ -67,6 +67,6 @@ main{
   display: block;
 }
 .left_zone {
-  width: 200px;
+  width: 300px;
 }
 </style>

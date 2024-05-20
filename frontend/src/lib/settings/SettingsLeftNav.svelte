@@ -42,6 +42,7 @@ main{
   padding: 20px;
   background: var(--base);
   height: 100%;
-  width: 100%;
+  width: calc(100% - 40px);
+  border-right: 1px solid var(--overlay0);
 }
 </style>

@@ -62,10 +62,10 @@ const manipulate_path = (s: string) => {
 }
 main {
   background: var(--base);
-  border: 1px solid var(--overlay0);
+  border-right: 1px solid var(--overlay0);
   border-top: none;
   height: 100%;
-  min-width: 260px;
+  width: 100%;
 }
 .active_section {
   color: var(--yellow);
