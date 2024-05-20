@@ -25,20 +25,18 @@ socket_manager.initialize_client();
   <div class="bottom_zone">
       {#if $router_state.show_left_nav}
         <div class="left_zone">
-          {#if $router_state.main_section === 'chat'} <LeftNav/> {/if}
-          {#if $router_state.main_section === 'settings'} <SettingsLeftNav/> {/if}
+          <div class='block' class:active_block={$router_state.main_section === 'chat'}> <LeftNav/></div>
+          <div class='block' class:active_block={$router_state.main_section === 'settings'}> <SettingsLeftNav/> </div>
         </div>
       {/if}
     <div class="middle_zone">
-      {#if $router_state.main_section === 'chat'} <ChatApp/> {/if}
-      {#if $router_state.main_section === 'friend_req_tool'} <FriendRequestUi/> {/if}
-      {#if $router_state.main_section === 'settings'} <Settings/> {/if}
+      <div class='block' class:active_block={$router_state.main_section === 'chat'}> <ChatApp/> </div>
+      <div class='block' class:active_block={$router_state.main_section === 'friend_req_tool'}> <FriendRequestUi/> </div>
+      <div class='block' class:active_block={$router_state.main_section === 'settings'}> <Settings/> </div>
     </div>
   </div>
   {/if}
-  {#if $router_state.main_section === 'auth'}
-    <AuthPage/>
-  {/if}
+  <div class='block' class:active_block={$router_state.main_section === 'auth'}> <AuthPage/> </div>
 </main>
 {#if $user_data && $search_query.active_overlay === 'inbox'}
   <Inbox/>
@@ -59,5 +57,13 @@ main{
 }
 .middle_zone {
   flex-grow: 1; 
+}
+.block {
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+.active_block {
+  display: block;
 }
 </style>
