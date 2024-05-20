@@ -1,5 +1,5 @@
 <script lang='ts'>
-import { router } from "../../stores/router";
+import { router, router_state } from "../../stores/router";
 
 const pannels_list = {
   account: "Account",
@@ -13,7 +13,7 @@ const pannels_list = {
 
 <main>
   {#each Object.entries(pannels_list) as [key, title]} 
-    <button class="pannel_btn" on:click={()=>{ 
+    <button class="pannel_btn" class:active_section={$router_state.settings_nav_section === key} on:click={()=>{ 
       router.route(`/app/settings/${key}`);
     }}>{title}</button>
   {/each}
@@ -32,6 +32,9 @@ const pannels_list = {
 .pannel_btn:hover {
   background: var(--surface0);
 }
+.active_section {
+  background: var(--surface1);
+}
 
 main{
   display: flex;
@@ -39,5 +42,6 @@ main{
   padding: 20px;
   background: var(--base);
   height: 100%;
+  width: 100%;
 }
 </style>

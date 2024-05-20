@@ -66,4 +66,7 @@ main{
 .active_block {
   display: block;
 }
+.left_zone {
+  width: 200px;
+}
 </style>

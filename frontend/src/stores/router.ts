@@ -7,18 +7,18 @@ const r = navaid('app', (url) => {
 });
 
 const MAIN_SECTIONS = <const>["auth", "chat", "settings", "friend_req_tool"];
-type MainSectionsTags = typeof MAIN_SECTIONS[number]; 
+type MainSectionsSections = typeof MAIN_SECTIONS[number]; 
 
-const CHAT_NAV_SECIONS = <const>["friends", "guilds", "requests"];
-type ChatNavTags = typeof CHAT_NAV_SECIONS[number];
+const CHAT_NAV_SECTIONS = <const>["friends", "guilds", "requests"];
+type ChatNavSections = typeof CHAT_NAV_SECTIONS[number];
 
 const SETTINGS_NAV_SECTIONS = <const>["account", "privacy", "appearence", "autio_video", "notifications", "keybinds"];
-type SettingsNavTags = typeof SETTINGS_NAV_SECTIONS[number];
+type SettingsNavSections = typeof SETTINGS_NAV_SECTIONS[number];
 
 type RouterState = {
-  main_section: MainSectionsTags,
-  chat_nav_section: ChatNavTags,
-  settings_nav_section: SettingsNavTags,
+  main_section: MainSectionsSections,
+  chat_nav_section: ChatNavSections,
+  settings_nav_section: SettingsNavSections,
   show_left_nav: boolean,
   active_channel_for: {
     friends: string | null,
@@ -74,9 +74,9 @@ r.on('chat/:section?/:channel_id?', (params) => {
     return r.route(`/app/chat/${synced_state.chat_nav_section}`, true);
   }
 
-  const section = params.section as ChatNavTags;
-  if (!CHAT_NAV_SECIONS.includes(section)) {
-    return console.error(section, "is not valid for route chat");
+  const section = params.section as ChatNavSections;
+  if (!CHAT_NAV_SECTIONS.includes(section)) {
+    return console.error(section, "is not valid for chat route");
   }
 
   const channel_id: string | null = params.channel_id;
@@ -109,10 +109,19 @@ r.on('chat/:section?/:channel_id?', (params) => {
 
   update(u);
 })
-.on('settings/profile', _ => {
+.on('settings/:section?', params => {
+    if (!params) return console.error("params need to be set");
+    let section = params.section as SettingsNavSections | undefined;
+    if (!section) {
+      return r.route(`/app/settings/${synced_state.settings_nav_section}`, true);
+    }
+    if (!SETTINGS_NAV_SECTIONS.includes(section)) {
+      return console.error(section, "is not valid for settings route");
+    }
+
     update({
       main_section: 'settings',
-      settings_nav_section: 'account',
+      settings_nav_section: section,
     });
 })
 .on('add_friend', _ => {
