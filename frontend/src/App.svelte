@@ -10,6 +10,8 @@ import ActiveNotification from './lib/active_notification.svelte';
 import LeftNav from './lib/left_nav/LeftNav.svelte';
 import { user_data } from './stores/data';
 import { router_state } from './stores/router';
+import Settings from './lib/settings/Settings.svelte';
+import SettingsLeftNav from './lib/settings/SettingsLeftNav.svelte';
 
 socket_manager.initialize_client(); 
 
@@ -24,11 +26,13 @@ socket_manager.initialize_client();
       {#if $router_state.show_left_nav}
         <div class="left_zone">
           {#if $router_state.show_chat} <LeftNav/> {/if}
+          {#if $router_state.show_settings} <SettingsLeftNav/> {/if}
         </div>
       {/if}
     <div class="middle_zone">
       {#if $router_state.show_chat} <ChatApp/> {/if}
       {#if $router_state.show_friend_requester} <FriendRequestUi/> {/if}
+      {#if $router_state.show_settings} <Settings/> {/if}
     </div>
   </div>
   {/if}
