@@ -11,15 +11,11 @@ const open_channel = (channel_id: string, friend_name: string) => {
   manipulate_path(friend_name);
   active_channel.set(channel_id);
 }
-
-setTimeout(()=>{
-  open_channel("12567514614595584", "pablo");
-}, 100);
 </script>
 
 <main>
   {#each Object.entries($friend_list) as [relation_id, friend_item]}
-    <button class="friend_item" style="background: {$active_channel == friend_item.relation_id ? 'var(--base)' : ''};" on:click={()=>{open_channel(relation_id, friend_item.username)}}>
+    <button class="friend_item" class:active_channel={relation_id === $active_channel} on:click={()=>{open_channel(relation_id, friend_item.username)}}>
       <span class="left"> <img src="" title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{friend_item.display_name ?? friend_item.username}</span>
@@ -38,6 +34,9 @@ setTimeout(()=>{
   aspect-ratio: 1/1;
   border: none;
   margin: 0;
+}
+.active_channel {
+  background-color: var(--surface0);
 }
 .right {
   display: flex;

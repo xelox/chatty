@@ -206,7 +206,7 @@ main {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--base);
+  background: var(--crust);
 }
 .messages_wrap {
   flex-grow: 1;

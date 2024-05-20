@@ -61,7 +61,7 @@ const manipulate_path = (s: string) => {
   text-decoration: underline;
 }
 main {
-  background: var(--crust);
+  background: var(--base);
   border: 1px solid var(--overlay0);
   border-top: none;
   height: 100%;
