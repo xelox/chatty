@@ -10,7 +10,7 @@ const open_channel = (channel_id: string) => {
 <main>
   {#each Object.entries($friend_list) as [relation_id, friend_item]}
     <button class="friend_item" class:active_channel={relation_id === $router_state.active_channel} on:click={()=>{open_channel(relation_id)}}>
-      <span class="left"> <img src="" title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
+      <span class="left"> <img src="{friend_item?.pfp_url}" title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{friend_item.display_name ?? friend_item.username}</span>
       </div>

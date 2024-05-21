@@ -1,9 +1,14 @@
 <script lang='ts'>
 import { router, router_state, SETTINGS_NAV_SECTIONS } from "../../stores/router";
-
+import { settings_left_pos } from "../../stores/ui";
+let ui_width = 0;
+$: if($settings_left_pos) {
+  ui_width = $settings_left_pos - 40;
+  console.log(ui_width);
+}
 </script>
 
-<main>
+<main style="width: {ui_width}px;">
   <div class="buttons_wrap">
     {#each Object.entries(SETTINGS_NAV_SECTIONS) as [key, title]} 
       <button class="pannel_btn" class:active_section={$router_state.settings_nav_section === key} on:click={()=>{ 
@@ -41,8 +46,6 @@ main{
   justify-content: center;
   padding: 20px;
   background: var(--base);
-  height: 100%;
-  width: calc(100% - 40px);
   height: calc(100% - 40px);
 }
 </style>
