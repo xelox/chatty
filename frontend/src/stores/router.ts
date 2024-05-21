@@ -12,8 +12,15 @@ type MainSectionsSections = typeof MAIN_SECTIONS[number];
 const CHAT_NAV_SECTIONS = <const>["friends", "guilds", "requests"];
 type ChatNavSections = typeof CHAT_NAV_SECTIONS[number];
 
-const SETTINGS_NAV_SECTIONS = <const>["account", "privacy", "appearence", "autio_video", "notifications", "keybinds"];
-type SettingsNavSections = typeof SETTINGS_NAV_SECTIONS[number];
+export const SETTINGS_NAV_SECTIONS = <const>{
+  account: "Account",
+  privacy: "Privacy",
+  appearence: "Appearence",
+  autio_video: "Autio & Video",
+  notifications: "Notifications",
+  keybinds: "Keybinds"
+};
+type SettingsNavSections = keyof typeof SETTINGS_NAV_SECTIONS;
 
 type RouterState = {
   main_section: MainSectionsSections,
@@ -115,7 +122,7 @@ r.on('chat/:section?/:channel_id?', (params) => {
     if (!section) {
       return r.route(`/app/settings/${synced_state.settings_nav_section}`, true);
     }
-    if (!SETTINGS_NAV_SECTIONS.includes(section)) {
+    if (!Object.keys(SETTINGS_NAV_SECTIONS).includes(section)) {
       return console.error(section, "is not valid for settings route");
     }
 

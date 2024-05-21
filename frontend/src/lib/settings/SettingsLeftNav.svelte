@@ -1,19 +1,11 @@
 <script lang='ts'>
-import { router, router_state } from "../../stores/router";
+import { router, router_state, SETTINGS_NAV_SECTIONS } from "../../stores/router";
 
-const pannels_list = {
-  account: "Account",
-  privacy: "Privacy",
-  appearence: "Appearence",
-  autio_video: "Autio & Video",
-  notifications: "Notifications",
-  keybinds: "Keybinds"
-};
 </script>
 
 <main>
   <div class="buttons_wrap">
-    {#each Object.entries(pannels_list) as [key, title]} 
+    {#each Object.entries(SETTINGS_NAV_SECTIONS) as [key, title]} 
       <button class="pannel_btn" class:active_section={$router_state.settings_nav_section === key} on:click={()=>{ 
         router.route(`/app/settings/${key}`);
       }}>{title}</button>
