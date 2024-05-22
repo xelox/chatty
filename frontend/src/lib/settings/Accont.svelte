@@ -43,7 +43,7 @@ const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
         </div>
         <div class="profile_banner">
           <div class="pfp_wrap">
-            <img bind:this={pfp_preview} class="pfp" alt='' src="#"/>
+            <img bind:this={pfp_preview} class="pfp_img" alt='' src="#"/>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="edit_hover" on:click={()=>{pfp_picker.click()}}>
               <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
@@ -65,7 +65,7 @@ const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
 </main>
 
 <style>
-.pfp, .banner_img{
+.pfp_img, .banner_img{
   width: 100%;
   aspect-ratio: 1/1;
   object-fit: cover;
@@ -81,8 +81,8 @@ const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
 }
 .profile_banner {
   background: var(--surface0);
-  height: 140px;
-  padding: 8px;
+  width: 100%;
+  aspect-ratio: 30/7;
 }
 .pfp_wrap {
   background: var(--mantle);
@@ -94,6 +94,7 @@ const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
   position: absolute;
   overflow: hidden;
   bottom: 8px;
+  left: 8px;
 }
 .edit_hover {
   opacity: 0;
