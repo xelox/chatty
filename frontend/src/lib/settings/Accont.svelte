@@ -5,10 +5,20 @@ import { user_data } from "../../stores/data";
 <main>
   <h1>Account Settings</h1>
   <div class="sections_wrap">
-    <div class="field_wrap">
-      <p class='label'>Profile Pictrue</p>
-      <div class="pfp_wrap">
-        <img class='pfp_img' src="{$user_data?.pfp_url}" alt="" title="pfp">
+    <div class="">
+      <p class='label'>Profile</p>
+      <div class="profile_banner_wrap">
+        <div class="edit_hover">
+          <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
+        </div>
+        <div class="profile_banner">
+          <div class="pfp_wrap">
+            <div class="pfp"></div>
+            <div class="edit_hover">
+              <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="field_wrap">
@@ -23,8 +33,49 @@ import { user_data } from "../../stores/data";
 </main>
 
 <style>
+.profile_banner_wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+.profile_banner {
+  background: var(--surface0);
+  height: 140px;
+  padding: 8px;
+}
 .pfp_wrap {
-  width: max-content;
+  background: var(--mantle);
+  border-radius: 100%;
+  width: 90px;
+  aspect-ratio: 1/1;
+  border: 0;
+  margin: 0;
+  position: absolute;
+  overflow: hidden;
+  bottom: 8px;
+}
+.edit_hover {
+  opacity: 0;
+  transition: 200ms;
+  position: relative;
+  cursor: pointer;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background: var(--overlay2);
+}
+.edit_hover:hover {
+  opacity: 0.5;
+}
+.edit_icon {
+  filter: invert(87%) sepia(6%) saturate(987%) hue-rotate(192deg) brightness(98%) contrast(94%);
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
 }
 .field_wrap {
   display: flex;
@@ -35,7 +86,7 @@ import { user_data } from "../../stores/data";
 .field_wrap {
   padding-bottom: 20px;
   margin-top: 20px;
-  border-bottom: 1px solid var(--overlay0);
+  border-bottom: 1px solid var(--surface0);
 }
 .label {
   margin-bottom: 4px;
@@ -52,14 +103,6 @@ import { user_data } from "../../stores/data";
 .sections_wrap {
   display: flex;
   flex-direction: column;
-}
-img {
-  background: var(--overlay0);
-  border-radius: 100%;
-  width: 100px;
-  aspect-ratio: 1/1;
-  border: 0;
-  margin: 0;
 }
 h1 {
   margin-bottom: 40px;
