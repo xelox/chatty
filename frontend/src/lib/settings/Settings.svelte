@@ -3,6 +3,7 @@ import { router_state, SETTINGS_NAV_SECTIONS } from "../../stores/router";
 import Account from './Accont.svelte';
 import { header_height, settings_left_pos } from '../../stores/ui';
     import { onMount } from "svelte";
+    import SettingsLeftNav from "./SettingsLeftNav.svelte";
 let main: HTMLElement;
 
 const updateUiStore = () => {
@@ -15,28 +16,59 @@ onMount(()=>{
 })
 </script>
 
-<main style="height: calc(100vh - {$header_height})">
-  <div class="wrap" bind:this={main}>
-    {#if $router_state.settings_nav_section === 'account' } <Account/>
-    {:else} <h1>{SETTINGS_NAV_SECTIONS[$router_state.settings_nav_section]} is not implemented yet.</h1>
-    {/if}
+<main>
+  <div class="left_empty"></div>
+  <div class="wrap_all">
+    <div class="section_wrap" bind:this={main}>
+      <div class="inner_wrap">
+        {#if $router_state.settings_nav_section === 'account' } <Account/>
+        {:else} <h1>{SETTINGS_NAV_SECTIONS[$router_state.settings_nav_section]} is not implemented yet.</h1>
+        {/if}
+      </div>
+    </div>
+    <div class="nav_wrap">
+      <div class="inner_wrap">
+        <SettingsLeftNav/>
+      </div>
+    </div>
   </div>
+  <div class="right_empty"></div>
 </main>
 
 <style>
-main {
-  overflow: auto;
-  position: fixed;
-  height: 100vh;
-  width: 800px;
-  transform: translateX(-50%);
-  left: 50%;
+.section_wrap {
+  flex: 1;
+  background: var(--base);
 }
-.wrap {
-  position: absolute;
-  min-height: calc(100% - 40px);
+.inner_wrap {
+  height: calc(100% - 40px);
   padding: 20px;
-  width: 800px;
-  background: var(--crust);
+}
+main > div {
+  height: 100%;
+  overflow-y: auto;
+}
+.wrap_all {
+  height: 100%;
+  width: 1000px;
+  display: flex;
+  flex-direction: row;
+}
+main {
+  background: var(--mantle);
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+.left_empty {
+  background: var(--base);
+  flex: 1;
+}
+.right_empty {
+  flex: 1;
+}
+h1 {
+  text-align: right;
 }
 </style>

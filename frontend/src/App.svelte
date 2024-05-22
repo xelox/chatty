@@ -11,7 +11,6 @@ import LeftNav from './lib/left_nav/LeftNav.svelte';
 import { user_data } from './stores/data';
 import { router_state } from './stores/router';
 import Settings from './lib/settings/Settings.svelte';
-import SettingsLeftNav from './lib/settings/SettingsLeftNav.svelte';
 
 socket_manager.initialize_client(); 
 
@@ -26,7 +25,6 @@ socket_manager.initialize_client();
       {#if $router_state.show_left_nav}
         <div class="left_zone">
           <div class='block' class:active_block={$router_state.main_section === 'chat'}> <LeftNav/></div>
-          <div class='block' class:active_block={$router_state.main_section === 'settings'}> <SettingsLeftNav/> </div>
         </div>
       {/if}
     <div class="middle_zone">

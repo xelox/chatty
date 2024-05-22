@@ -8,7 +8,7 @@ $: if($settings_left_pos) {
 }
 </script>
 
-<main style="width: {ui_width}px;">
+<main>
   <div class="buttons_wrap">
     {#each Object.entries(SETTINGS_NAV_SECTIONS) as [key, title]} 
       <button class="pannel_btn" class:active_section={$router_state.settings_nav_section === key} on:click={()=>{ 
@@ -22,7 +22,6 @@ $: if($settings_left_pos) {
 .pannel_btn{
   cursor: pointer;
   text-align: left;
-  font-family: 'Noto Sans';
   font-size: var(--size-large);
   padding: 4px;
   border-radius: 4px; 
@@ -38,14 +37,10 @@ $: if($settings_left_pos) {
 .buttons_wrap {
   display: flex;
   flex-direction: column;
+  width: max-content;
 }
 
 main{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 20px;
-  background: var(--base);
-  height: calc(100% - 40px);
+  height: 100%;
 }
 </style>
