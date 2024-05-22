@@ -1,6 +1,7 @@
 <script lang='ts'>
 import type { ChangeEventHandler } from "svelte/elements";
 import { user_data } from "../../stores/data";
+    import CropperTool from "./CropperTool.svelte";
 
 let pfp_picker: HTMLInputElement;
 let banner_picker: HTMLInputElement;
@@ -62,6 +63,8 @@ const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
       <input type="text" class="ed" placeholder="Display Name">
     </div>
   </div>
+
+  <CropperTool subject_src='/cat-profile.jpg' round={true} aspect={{x: 1, y:1}} />
 </main>
 
 <style>
