@@ -16,7 +16,7 @@ socket_manager.initialize_client();
 
 </script>
 
-<main>
+<main on:contextmenu|preventDefault>
   {#if $user_data}
     <div class="top_zone">
       <Header></Header>

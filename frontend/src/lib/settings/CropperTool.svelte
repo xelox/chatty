@@ -9,7 +9,6 @@ let width: number;
 let height: number;
 let min_width: number;
 let min_height: number;
-let axis: string;
 let offset = { x: 0, y: 0 };
 let min_offset = { x: 0, y: 0 };
 let ratio: number;
@@ -27,7 +26,6 @@ image.onload = function(e) {
   if (w < h) {
     height = SIZE / ratio;
     width = SIZE;
-    axis = 'width';
 
     offset = { x: 0, y: SIZE / 2 - height / 2};
     min_offset.y = SIZE - height;
@@ -43,7 +41,6 @@ image.onload = function(e) {
   } else {
     width = ratio * SIZE;
     height = SIZE;
-    axis = 'height';
 
     offset = { x: SIZE / 2 - width / 2, y: 0 };
     min_offset.x = SIZE - width;
@@ -73,15 +70,28 @@ function clamp(val: number, min: number, max: number):number {
   return val;
 }
 
+let canvas: HTMLCanvasElement;
+let ctx: CanvasRenderingContext2D;
+function save(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height); 
+  ctx.drawImage(image, offset.x, offset.y, width, height);
+}
+
 onMount(()=>{
-  main.addEventListener('mousedown', (e: Event) => {
+  ctx = canvas.getContext('2d')!;
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+  main.addEventListener('mousedown', (e: MouseEvent) => { 
     e.preventDefault();
-    dragging = true;
+    if(e.buttons === 1) {
+      dragging = true; 
+    }
+    else if (e.buttons === 2 ) {
+      save();
+    }
   })
-  window.addEventListener('mouseup', (e: Event) => {
-    dragging = false;
-  })
-  window.addEventListener('mousemove', (e: MouseEvent) => {
+  window.addEventListener('mouseup', () => { dragging = false; })
+  main.addEventListener('mousemove', (e: MouseEvent) => {
     const new_x = e.x;
     const new_y = e.y;
     const delta_x = last_m_x - new_x;
@@ -93,36 +103,63 @@ onMount(()=>{
       offset.y = clamp(offset.y - delta_y, min_offset.y, 0);
     }
   })
-  window.addEventListener('wheel', (e: WheelEvent) => {
+  main.addEventListener('wheel', (e: WheelEvent) => {
     zoom(clamp(e.deltaY, -1, 1));
   })
 })
 </script>
 
-<main bind:clientWidth={width} bind:clientHeight={height} bind:this={main}>
-  <img src={subject_src} alt="" class='subject_img' style={`width: ${width}px; height: ${height}px; left: ${offset.x}px; top: ${offset.y}px`}>
-  <div class="guideline" style="aspect-ratio: {aspect.x}/{aspect.y}; border-radius: {round ? '100vh':'4px'}"></div>
+<main bind:this={main}>
+  <h1>Crop Image</h1>
+  <div class="sub">
+    <img src={subject_src} alt="" class='subject_img' style={`width: ${width}px; height: ${height}px; left: ${offset.x}px; top: ${offset.y}px`}>
+    <div class="mask"></div>
+  </div>
 </main>
+<canvas bind:this={canvas}></canvas>
 
 <style>
-.guideline {
-  border: 3px solid var(--text);
-  z-index: 1;
-}
 .subject_img {
-  position: absolute;
+  position: relative;
   top: 0;
   left: 0;
-  z-index: -1;
+  z-index: -2;
   object-fit: cover;
-  transition: 50ms linear;
+  transition: 80ms linear;
+}
+.sub{
+  cursor: move;
+  z-index: 1;
+}
+.sub {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  left: 50%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  border-radius: 4px;
+}
+.mask {
+  position: absolute;
+  width: inherit;
+  height: inherit;
+  background: black;
+  mask: radial-gradient(circle at center, transparent 0%, transparent 200px, rgba(0, 0, 0, 0.5) 201px, rgba(0, 0, 0, 0.5) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+canvas {
+  display: none;
 }
 main {
   position: fixed;
-  left: 50%; top: 50%;
+  background: var(--crust);
+  width: 600px;
+  height: 750px;
+  left: 50%;
+  top: 50%;
   transform: translate(-50%, -50%);
-  width: 400px;
-  height: 400px;
-  /* overflow: hidden; */
+  border-radius: 4px;
 }
 </style>
