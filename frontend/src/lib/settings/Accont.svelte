@@ -1,5 +1,31 @@
 <script lang='ts'>
+import type { ChangeEventHandler } from "svelte/elements";
 import { user_data } from "../../stores/data";
+
+let pfp_picker: HTMLInputElement;
+let banner_picker: HTMLInputElement;
+let pfp_preview: HTMLImageElement;
+let banner_preview: HTMLImageElement;
+
+const file_handler = (e: Event, prev: HTMLImageElement) => {
+  const target = e.target as HTMLInputElement;
+  const file = target.files![0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const local_url = e.target?.result;
+    if (typeof local_url !== 'string') return console.log('not a string');
+    prev.src = local_url;
+  }
+  reader.readAsDataURL(file);
+}
+
+const pfp_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
+  file_handler(e, pfp_preview);
+}
+
+const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
+  file_handler(e, banner_preview);
+}
 </script>
 
 <main>
@@ -7,15 +33,21 @@ import { user_data } from "../../stores/data";
   <div class="sections_wrap">
     <div class="">
       <p class='label'>Profile</p>
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="profile_banner_wrap">
-        <div class="edit_hover">
+        <img class='banner_img' src="#" alt="" bind:this={banner_preview} />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="edit_hover" on:click={()=>{banner_picker.click()}}>
           <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
+          <input type="file" accept="image/*" class='file_input' bind:this={banner_picker} on:change={banner_handler}>
         </div>
         <div class="profile_banner">
           <div class="pfp_wrap">
-            <div class="pfp"></div>
-            <div class="edit_hover">
+            <img bind:this={pfp_preview} class="pfp" alt='' src="#"/>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div class="edit_hover" on:click={()=>{pfp_picker.click()}}>
               <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
+              <input type="file" accept="image/*" class='file_input' bind:this={pfp_picker} on:change={pfp_handler}>
             </div>
           </div>
         </div>
@@ -33,6 +65,15 @@ import { user_data } from "../../stores/data";
 </main>
 
 <style>
+.pfp, .banner_img{
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  position: absolute;
+}
+.file_input {
+  display: none;
+}
 .profile_banner_wrap {
   position: relative;
   overflow: hidden;
