@@ -68,5 +68,6 @@ main{
   border-radius: 4px;
   border: 1px solid var(--overlay0);
   width: 70vw;
+  z-index: 10;
 }
 </style>

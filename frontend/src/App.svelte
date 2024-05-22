@@ -66,4 +66,8 @@ main{
 .active_block {
   display: block;
 }
+.left_zone {
+  border-right: 1px solid var(--overlay0);
+  z-index: 1;
+}
 </style>

@@ -44,7 +44,6 @@ import { user_data } from "../../stores/data";
   flex: 1;
 }
 img {
-  float: right;
   background: var(--overlay0);
   border-radius: 100%;
   width: 100px;
