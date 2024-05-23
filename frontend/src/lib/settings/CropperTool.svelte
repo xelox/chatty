@@ -190,14 +190,13 @@ onMount(()=>{
 .edit_wrap {
   overflow: hidden;
   position: relative;
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--crust);
 }
 .sub {
   width: 100%;
   height: 100%;
   position: relative;
-  border-radius: 4px;
 }
 .mask{
   padding: inherit;
