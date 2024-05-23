@@ -8,24 +8,53 @@ let banner_picker: HTMLInputElement;
 let pfp_preview: HTMLImageElement;
 let banner_preview: HTMLImageElement;
 
-const file_handler = (e: Event, prev: HTMLImageElement) => {
-  const target = e.target as HTMLInputElement;
-  const file = target.files![0];
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const local_url = e.target?.result;
-    if (typeof local_url !== 'string') return console.log('not a string');
-    prev.src = local_url;
-  }
-  reader.readAsDataURL(file);
+const changes: {
+  new_pfp: string | null
+  new_banner: string | null
+} = {
+  new_pfp: null,
+  new_banner: null,
+}
+
+let tmp_pfp_input: string | null;
+let tmp_banner_input: string | null;
+
+const file_handler = async (e: Event) => {
+  return new Promise<string>((res, rej) => {
+    const target = e.target as HTMLInputElement;
+    const file = target.files![0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const local_url = e.target?.result;
+      if (typeof local_url !== 'string') return rej();
+      res(local_url);
+    }
+    reader.readAsDataURL(file);
+  })
 }
 
 const pfp_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
-  file_handler(e, pfp_preview);
+  file_handler(e).then(tmp => {
+    tmp_pfp_input = tmp;
+  });
 }
 
 const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
-  file_handler(e, banner_preview);
+  file_handler(e).then(tmp => {
+    tmp_banner_input = tmp;
+  });
+}
+
+const submit_pfp = (output: string) => {
+  changes.new_pfp = output;
+  tmp_pfp_input = null;
+  pfp_preview.src = output;
+}
+
+const submit_banner = (output: string) => {
+  changes.new_banner = output;
+  tmp_banner_input = null;
+  banner_preview.src = output;
 }
 </script>
 
@@ -64,7 +93,13 @@ const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
     </div>
   </div>
 
-  <CropperTool subject_src='/cat-portrait.jpg' round={false} aspect={{x: 2, y: 3}} />
+  {#if tmp_pfp_input}
+    <CropperTool subject_src={tmp_pfp_input} round={true} aspect={{x: 1, y: 1}} on_submit={submit_pfp}/>
+  {/if}
+
+  {#if tmp_banner_input}
+    <CropperTool subject_src={tmp_banner_input} round={false} aspect={{x: 30, y: 7}} on_submit={submit_banner}/>
+  {/if}
 </main>
 
 <style>

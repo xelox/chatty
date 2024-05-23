@@ -5,6 +5,7 @@ export let aspect: {x: number, y:number};
 const ratio = aspect.x / aspect.y; 
 export let round: boolean;
 export let subject_src: string;
+export let on_submit: (src: string) => void;
 
 let width: number;
 let height: number;
@@ -28,14 +29,14 @@ let mask_style = `width: ${SIZE_X}px; height: ${SIZE_Y}px;`;
 let guideline_style = `width: ${SIZE_X}px; height: ${SIZE_Y}px; top: ${WHITESPACE}px; left: ${WHITESPACE}px;`
 if (round) {
   mask_style += `
-    mask: radial-gradient(circle at center, transparent 0%, transparent ${MAX_SIZE / 2 - 0.5}px, rgba(0, 0, 0, 0.5) ${MAX_SIZE / 2 + 0.5}px, rgba(0, 0, 0, 0.5) 100%);
+    mask: radial-gradient(circle at center, transparent 0%, transparent ${MAX_SIZE / 2 - 0.5}px, rgba(0, 0, 0, 0.65) ${MAX_SIZE / 2 + 0.5}px, rgba(0, 0, 0, 0.65) 100%);
   `;
   guideline_style += 'border-radius: 100vh';
 } else {
   mask_style += `
     box-shadow: inset 0 0 0 50px var(--crust); 
     background: transparent;
-    opacity: 0.5;
+    opacity: 0.65;
   `;
 }
 
@@ -90,19 +91,18 @@ let ctx: CanvasRenderingContext2D;
 function save(){
   ctx.clearRect(0, 0, canvas.width, canvas.height); 
   ctx.drawImage(image, offset.x, offset.y, width, height);
+  const output = canvas.toDataURL('image/png');
+  on_submit(output);
 }
 
 onMount(()=>{
   ctx = canvas.getContext('2d')!;
-  canvas.width = MAX_SIZE;
-  canvas.height = MAX_SIZE;
+  canvas.width = SIZE_X;
+  canvas.height = SIZE_Y;
   main.addEventListener('mousedown', (e: MouseEvent) => { 
     e.preventDefault();
     if(e.buttons === 1) {
       dragging = true; 
-    }
-    else if (e.buttons === 2 ) {
-      save();
     }
   })
   window.addEventListener('mouseup', () => { dragging = false; })
@@ -135,9 +135,13 @@ onMount(()=>{
       <div class="guideline" style={guideline_style}></div>
     </div>
     <div class="footer">
-      <button class='edit_btn'>Mirror V</button>
-      <button class='edit_btn'>Mirror H</button>
-      <button class='save_btn'>Save</button>
+      <div>
+        <button class='edit_btn'>Mirror V</button>
+        <button class='edit_btn'>Mirror H</button>
+      </div>
+      <div>
+        <button class='save_btn' on:click={save}>Save</button>
+      </div>
     </div>
   </div>
 </main>
@@ -221,5 +225,7 @@ h1 {
 }
 .footer {
   margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
 }
 </style>
