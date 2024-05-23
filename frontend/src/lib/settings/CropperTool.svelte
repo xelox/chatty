@@ -25,7 +25,15 @@ if (aspect.x < aspect.y) {
 }
 const MIN_SIZE = Math.min(SIZE_X, SIZE_Y);
 const ZOOM_SPEED = 20;
-let zoom: (dir: number) => void;
+
+function zoom(dir: number) {
+  width = clamp(width - dir * ZOOM_SPEED, min_width, Infinity);  
+  height = width / image_ratio;
+  min_offset.y = SIZE_Y - height;
+  min_offset.x = SIZE_X - width;
+  offset.x = clamp(offset.x, min_offset.x, 0);
+  offset.y = clamp(offset.y, min_offset.y, 0);
+}
 
 const image = new Image();
 image.onload = function(e) {
@@ -34,34 +42,17 @@ image.onload = function(e) {
   const h = target.height;
   image_ratio = w / h;
 
-  if (w < h) {
-    height = MAX_SIZE / image_ratio;
-    width = MAX_SIZE;
-
+  if (SIZE_X < SIZE_Y) {
+    width = MAX_SIZE * image_ratio;
+    height = MAX_SIZE;
     offset = { x: 0, y: MAX_SIZE / 2 - height / 2};
-    min_offset.y = SIZE_Y - height;
-    min_offset.x = SIZE_X - width;
-
-    zoom = (dir) => {
-    }
   } else {
-    width = MAX_SIZE;
     height = MAX_SIZE / image_ratio;
-
+    width = MAX_SIZE;
     offset = { x: MAX_SIZE / 2 - width / 2, y: 0 };
-    min_offset.y = MIN_SIZE - height;
-    min_offset.x = MAX_SIZE - width;
-    console.log(min_offset);
-
-    zoom = (dir) => {
-      width = clamp(width - dir * ZOOM_SPEED, min_width, Infinity);  
-      height = width / image_ratio;
-      min_offset.y = SIZE_Y - height;
-      min_offset.x = SIZE_X - width;
-      offset.x = clamp(offset.x, min_offset.x, 0);
-      offset.y = clamp(offset.y, min_offset.y, 0);
-    }
   }
+  min_offset.y = SIZE_Y - height;
+  min_offset.x = SIZE_X - width;
   min_width = width;
   min_height = height;
 }
