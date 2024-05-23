@@ -2,6 +2,7 @@
 import { onMount } from "svelte";
 
 export let aspect: {x: number, y:number};
+const ratio = aspect.x / aspect.y; 
 export let round: boolean;
 export let subject_src: string;
 
@@ -11,8 +12,18 @@ let min_width: number;
 let min_height: number;
 let offset = { x: 0, y: 0 };
 let min_offset = { x: 0, y: 0 };
-let ratio: number;
-const SIZE = 400;
+let image_ratio: number;
+const MAX_SIZE = 580;
+let SIZE_X: number;
+let SIZE_Y: number;
+if (aspect.x < aspect.y) {
+  SIZE_X = ratio * MAX_SIZE;
+  SIZE_Y = MAX_SIZE
+} else {
+  SIZE_Y = MAX_SIZE / ratio;
+  SIZE_X = MAX_SIZE;
+}
+const MIN_SIZE = Math.min(SIZE_X, SIZE_Y);
 const ZOOM_SPEED = 20;
 let zoom: (dir: number) => void;
 
@@ -21,35 +32,32 @@ image.onload = function(e) {
   const target = e.target as HTMLImageElement;
   const w = target.width;
   const h = target.height;
-  ratio = w / h;
+  image_ratio = w / h;
 
   if (w < h) {
-    height = SIZE / ratio;
-    width = SIZE;
+    height = MAX_SIZE / image_ratio;
+    width = MAX_SIZE;
 
-    offset = { x: 0, y: SIZE / 2 - height / 2};
-    min_offset.y = SIZE - height;
+    offset = { x: 0, y: MAX_SIZE / 2 - height / 2};
+    min_offset.y = SIZE_Y - height;
+    min_offset.x = SIZE_X - width;
 
     zoom = (dir) => {
-      width = clamp(width - dir * ZOOM_SPEED, min_width, Number.MAX_VALUE);  
-      height = width * ratio;
-      min_offset.y = SIZE - height;
-      min_offset.x = SIZE - width;
-      offset.x = clamp(offset.x, min_offset.x, 0);
-      offset.y = clamp(offset.y, min_offset.y, 0);
     }
   } else {
-    width = ratio * SIZE;
-    height = SIZE;
+    width = MAX_SIZE;
+    height = MAX_SIZE / image_ratio;
 
-    offset = { x: SIZE / 2 - width / 2, y: 0 };
-    min_offset.x = SIZE - width;
+    offset = { x: MAX_SIZE / 2 - width / 2, y: 0 };
+    min_offset.y = MIN_SIZE - height;
+    min_offset.x = MAX_SIZE - width;
+    console.log(min_offset);
 
     zoom = (dir) => {
-      height = clamp(height - dir * ZOOM_SPEED, min_height, Number.MAX_VALUE);  
-      width = height * ratio;
-      min_offset.x = SIZE - width;
-      min_offset.y = SIZE - height;
+      width = clamp(width - dir * ZOOM_SPEED, min_width, Infinity);  
+      height = width / image_ratio;
+      min_offset.y = SIZE_Y - height;
+      min_offset.x = SIZE_X - width;
       offset.x = clamp(offset.x, min_offset.x, 0);
       offset.y = clamp(offset.y, min_offset.y, 0);
     }
@@ -79,8 +87,8 @@ function save(){
 
 onMount(()=>{
   ctx = canvas.getContext('2d')!;
-  canvas.width = SIZE;
-  canvas.height = SIZE;
+  canvas.width = MAX_SIZE;
+  canvas.height = MAX_SIZE;
   main.addEventListener('mousedown', (e: MouseEvent) => { 
     e.preventDefault();
     if(e.buttons === 1) {
@@ -111,9 +119,9 @@ onMount(()=>{
 
 <main bind:this={main}>
   <h1>Crop Image</h1>
-  <div class="sub">
+  <div class="sub" style={`width: ${SIZE_X}px; height: ${SIZE_Y}px;`}>
     <img src={subject_src} alt="" class='subject_img' style={`width: ${width}px; height: ${height}px; left: ${offset.x}px; top: ${offset.y}px`}>
-    <div class="mask"></div>
+    <div class="mask" class:hide={!round}></div>
   </div>
 </main>
 <canvas bind:this={canvas}></canvas>
@@ -132,12 +140,11 @@ onMount(()=>{
   z-index: 1;
 }
 .sub {
+  border: 1px solid white;
   position: relative;
-  width: 400px;
-  height: 400px;
   left: 50%;
   transform: translateX(-50%);
-  overflow: hidden;
+  /* overflow: hidden; */
   border-radius: 4px;
 }
 .mask {
@@ -151,6 +158,9 @@ onMount(()=>{
   mask: radial-gradient(circle at center, transparent 0%, transparent 200px, rgba(0, 0, 0, 0.5) 201px, rgba(0, 0, 0, 0.5) 100%);
   pointer-events: none;
   z-index: 2;
+}
+.hide {
+  display: none;
 }
 canvas {
   display: none;
