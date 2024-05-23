@@ -13,7 +13,7 @@ let offset = { x: 0, y: 0 };
 let min_offset = { x: 0, y: 0 };
 let ratio: number;
 const SIZE = 400;
-const ZOOM_SPEED = 10;
+const ZOOM_SPEED = 20;
 let zoom: (dir: number) => void;
 
 const image = new Image();
@@ -141,6 +141,9 @@ onMount(()=>{
   border-radius: 4px;
 }
 .mask {
+  width: 100%;
+  height: 100%;
+  top: 0; left: 0;
   position: absolute;
   width: inherit;
   height: inherit;
