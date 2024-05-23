@@ -9,7 +9,6 @@ export let subject_src: string;
 let width: number;
 let height: number;
 let min_width: number;
-let min_height: number;
 let offset = { x: 0, y: 0 };
 let min_offset = { x: 0, y: 0 };
 let image_ratio: number;
