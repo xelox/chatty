@@ -13,7 +13,7 @@ let min_height: number;
 let offset = { x: 0, y: 0 };
 let min_offset = { x: 0, y: 0 };
 let image_ratio: number;
-const MAX_SIZE = 580;
+const MAX_SIZE = 400;
 let SIZE_X: number;
 let SIZE_Y: number;
 if (aspect.x < aspect.y) {
@@ -23,7 +23,25 @@ if (aspect.x < aspect.y) {
   SIZE_Y = MAX_SIZE / ratio;
   SIZE_X = MAX_SIZE;
 }
-const MIN_SIZE = Math.min(SIZE_X, SIZE_Y);
+
+const WHITESPACE = 50;
+let mask_style = `width: ${SIZE_X}px; height: ${SIZE_Y}px;`;
+let guideline_style = `width: ${SIZE_X}px; height: ${SIZE_Y}px; top: ${WHITESPACE}px; left: ${WHITESPACE}px;`
+if (round) {
+  mask_style += `
+    mask: radial-gradient(circle at center, transparent 0%, transparent ${MAX_SIZE / 2 - 0.5}px, rgba(0, 0, 0, 0.5) ${MAX_SIZE / 2 + 0.5}px, rgba(0, 0, 0, 0.5) 100%);
+  `;
+  guideline_style += 'border-radius: 100vh';
+} else {
+  mask_style += `
+    box-shadow: inset 0 0 0 50px var(--crust); 
+    background: transparent;
+    opacity: 0.5;
+  `;
+}
+
+
+console.log(mask_style);
 const ZOOM_SPEED = 20;
 
 function zoom(dir: number) {
@@ -109,10 +127,20 @@ onMount(()=>{
 </script>
 
 <main bind:this={main}>
-  <h1>Crop Image</h1>
-  <div class="sub" style={`width: ${SIZE_X}px; height: ${SIZE_Y}px;`}>
-    <img src={subject_src} alt="" class='subject_img' style={`width: ${width}px; height: ${height}px; left: ${offset.x}px; top: ${offset.y}px`}>
-    <div class="mask" class:hide={!round}></div>
+  <div class="main">
+    <h1>Crop Image</h1>
+    <div class="edit_wrap" style={`width: ${SIZE_X}px; height: ${SIZE_Y}px; padding: ${WHITESPACE}px;`}>
+      <div class="sub">
+        <img src={subject_src} alt="" class='subject_img' style={`width: ${width}px; height: ${height}px; left: ${offset.x}px; top: ${offset.y}px`}>
+      </div>
+      <div class="mask" style={mask_style}></div>
+      <div class="guideline" style={guideline_style}></div>
+    </div>
+    <div class="footer">
+      <button class='edit_btn'>Mirror V</button>
+      <button class='edit_btn'>Mirror H</button>
+      <button class='save_btn'>Save</button>
+    </div>
   </div>
 </main>
 <canvas bind:this={canvas}></canvas>
@@ -129,40 +157,71 @@ onMount(()=>{
 .sub{
   z-index: 1;
 }
-.sub {
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
+.edit_wrap {
   overflow: hidden;
-  border-radius: 4px;
+  position: relative;
+  border-radius: 10px;
+  background: var(--crust);
 }
-.mask {
+.sub {
   width: 100%;
   height: 100%;
+  position: relative;
+  border-radius: 4px;
+}
+.mask{
+  padding: inherit;
   top: 0; left: 0;
   position: absolute;
-  width: inherit;
-  height: inherit;
-  background: black;
-  mask: radial-gradient(circle at center, transparent 0%, transparent 200px, rgba(0, 0, 0, 0.5) 201px, rgba(0, 0, 0, 0.5) 100%);
+  background: var(--crust);
   pointer-events: none;
   z-index: 2;
 }
-.hide {
-  display: none;
+.guideline {
+  position: absolute;
+  border: 1px solid var(--crust);
+  transform: translate(-1px, -1px);
+  z-index: 9;
 }
 canvas {
   display: none;
 }
-main {
-  position: fixed;
-  background: var(--crust);
-  width: 600px;
-  height: 750px;
+button {
+  padding: 4px 10px 4px 10px;
+  border-radius: 2px;
+  font-family: 'Noto Sans';
+  background: var(--btn-blue);
+  color: white;
+  -webkit-box-shadow: 0px 3px 5px -2px rgba(0,0,0,0.24); 
+  box-shadow: 0px 3px 5px -2px rgba(0,0,0,0.24);
+}
+.save_btn {
+  background: var(--btn-green);
+}
+.main {
+  padding: 20px;
+  position: absolute;
+  background: var(--surface0);
+  width: max-content;
+  height: max-content;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   border-radius: 4px;
   cursor: move;
+  -webkit-box-shadow: 0px 33px 19px 2px rgba(0,0,0,0.2), 0px 24px 9px -2px rgba(0,0,0,0.17), 0px 9px 11px -2px rgba(0,0,0,0.58); 
+  box-shadow: 0px 33px 19px 2px rgba(0,0,0,0.2), 0px 24px 9px -2px rgba(0,0,0,0.17), 0px 9px 11px -2px rgba(0,0,0,0.58);
+}
+main {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+}
+h1 {
+  margin-bottom: 20px;
+}
+.footer {
+  margin-top: 20px;
 }
 </style>
