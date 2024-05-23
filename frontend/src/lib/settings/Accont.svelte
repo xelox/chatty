@@ -94,7 +94,7 @@ const submit_banner = (output: string) => {
   </div>
 
   {#if tmp_pfp_input}
-    <CropperTool subject_src={tmp_pfp_input} round={false} aspect={{x: 90, y: 90}} on_submit={submit_pfp}/>
+    <CropperTool subject_src={tmp_pfp_input} round={true} aspect={{x: 90, y: 90}} on_submit={submit_pfp}/>
   {/if}
 
   {#if tmp_banner_input}
