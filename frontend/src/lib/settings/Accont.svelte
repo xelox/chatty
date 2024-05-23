@@ -1,7 +1,7 @@
 <script lang='ts'>
 import type { ChangeEventHandler } from "svelte/elements";
 import { user_data } from "../../stores/data";
-    import CropperTool from "./CropperTool.svelte";
+import CropperTool from "./CropperTool.svelte";
 
 let pfp_picker: HTMLInputElement;
 let banner_picker: HTMLInputElement;
@@ -94,18 +94,17 @@ const submit_banner = (output: string) => {
   </div>
 
   {#if tmp_pfp_input}
-    <CropperTool subject_src={tmp_pfp_input} round={true} aspect={{x: 1, y: 1}} on_submit={submit_pfp}/>
+    <CropperTool subject_src={tmp_pfp_input} round={true} aspect={{x: 90, y: 90}} on_submit={submit_pfp}/>
   {/if}
 
   {#if tmp_banner_input}
-    <CropperTool subject_src={tmp_banner_input} round={false} aspect={{x: 30, y: 7}} on_submit={submit_banner}/>
+    <CropperTool subject_src={tmp_banner_input} round={false} aspect={{x: 1200, y: 280}} on_submit={submit_banner}/>
   {/if}
 </main>
 
 <style>
 .pfp_img, .banner_img{
   width: 100%;
-  aspect-ratio: 1/1;
   object-fit: cover;
   position: absolute;
 }

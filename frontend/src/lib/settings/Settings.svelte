@@ -1,9 +1,9 @@
 <script lang='ts'>
 import { router_state, SETTINGS_NAV_SECTIONS } from "../../stores/router";
 import Account from './Accont.svelte';
-import { header_height, settings_left_pos } from '../../stores/ui';
-    import { onMount } from "svelte";
-    import SettingsLeftNav from "./SettingsLeftNav.svelte";
+import { settings_left_pos } from '../../stores/ui';
+import { onMount } from "svelte";
+import SettingsLeftNav from "./SettingsLeftNav.svelte";
 let main: HTMLElement;
 
 const updateUiStore = () => {

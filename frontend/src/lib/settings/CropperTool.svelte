@@ -13,6 +13,8 @@ let min_zoom: number;
 let offset = { x: 0, y: 0 };
 let min_offset = { x: 0, y: 0 };
 let image_ratio: number;
+let input_w: number;
+let input_h: number;
 const MAX_SIZE = 400;
 let SIZE_X: number;
 let SIZE_Y: number;
@@ -23,6 +25,8 @@ if (aspect.x < aspect.y) {
   SIZE_Y = MAX_SIZE / ratio;
   SIZE_X = MAX_SIZE;
 }
+
+console.log(SIZE_X/SIZE_Y, aspect.x / aspect.y);
 
 const WHITESPACE = 50;
 let mask_style = `width: ${SIZE_X}px; height: ${SIZE_Y}px;`;
@@ -56,9 +60,9 @@ function zoom(dir: number) {
 const image = new Image();
 image.onload = function(e) {
   const target = e.target as HTMLImageElement;
-  const w = target.width;
-  const h = target.height;
-  image_ratio = w / h;
+  input_w = target.width;
+  input_h = target.height;
+  image_ratio = input_w / input_h;
 
   if (SIZE_X < SIZE_Y) {
     width = MAX_SIZE * image_ratio;
@@ -89,16 +93,24 @@ function clamp(val: number, min: number, max: number):number {
 let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;
 function save(){
-  ctx.clearRect(0, 0, canvas.width, canvas.height); 
-  ctx.drawImage(image, offset.x, offset.y, width, height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const src_w = (SIZE_X / width) * input_w;
+  const src_h = (SIZE_Y / height) * input_h;
+
+  const src_offset_x = (-offset.x / SIZE_X) * src_w;
+  const src_offset_y = (-offset.y / SIZE_Y) * src_h;
+
+  ctx.drawImage(image, src_offset_x, src_offset_y, src_w, src_h, 0, 0, canvas.width, canvas.height);
+
   const output = canvas.toDataURL('image/png');
   on_submit(output);
 }
 
 onMount(()=>{
   ctx = canvas.getContext('2d')!;
-  canvas.width = SIZE_X;
-  canvas.height = SIZE_Y;
+  canvas.width = aspect.x;
+  canvas.height = aspect.y;
   main.addEventListener('mousedown', (e: MouseEvent) => { 
     e.preventDefault();
     if(e.buttons === 1) {
@@ -144,8 +156,8 @@ onMount(()=>{
       </div>
     </div>
   </div>
-</main>
 <canvas bind:this={canvas}></canvas>
+</main>
 
 <style>
 .subject_img {
@@ -153,7 +165,6 @@ onMount(()=>{
   top: 0;
   left: 0;
   z-index: -2;
-  object-fit: cover;
   transition: 80ms linear;
 }
 .sub{
