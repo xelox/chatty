@@ -8,7 +8,7 @@ export let subject_src: string;
 
 let width: number;
 let height: number;
-let min_width: number;
+let min_zoom: number;
 let offset = { x: 0, y: 0 };
 let min_offset = { x: 0, y: 0 };
 let image_ratio: number;
@@ -44,7 +44,7 @@ console.log(mask_style);
 const ZOOM_SPEED = 20;
 
 function zoom(dir: number) {
-  width = clamp(width - dir * ZOOM_SPEED, min_width, Infinity);  
+  width = clamp(width - dir * ZOOM_SPEED, min_zoom, Infinity);  
   height = width / image_ratio;
   min_offset.y = SIZE_Y - height;
   min_offset.x = SIZE_X - width;
@@ -70,8 +70,7 @@ image.onload = function(e) {
   }
   min_offset.y = SIZE_Y - height;
   min_offset.x = SIZE_X - width;
-  min_width = width;
-  min_height = height;
+  min_zoom = Math.min(width, height);
 }
 image.src = subject_src;
 

@@ -64,7 +64,7 @@ const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
     </div>
   </div>
 
-  <CropperTool subject_src='/cat-portrait.jpg' round={false} aspect={{x: 2, y: 1}} />
+  <CropperTool subject_src='/cat-portrait.jpg' round={false} aspect={{x: 2, y: 3}} />
 </main>
 
 <style>
