@@ -9,7 +9,8 @@ export let on_submit: (src: string) => void;
 
 let width: number;
 let height: number;
-let min_zoom: number;
+let min_w: number;
+let min_h: number;
 let offset = { x: 0, y: 0 };
 let min_offset = { x: 0, y: 0 };
 let image_ratio: number;
@@ -25,6 +26,8 @@ if (aspect.x < aspect.y) {
   SIZE_Y = MAX_SIZE / ratio;
   SIZE_X = MAX_SIZE;
 }
+
+const MIN_SIZE = Math.min(SIZE_X, SIZE_Y);
 
 console.log(SIZE_X/SIZE_Y, aspect.x / aspect.y);
 
@@ -45,16 +48,13 @@ if (round) {
 }
 
 
-console.log(mask_style);
 const ZOOM_SPEED = 20;
-
-function zoom(dir: number) {
-  width = clamp(width - dir * ZOOM_SPEED, min_zoom, Infinity);  
-  height = width / image_ratio;
-  min_offset.y = SIZE_Y - height;
-  min_offset.x = SIZE_X - width;
-  offset.x = clamp(offset.x, min_offset.x, 0);
-  offset.y = clamp(offset.y, min_offset.y, 0);
+let zoom: (dir: number) => void;
+function post_zoom() {
+    min_offset.y = SIZE_Y - height;
+    min_offset.x = SIZE_X - width;
+    offset.x = clamp(offset.x, min_offset.x, 0);
+    offset.y = clamp(offset.y, min_offset.y, 0);
 }
 
 const image = new Image();
@@ -64,18 +64,35 @@ image.onload = function(e) {
   input_h = target.height;
   image_ratio = input_w / input_h;
 
-  if (SIZE_X < SIZE_Y) {
-    width = MAX_SIZE * image_ratio;
+  let magic: boolean;
+  if (aspect.x === aspect.y) {
+    magic = input_w > input_h;
+  } else {
+    magic = aspect.x < aspect.y;
+  }
+  if (magic) {
     height = MAX_SIZE;
-    offset = { x: 0, y: MAX_SIZE / 2 - height / 2};
+    width = MAX_SIZE * image_ratio
+    zoom = (dir: number) => {
+      height = clamp(height - dir * ZOOM_SPEED, SIZE_Y, Infinity);
+      width = height * image_ratio;
+      post_zoom();
+    }
   } else {
     height = MAX_SIZE / image_ratio;
     width = MAX_SIZE;
-    offset = { x: MAX_SIZE / 2 - width / 2, y: 0 };
+    zoom = (dir: number) => {
+      width = clamp(width - dir * ZOOM_SPEED, SIZE_X, Infinity);  
+      height = width / image_ratio;
+      post_zoom();
+    }
   }
+
+  offset = { x: SIZE_X / 2 - width / 2, y: SIZE_Y / 2 - height / 2 };
   min_offset.y = SIZE_Y - height;
   min_offset.x = SIZE_X - width;
-  min_zoom = Math.min(width, height);
+  min_w = width;
+  min_h = height;
 }
 image.src = subject_src;
 
