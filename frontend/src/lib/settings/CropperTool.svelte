@@ -127,15 +127,13 @@ onMount(()=>{
   transition: 80ms linear;
 }
 .sub{
-  cursor: move;
   z-index: 1;
 }
 .sub {
-  border: 1px solid white;
   position: relative;
   left: 50%;
   transform: translateX(-50%);
-  /* overflow: hidden; */
+  overflow: hidden;
   border-radius: 4px;
 }
 .mask {
@@ -165,5 +163,6 @@ main {
   top: 50%;
   transform: translate(-50%, -50%);
   border-radius: 4px;
+  cursor: move;
 }
 </style>
