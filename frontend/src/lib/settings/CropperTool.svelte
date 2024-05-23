@@ -1,8 +1,8 @@
 <script lang='ts'>
 import { onMount } from "svelte";
 
-export let aspect: {x: number, y:number};
-const ratio = aspect.x / aspect.y; 
+export let output_res: {x: number, y:number};
+const ratio = output_res.x / output_res.y; 
 export let round: boolean;
 export let subject_src: string;
 export let on_submit: (src: string) => void;
@@ -19,7 +19,7 @@ let input_h: number;
 const MAX_SIZE = 400;
 let SIZE_X: number;
 let SIZE_Y: number;
-if (aspect.x < aspect.y) {
+if (output_res.x < output_res.y) {
   SIZE_X = ratio * MAX_SIZE;
   SIZE_Y = MAX_SIZE
 } else {
@@ -29,7 +29,7 @@ if (aspect.x < aspect.y) {
 
 const MIN_SIZE = Math.min(SIZE_X, SIZE_Y);
 
-console.log(SIZE_X/SIZE_Y, aspect.x / aspect.y);
+console.log(SIZE_X/SIZE_Y, output_res.x / output_res.y);
 
 const WHITESPACE = 50;
 let mask_style = `width: ${SIZE_X}px; height: ${SIZE_Y}px;`;
@@ -65,10 +65,10 @@ image.onload = function(e) {
   image_ratio = input_w / input_h;
 
   let magic: boolean;
-  if (aspect.x === aspect.y) {
+  if (output_res.x === output_res.y) {
     magic = input_w > input_h;
   } else {
-    magic = aspect.x < aspect.y;
+    magic = output_res.x < output_res.y;
   }
   if (magic) {
     height = MAX_SIZE;
@@ -126,8 +126,8 @@ function save(){
 
 onMount(()=>{
   ctx = canvas.getContext('2d')!;
-  canvas.width = aspect.x;
-  canvas.height = aspect.y;
+  canvas.width = output_res.x;
+  canvas.height = output_res.y;
   main.addEventListener('mousedown', (e: MouseEvent) => { 
     e.preventDefault();
     if(e.buttons === 1) {
