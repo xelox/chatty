@@ -1,22 +1,16 @@
 <script lang='ts'>
-import { user_data } from "../../stores/data";
+import { user_data, type SchemaUserInfo } from "../../stores/data";
 import CropperTool from "./CropperTool.svelte";
 
 let pfp_picker: HTMLInputElement;
 let banner_picker: HTMLInputElement;
 
-const changes: {
-  pfp: string | null
-  banner: string | null
-} = {
-  pfp: null,
-  banner: null,
-}
+const changes: Partial<Omit<SchemaUserInfo, "id">> = {}
 
 const tmp: {
-  pfp: string | null,
-  banner: string | null
-} = {pfp: null, banner: null}
+  pfp?: string,
+  banner?: string
+} = {}
 
 const image_file_handler = async (e: Event, key: 'pfp' | 'banner') => {
   const target = e.target as HTMLInputElement;
@@ -31,6 +25,15 @@ const image_file_handler = async (e: Event, key: 'pfp' | 'banner') => {
   reader.readAsDataURL(file);
 }
 
+const any_changes = (): boolean => {
+  for (const [key_, change] of Object.entries(changes)) {
+    const key = key_ as keyof SchemaUserInfo;
+    if (change === $user_data![key]) continue
+    if(change) return true;
+  }
+  return false;
+}
+
 </script>
 
 <main>
@@ -40,7 +43,7 @@ const image_file_handler = async (e: Event, key: 'pfp' | 'banner') => {
       <p class='label'>Profile</p>
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="profile_banner_wrap">
-        <img class='banner_img' src={changes.banner ?? $user_data?.banner_url ?? '#' } alt="" />
+        <img class='banner_img' src={changes.banner_url ?? $user_data?.banner_url ?? '#' } alt="" />
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="edit_hover" on:click={()=>{banner_picker.click()}}>
           <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
@@ -48,7 +51,7 @@ const image_file_handler = async (e: Event, key: 'pfp' | 'banner') => {
         </div>
         <div class="profile_banner">
           <div class="pfp_wrap">
-            <img src={changes.pfp ?? $user_data?.pfp_url ?? '#' } class="pfp_img" alt=''/>
+            <img src={changes.pfp_url?? $user_data?.pfp_url ?? '#' } class="pfp_img" alt=''/>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="edit_hover" on:click={()=>{pfp_picker.click()}}>
               <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
@@ -72,14 +75,14 @@ const image_file_handler = async (e: Event, key: 'pfp' | 'banner') => {
     <CropperTool input_src={tmp.pfp} 
     round={true} 
     output_res={{x: 600, y: 600}} 
-    on_submit={s => {tmp.pfp = null; changes.pfp = s}}/>
+    on_submit={s => {tmp.pfp = undefined; changes.pfp_url = s}}/>
   {/if}
 
   {#if tmp.banner}
     <CropperTool input_src={tmp.banner} 
     round={false} 
     output_res={{x: 1200, y: 280}} 
-    on_submit={s => {tmp.banner = null; changes.banner = s}}/>
+    on_submit={s => {tmp.banner = undefined; changes.banner_url = s}}/>
   {/if}
 </main>
 
