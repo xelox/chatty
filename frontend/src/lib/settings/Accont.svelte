@@ -1,61 +1,36 @@
 <script lang='ts'>
-import type { ChangeEventHandler } from "svelte/elements";
 import { user_data } from "../../stores/data";
 import CropperTool from "./CropperTool.svelte";
 
 let pfp_picker: HTMLInputElement;
 let banner_picker: HTMLInputElement;
-let pfp_preview: HTMLImageElement;
-let banner_preview: HTMLImageElement;
 
 const changes: {
-  new_pfp: string | null
-  new_banner: string | null
+  pfp: string | null
+  banner: string | null
 } = {
-  new_pfp: null,
-  new_banner: null,
+  pfp: null,
+  banner: null,
 }
 
-let tmp_pfp_input: string | null;
-let tmp_banner_input: string | null;
+const tmp: {
+  pfp: string | null,
+  banner: string | null
+} = {pfp: null, banner: null}
 
-const file_handler = async (e: Event) => {
-  return new Promise<string>((res, rej) => {
-    const target = e.target as HTMLInputElement;
-    const file = target.files![0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const local_url = e.target?.result;
-      if (typeof local_url !== 'string') return rej();
-      res(local_url);
-    }
-    reader.readAsDataURL(file);
-  })
+const image_file_handler = async (e: Event, key: 'pfp' | 'banner') => {
+  const target = e.target as HTMLInputElement;
+  const file = target.files![0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const local_url = e.target?.result;
+    // WARNING: Possibly neccessary to properly handle this error.
+    if (typeof local_url !== 'string') return console.error("Something went quite wrong.");
+    tmp[key] = local_url;
+  }
+  reader.readAsDataURL(file);
 }
 
-const pfp_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
-  file_handler(e).then(tmp => {
-    tmp_pfp_input = tmp;
-  });
-}
-
-const banner_handler: ChangeEventHandler<HTMLInputElement> = (e) => {
-  file_handler(e).then(tmp => {
-    tmp_banner_input = tmp;
-  });
-}
-
-const submit_pfp = (output: string) => {
-  changes.new_pfp = output;
-  tmp_pfp_input = null;
-  pfp_preview.src = output;
-}
-
-const submit_banner = (output: string) => {
-  changes.new_banner = output;
-  tmp_banner_input = null;
-  banner_preview.src = output;
-}
 </script>
 
 <main>
@@ -65,19 +40,19 @@ const submit_banner = (output: string) => {
       <p class='label'>Profile</p>
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="profile_banner_wrap">
-        <img class='banner_img' src="#" alt="" bind:this={banner_preview} />
+        <img class='banner_img' src={changes.banner ?? $user_data?.banner_url ?? '#' } alt="" />
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="edit_hover" on:click={()=>{banner_picker.click()}}>
           <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
-          <input type="file" accept="image/*" class='file_input' bind:this={banner_picker} on:change={banner_handler}>
+          <input type="file" accept="image/*" class='file_input' bind:this={banner_picker} on:change={e=>image_file_handler(e, 'banner')}>
         </div>
         <div class="profile_banner">
           <div class="pfp_wrap">
-            <img bind:this={pfp_preview} class="pfp_img" alt='' src="#"/>
+            <img src={changes.pfp ?? $user_data?.pfp_url ?? '#' } class="pfp_img" alt=''/>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="edit_hover" on:click={()=>{pfp_picker.click()}}>
               <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
-              <input type="file" accept="image/*" class='file_input' bind:this={pfp_picker} on:change={pfp_handler}>
+              <input type="file" accept="image/*" class='file_input' bind:this={pfp_picker} on:change={e=>image_file_handler(e, 'pfp')}>
             </div>
           </div>
         </div>
@@ -93,12 +68,18 @@ const submit_banner = (output: string) => {
     </div>
   </div>
 
-  {#if tmp_pfp_input}
-    <CropperTool subject_src={tmp_pfp_input} round={true} output_res={{x: 600, y: 600}} on_submit={submit_pfp}/>
+  {#if tmp.pfp}
+    <CropperTool input_src={tmp.pfp} 
+    round={true} 
+    output_res={{x: 600, y: 600}} 
+    on_submit={s => {tmp.pfp = null; changes.pfp = s}}/>
   {/if}
 
-  {#if tmp_banner_input}
-    <CropperTool subject_src={tmp_banner_input} round={false} output_res={{x: 1200, y: 280}} on_submit={submit_banner}/>
+  {#if tmp.banner}
+    <CropperTool input_src={tmp.banner} 
+    round={false} 
+    output_res={{x: 1200, y: 280}} 
+    on_submit={s => {tmp.banner = null; changes.banner = s}}/>
   {/if}
 </main>
 

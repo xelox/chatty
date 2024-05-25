@@ -4,6 +4,7 @@ export type SchemaUserInfo = {
   id: string,
   username: string,
   pfp_url?: string,
+  banner_url?: string,
   display_name: string | null,
   status?: string,
 };
