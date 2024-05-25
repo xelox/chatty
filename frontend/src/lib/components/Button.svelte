@@ -29,6 +29,6 @@ button {
   transition: 80ms;
 }
 button:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.2);
 }
 </style>
