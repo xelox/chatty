@@ -191,12 +191,13 @@ impl User {
         }
 
         let conn = &mut database::establish_connection();
-        let query: Result<_, _> = diesel::update(users::table.filter(users::id.eq(uid)))
+        let query: Result<User, _> = diesel::update(users::table.filter(users::id.eq(uid)))
             .set(changes)
-            .execute(conn);
+            .returning(users::all_columns)
+            .get_result(conn);
 
         match query {
-            Ok(_) => ChattyResponse::Ok,
+            Ok(user) => ChattyResponse::Plain(serde_json::to_string(&user).unwrap(), None),
             Err(_) => ChattyResponse::InternalError,
         }
     }

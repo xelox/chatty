@@ -57,10 +57,18 @@ $: if(changes || pictures) {
   there_are_changes = any_changes();
 }
 
+const reset = () => {
+  pictures.pfp = undefined;
+  pictures.banner = undefined;
+  changes.display_name = $user_data?.display_name ?? undefined;
+}
+
 const save = () => {
   const opts: RequestOptions = {
-    succeed_action: () => {
-      console.log('yeyyyy!');
+    succeed_action: (new_data) => {
+      const data: SchemaUserInfo = JSON.parse(new_data); 
+      user_data.set(data);
+      reset();
     },
   }
   const form = new FormData();
@@ -130,7 +138,7 @@ const save = () => {
     <div class="changes_to_commit_wrap">
       <p> You have un-saved changes! </p>
       <div class="buttons_wrap">
-        <Button bg={'red'}>Reset</Button>
+        <Button bg={'red'} action={reset}>Reset</Button>
         <Button bg={'green'} action={save}>Save</Button>
       </div>
     </div>
