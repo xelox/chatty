@@ -8,13 +8,13 @@ import RequestsSection from "./RequestsSection.svelte"
 
 <main>
   <div class="buttons_wrap">
-    <Link to='/app/friends'> 
+    <Link to='/app/chat/friends'> 
       <div class="button" class:active_section={$router_state.chat_nav_section === 'friends'}> Friends</div>
     </Link>
-    <Link to='/app/guilds'> 
+    <Link to='/app/chat/guilds'> 
       <div class="button" class:active_section={$router_state.chat_nav_section === 'guilds'}> Guilds</div>
     </Link>
-    <Link to='/app/requests'> 
+    <Link to='/app/chat/requests'> 
       <div class="button" class:active_section={$router_state.chat_nav_section === 'requests'}> Requests</div>
     </Link>
   </div> 
@@ -37,10 +37,9 @@ import RequestsSection from "./RequestsSection.svelte"
   justify-content: space-between;
   border-bottom: 1px solid var(--overlay0);
 }
+
 .button {
-  /* font-style: italic; */
-  cursor: pointer;
-  font-size: var(--size-normal);
+  padding: 4px 16px;
 }
 
 .button:hover {
