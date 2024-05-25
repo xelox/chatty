@@ -1,21 +1,26 @@
 <script lang='ts'>
 import { onMount } from "svelte";
 
+// Component Inputs.
 export let output_res: {x: number, y:number};
-const ratio = output_res.x / output_res.y; 
 export let round: boolean;
-export let subject_src: string;
+export let input_src: string;
 export let on_submit: (src: string) => void;
 
-let width: number;
-let height: number;
-let min_w: number;
-let min_h: number;
-let offset = { x: 0, y: 0 };
-let min_offset = { x: 0, y: 0 };
+const ratio = output_res.x / output_res.y; 
+
+// Tool state.
+let preview_w: number;
+let preview_h: number;
+let preview_offset = { x: 0, y: 0 };
+let preview_offset_limit = { x: 0, y: 0 };
+
+// Source Image Properties.
 let image_ratio: number;
 let input_w: number;
 let input_h: number;
+
+// Tool setup.
 const MAX_SIZE = 400;
 let SIZE_X: number;
 let SIZE_Y: number;
@@ -27,36 +32,36 @@ if (output_res.x < output_res.y) {
   SIZE_X = MAX_SIZE;
 }
 
-const MIN_SIZE = Math.min(SIZE_X, SIZE_Y);
+// Utility functions
+function clamp(val: number, min: number, max: number):number {
+  if (val > max) return max;
+  if (val < min) return min;
+  return val;
+}
 
-console.log(SIZE_X/SIZE_Y, output_res.x / output_res.y);
-
+// Constant style setup.
 const WHITESPACE = 50;
-let mask_style = `width: ${SIZE_X}px; height: ${SIZE_Y}px;`;
-let guideline_style = `width: ${SIZE_X}px; height: ${SIZE_Y}px; top: ${WHITESPACE}px; left: ${WHITESPACE}px;`
-if (round) {
-  mask_style += `
-    mask: radial-gradient(circle at center, transparent 0%, transparent ${MAX_SIZE / 2 - 0.5}px, rgba(0, 0, 0, 0.65) ${MAX_SIZE / 2 + 0.5}px, rgba(0, 0, 0, 0.65) 100%);
-  `;
-  guideline_style += 'border-radius: 100vh';
-} else {
-  mask_style += `
-    box-shadow: inset 0 0 0 50px var(--crust); 
-    background: transparent;
-    opacity: 0.65;
-  `;
+const make_style = () => {
+  let MASK_STYLE = `width: ${SIZE_X}px; height: ${SIZE_Y}px;`;
+  let GUIDELINE_STYLE = `width: ${SIZE_X}px; height: ${SIZE_Y}px; top: ${WHITESPACE}px; left: ${WHITESPACE}px;`
+  if (round) {
+    MASK_STYLE += `mask: radial-gradient(circle at center, transparent 0%, transparent ${MAX_SIZE / 2 - 0.5}px, rgba(0, 0, 0, 0.65) ${MAX_SIZE / 2 + 0.5}px, rgba(0, 0, 0, 0.65) 100%);`;
+    GUIDELINE_STYLE += 'border-radius: 100vh';
+  } else {
+    MASK_STYLE += `box-shadow: inset 0 0 0 50px var(--crust); background: transparent; opacity: 0.65;`;
+  }
+  const EDIT_WRAP_STYLE = `width: ${SIZE_X}px; height: ${SIZE_Y}px; padding: ${WHITESPACE}px;`;
+  return {MASK_STYLE, GUIDELINE_STYLE, EDIT_WRAP_STYLE};
 }
 
+const {MASK_STYLE, GUIDELINE_STYLE, EDIT_WRAP_STYLE} = make_style();
 
-const ZOOM_SPEED = 20;
+
+// Zoom declaration.
+const ZOOM_SPEED = 25;
 let zoom: (dir: number) => void;
-function post_zoom() {
-    min_offset.y = SIZE_Y - height;
-    min_offset.x = SIZE_X - width;
-    offset.x = clamp(offset.x, min_offset.x, 0);
-    offset.y = clamp(offset.y, min_offset.y, 0);
-}
 
+// Loading image properies to then setup initial tool state.
 const image = new Image();
 image.onload = function(e) {
   const target = e.target as HTMLImageElement;
@@ -71,52 +76,40 @@ image.onload = function(e) {
     magic = output_res.x < output_res.y;
   }
   if (magic) {
-    height = MAX_SIZE;
-    width = MAX_SIZE * image_ratio
+    preview_h = MAX_SIZE;
+    preview_w = MAX_SIZE * image_ratio
     zoom = (dir: number) => {
-      height = clamp(height - dir * ZOOM_SPEED, SIZE_Y, Infinity);
-      width = height * image_ratio;
-      post_zoom();
+      preview_h = clamp(preview_h - dir * ZOOM_SPEED, SIZE_Y, Infinity);
+      preview_w = preview_h * image_ratio;
     }
   } else {
-    height = MAX_SIZE / image_ratio;
-    width = MAX_SIZE;
+    preview_h = MAX_SIZE / image_ratio;
+    preview_w = MAX_SIZE;
     zoom = (dir: number) => {
-      width = clamp(width - dir * ZOOM_SPEED, SIZE_X, Infinity);  
-      height = width / image_ratio;
-      post_zoom();
+      preview_w = clamp(preview_w - dir * ZOOM_SPEED, SIZE_X, Infinity);  
+      preview_h = preview_w / image_ratio;
     }
   }
 
-  offset = { x: SIZE_X / 2 - width / 2, y: SIZE_Y / 2 - height / 2 };
-  min_offset.y = SIZE_Y - height;
-  min_offset.x = SIZE_X - width;
-  min_w = width;
-  min_h = height;
+  preview_offset = { x: SIZE_X / 2 - preview_w / 2, y: SIZE_Y / 2 - preview_h / 2 };
+  preview_offset_limit.y = SIZE_Y - preview_h;
+  preview_offset_limit.x = SIZE_X - preview_w;
 }
-image.src = subject_src;
+image.src = input_src;
 
-let main: HTMLElement;
-let dragging = false;
-let last_m_x = 0;
-let last_m_y = 0;
-
-function clamp(val: number, min: number, max: number):number {
-  if (val > max) return max;
-  if (val < min) return min;
-  return val;
-}
-
+// Drawing to canvas and submitting the cropped image.
 let canvas: HTMLCanvasElement;
-let ctx: CanvasRenderingContext2D;
 function save(){
+  const ctx = canvas.getContext('2d');
+  // WARNING: This error handle is not acceptable for prod.
+  if (!ctx) return console.error('Operation not supported by the browser.');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const src_w = (SIZE_X / width) * input_w;
-  const src_h = (SIZE_Y / height) * input_h;
+  const src_w = (SIZE_X / preview_w) * input_w;
+  const src_h = (SIZE_Y / preview_h) * input_h;
 
-  const src_offset_x = (-offset.x / SIZE_X) * src_w;
-  const src_offset_y = (-offset.y / SIZE_Y) * src_h;
+  const src_offset_x = (-preview_offset.x / SIZE_X) * src_w;
+  const src_offset_y = (-preview_offset.y / SIZE_Y) * src_h;
 
   ctx.drawImage(image, src_offset_x, src_offset_y, src_w, src_h, 0, 0, canvas.width, canvas.height);
 
@@ -124,8 +117,11 @@ function save(){
   on_submit(output);
 }
 
+// Handeling input events.
+let main: HTMLElement;
+let dragging = false;
+const mouse = { x: 0, y: 0 };
 onMount(()=>{
-  ctx = canvas.getContext('2d')!;
   canvas.width = output_res.x;
   canvas.height = output_res.y;
   main.addEventListener('mousedown', (e: MouseEvent) => { 
@@ -134,34 +130,39 @@ onMount(()=>{
       dragging = true; 
     }
   })
-  window.addEventListener('mouseup', () => { dragging = false; })
+  main.addEventListener('mouseup', () => { dragging = false; })
   main.addEventListener('mousemove', (e: MouseEvent) => {
-    const new_x = e.x;
-    const new_y = e.y;
-    const delta_x = last_m_x - new_x;
-    const delta_y = last_m_y - new_y;
-    last_m_x = new_x;
-    last_m_y = new_y;
+    // Mouse dragging logic.
     if (dragging) {
-      offset.x = clamp(offset.x - delta_x, min_offset.x, 0);
-      offset.y = clamp(offset.y - delta_y, min_offset.y, 0);
+      const delta_x = mouse.x - e.x;
+      const delta_y = mouse.y - e.y;
+      preview_offset.x = clamp(preview_offset.x - delta_x, preview_offset_limit.x, 0);
+      preview_offset.y = clamp(preview_offset.y - delta_y, preview_offset_limit.y, 0);
     }
+    mouse.x = e.x;
+    mouse.y = e.y;
   })
   main.addEventListener('wheel', (e: WheelEvent) => {
     zoom(clamp(e.deltaY, -1, 1));
+
+    // Post zoom
+    preview_offset_limit.y = SIZE_Y - preview_h;
+    preview_offset_limit.x = SIZE_X - preview_w;
+    preview_offset.x = clamp(preview_offset.x, preview_offset_limit.x, 0);
+    preview_offset.y = clamp(preview_offset.y, preview_offset_limit.y, 0);
   })
 })
 </script>
 
 <main bind:this={main}>
-  <div class="main">
+  <div class="arc">
     <h1>Crop Image</h1>
-    <div class="edit_wrap" style={`width: ${SIZE_X}px; height: ${SIZE_Y}px; padding: ${WHITESPACE}px;`}>
+    <div class="edit_wrap" style={EDIT_WRAP_STYLE}>
       <div class="sub">
-        <img src={subject_src} alt="" class='subject_img' style={`width: ${width}px; height: ${height}px; left: ${offset.x}px; top: ${offset.y}px`}>
+        <img src={input_src} alt="" class='subject_img' style={`width: ${preview_w}px; height: ${preview_h}px; left: ${preview_offset.x}px; top: ${preview_offset.y}px`}>
       </div>
-      <div class="mask" style={mask_style}></div>
-      <div class="guideline" style={guideline_style}></div>
+      <div class="mask" style={MASK_STYLE}></div>
+      <div class="guideline" style={GUIDELINE_STYLE}></div>
     </div>
     <div class="footer">
       <div>
@@ -227,7 +228,7 @@ button {
 .save_btn {
   background: var(--btn-green);
 }
-.main {
+.arc {
   padding: 20px;
   position: absolute;
   background: var(--surface0);
