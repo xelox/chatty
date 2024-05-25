@@ -1,6 +1,6 @@
 <script lang="ts">
-import { router, router_state } from "../../stores/router";
-    import Link from "../components/Link.svelte";
+import { router_state } from "../../stores/router";
+import Link from "../components/Link.svelte";
 import FriendsSection from "./FriendsSection.svelte"
 import GuildsSection from "./GuildsSection.svelte"
 import RequestsSection from "./RequestsSection.svelte"
