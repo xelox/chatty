@@ -48,8 +48,7 @@ pub async fn update_profile(session: Session<SessionPgPool>, mut form: Multipart
             _ => {}
         }
     }
-    User::update_profile_decorations(decorations, uid);
-    ChattyResponse::Ok
+    User::update_profile_decorations(decorations, uid)
 }
 pub async fn send_message(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>) -> ChattyResponse {
     let Some(allowed_channels) = session.get::<Vec<ChattyId>>("channels") else {

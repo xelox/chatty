@@ -8,6 +8,7 @@ use diesel::expression::ValidGrouping;
 use serde::Serialize;
 use crate::database;
 use crate::file_storage::save;
+use crate::structs::chatty_response::ChattyResponse;
 use crate::structs::checked_string::CheckedString;
 use crate::database::schema;
 use crate::structs::checked_string::Email;
@@ -23,12 +24,19 @@ use crate::structs::ts::TimeStamp;
 #[derive(Serialize)]
 pub struct User {
     pub id: ChattyId,
+
     pub username: CheckedString,
     pub email: Option<Email>,
-    pub display_name: Option<String>,
 
     #[serde(skip_serializing)]
     pub password_hash: String,
+
+    pub display_name: Option<String>,
+    pub has_pfp: bool,
+    pub has_banner: bool,
+    pub custom_status: Option<String>,
+    pub about_me: String,
+
     pub created_at: TimeStamp,
     pub last_online: TimeStamp,
 }
@@ -135,17 +143,61 @@ impl User {
         }
     }
         
-    pub fn update_profile_decorations(decorations: Vec<ProfileDecoration>, uid: ChattyId) {
-        for decoration in decorations {
+    pub fn update_profile_decorations(decorations: Vec<ProfileDecoration>, uid: ChattyId) -> ChattyResponse {
+        use schema::users;
+        use diesel::prelude::*;
+
+
+        #[derive(AsChangeset)]
+        #[diesel(table_name = schema::users)]
+        struct Change<'a> {
+            display_name: Option<&'a str>,
+            has_pfp: Option<&'a bool>,
+            has_banner: Option<&'a bool>,
+            about_me: Option<&'a str>,
+            custom_status: Option<&'a str>,
+        }
+
+        let mut changes = Change {
+            display_name: None,
+            has_pfp: None,
+            has_banner: None,
+            about_me: None,
+            custom_status: None
+        };
+
+        for decoration in decorations.iter() {
             match decoration {
                 ProfileDecoration::Pfp(bytes) => {
                     let path_str = format!("user_decorations/pfp/{uid}.png");
-                    let _ = save(Path::new(&path_str), bytes);
+                    let _ = save(Path::new(&path_str), &bytes);
+                    changes.has_pfp = Some(&true);
+                },
+                ProfileDecoration::Banner(bytes) => {
+                    let path_str = format!("user_decorations/banner/{uid}.png");
+                    let _ = save(Path::new(&path_str), &bytes);
+                    changes.has_banner = Some(&true);
+                },
+                ProfileDecoration::DisplayName(display_name) => {
+                    changes.display_name = Some(display_name);
                 }
-                _ => {
-                   unimplemented!() 
+                ProfileDecoration::AboutMe(about_me) => {
+                    changes.about_me = Some(about_me);
+                },
+                ProfileDecoration::Status(status) => {
+                    changes.custom_status = Some(status);
                 }
             }
+        }
+
+        let conn = &mut database::establish_connection();
+        let query: Result<_, _> = diesel::update(users::table.filter(users::id.eq(uid)))
+            .set(changes)
+            .execute(conn);
+
+        match query {
+            Ok(_) => ChattyResponse::Ok,
+            Err(_) => ChattyResponse::InternalError,
         }
     }
 }

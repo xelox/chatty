@@ -3,7 +3,7 @@ use axum::body::Bytes;
 
 static BASE_PATH_STR: &str = "/home/alex/dev/chatty/public";
 
-pub fn save(path: &Path, bytes: Bytes) -> io::Result<()> {
+pub fn save(path: &Path, bytes: &Bytes) -> io::Result<()> {
     let full_path = Path::new(BASE_PATH_STR).join(path);
     if let Some(parent_dir) = full_path.parent() {
         fs::create_dir_all(parent_dir)?;
