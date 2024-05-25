@@ -1,6 +1,7 @@
 <script lang='ts'>
+import { requests_manager, type RequestOptions } from "../../requests_manager";
 import { user_data, type SchemaUserInfo } from "../../stores/data";
-    import Button from "../components/Button.svelte";
+import Button from "../components/Button.svelte";
 import CropperTool from "./CropperTool.svelte";
 
 let pfp_picker: HTMLInputElement;
@@ -26,15 +27,28 @@ const image_file_handler = async (e: Event, key: 'pfp' | 'banner') => {
   reader.readAsDataURL(file);
 }
 
-const any_changes = (): boolean => {
-  for (const [key_, change] of Object.entries(changes)) {
-    const key = key_ as keyof SchemaUserInfo;
-    if (change === $user_data![key]) continue
-    if(change) return true;
+let there_are_changes = true;
+$: if(changes) {
+  const any_changes = (): boolean => {
+    console.log('changes check');
+    for (const [key_, change] of Object.entries(changes)) {
+      const key = key_ as keyof SchemaUserInfo;
+      if (change === $user_data![key]) continue
+      if(change) return true;
+    }
+    return false;
   }
-  return false;
+  there_are_changes = any_changes();
 }
 
+const save = () => {
+  const opts: RequestOptions = {
+    succeed_action: () => {
+      console.log('yeyyyy!');
+    }
+  }
+  requests_manager.post('/api/update_profile', changes, opts);
+}
 </script>
 
 <main>
@@ -86,11 +100,13 @@ const any_changes = (): boolean => {
     on_submit={s => {tmp.banner = undefined; changes.banner_url = s}}/>
   {/if}
 
-  {#if any_changes()}
+  {#if there_are_changes}
     <div class="changes_to_commit_wrap">
-      You have un-saved changes!
-      <Button bg={'red'}>Cancel</Button>
-      <Button bg={'green'}>Save</Button>
+      <p> You have un-saved changes! </p>
+      <div class="buttons_wrap">
+        <Button bg={'red'}>Reset</Button>
+        <Button bg={'green'} action={save}>Save</Button>
+      </div>
     </div>
   {/if}
 </main>
@@ -178,5 +194,21 @@ const any_changes = (): boolean => {
 }
 h1 {
   margin-bottom: 40px;
+}
+.changes_to_commit_wrap {
+  background: var(--crust);
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 100px;
+  padding: 8px 30px 8px 30px;
+  border-radius: 4px;
+  border: 1px solid var(--overlay0);
+}
+.changes_to_commit_wrap > p {
+  margin-top: auto;
+  margin-bottom:  auto;
 }
 </style>
