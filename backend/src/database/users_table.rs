@@ -1,9 +1,13 @@
+use std::path::Path;
+
+use axum::body::Bytes;
 use diesel::prelude::Insertable;
 use diesel::deserialize::Queryable;
 use diesel::Selectable;
 use diesel::expression::ValidGrouping;
 use serde::Serialize;
 use crate::database;
+use crate::file_storage::save;
 use crate::structs::checked_string::CheckedString;
 use crate::database::schema;
 use crate::structs::checked_string::Email;
@@ -130,7 +134,20 @@ impl User {
             }
         }
     }
-
+        
+    pub fn update_profile_decorations(decorations: Vec<ProfileDecoration>, uid: ChattyId) {
+        for decoration in decorations {
+            match decoration {
+                ProfileDecoration::Pfp(bytes) => {
+                    let path_str = format!("user_decorations/pfp/{uid}.png");
+                    let _ = save(Path::new(&path_str), bytes);
+                }
+                _ => {
+                   unimplemented!() 
+                }
+            }
+        }
+    }
 }
 
 #[derive(Insertable)]
@@ -146,4 +163,12 @@ pub enum AuthValidationResult {
     Valid(ChattyId),
     IncorrectUniqueName,
     IncorrectPassword,
+}
+
+pub enum ProfileDecoration {
+    DisplayName(String),
+    Pfp(Bytes),
+    Banner(Bytes),
+    AboutMe(String),
+    Status(String),
 }

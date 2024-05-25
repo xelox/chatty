@@ -16,6 +16,7 @@ pub mod serve_app;
 pub mod server_state;
 pub mod structs;
 pub mod web_socket_manager;
+pub mod file_storage;
 
 use crate::server_state::ServerState;
 

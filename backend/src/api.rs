@@ -1,7 +1,7 @@
 use crate::database::channel_subscribers_table::ChannelSubscribers;
 use crate::database::channel_table::ChannelTable;
 use crate::database::message_table::{Message, NewMessage};
-use crate::database::users_table::{AuthValidationResult, User};
+use crate::database::users_table::{AuthValidationResult, ProfileDecoration, User};
 use crate::database::user_relations_table::{RelationAndUser, UserRelationPair, UserRelation};
 use crate::server_state::ServerState;
 use crate::structs::chatty_response::{chatty_json_response, ChattyResponse};
@@ -17,15 +17,38 @@ use std::sync::Arc;
 use crate::structs::id::ChattyId;
 
 pub async fn update_profile(session: Session<SessionPgPool>, mut form: Multipart) -> ChattyResponse {
-    let Some(_uid) = session.get::<ChattyId>("user_id") else {
+    let Some(uid) = session.get::<ChattyId>("user_id") else {
         return ChattyResponse::InternalError;
     };
     
+    let mut decorations = Vec::<ProfileDecoration>::new();
     while let Some(field) = form.next_field().await.unwrap() {
         let key = field.name().unwrap().to_string();
-        let data = field.bytes().await.unwrap();
-        dbg!(key, data);
+        match key.as_str() {
+            "display_name" => {
+                let str = field.text().await.unwrap();
+                decorations.push(ProfileDecoration::DisplayName(str));
+            },
+            "pfp" => {
+                let bytes = field.bytes().await.unwrap();
+                decorations.push(ProfileDecoration::Pfp(bytes));          
+            },
+            "banner" => {
+                let bytes = field.bytes().await.unwrap();
+                decorations.push(ProfileDecoration::Banner(bytes));
+            },
+            "about_me" => {
+                let str = field.text().await.unwrap();
+                decorations.push(ProfileDecoration::AboutMe(str));
+            },
+            "status" => {
+                let str = field.text().await.unwrap();
+                decorations.push(ProfileDecoration::Status(str));
+            }
+            _ => {}
+        }
     }
+    User::update_profile_decorations(decorations, uid);
     ChattyResponse::Ok
 }
 pub async fn send_message(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>) -> ChattyResponse {
