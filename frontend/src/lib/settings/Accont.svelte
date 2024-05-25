@@ -84,7 +84,7 @@ const save = () => {
       <p class='label'>Profile</p>
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="profile_banner_wrap">
-        <img class='banner_img' src={pictures.banner?.url ?? $user_data?.has_banner ? `/media/banner/${$user_data?.id}.png` : '#'} alt="" />
+        <img class='banner_img' src={pictures.banner?.url ?? ($user_data?.has_banner ? `/media/banner/${$user_data?.id}.png` : '#')} alt="" />
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="edit_hover" on:click={()=>{banner_picker.click()}}>
           <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
@@ -92,7 +92,7 @@ const save = () => {
         </div>
         <div class="profile_banner">
           <div class="pfp_wrap">
-            <img src={pictures.pfp?.url ?? $user_data?.has_pfp ? `/media/pfp/${$user_data?.id}.png` : '#'} class="pfp_img" alt=''/>
+            <img src={pictures.pfp?.url ?? ($user_data?.has_pfp ? `/media/pfp/${$user_data?.id}.png` : '#')} class="pfp_img" alt=''/>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="edit_hover" on:click={()=>{pfp_picker.click()}}>
               <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
