@@ -194,6 +194,7 @@ onMount(()=>{
   position: relative;
   border-radius: 4px;
   background: var(--crust);
+  cursor: move;
 }
 .sub {
   width: 100%;
@@ -227,7 +228,6 @@ canvas {
   top: 50%;
   transform: translate(-50%, -50%);
   border-radius: 4px;
-  cursor: move;
   -webkit-box-shadow: 0px 33px 19px 2px rgba(0,0,0,0.2), 0px 24px 9px -2px rgba(0,0,0,0.17), 0px 9px 11px -2px rgba(0,0,0,0.58); 
   box-shadow: 0px 33px 19px 2px rgba(0,0,0,0.2), 0px 24px 9px -2px rgba(0,0,0,0.17), 0px 9px 11px -2px rgba(0,0,0,0.58);
 }
