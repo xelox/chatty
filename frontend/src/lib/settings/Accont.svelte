@@ -7,7 +7,11 @@ import CropperTool from "./CropperTool.svelte";
 let pfp_picker: HTMLInputElement;
 let banner_picker: HTMLInputElement;
 
-const changes: Partial<Omit<SchemaUserInfo, "id" | "pfp_url" | "banner_url">> = {}
+const changes: {
+  display_name?: string,
+  about_me?: string,
+  status?: string,
+} = {};
 const pictures: {
   pfp?: {
     url: string,
@@ -65,6 +69,7 @@ const save = () => {
   }
   for(const [key, change] of Object.entries(changes)) {
     if (change) {
+      console.log(key, change);
       form.append(key, change);
     }
   }
@@ -103,7 +108,7 @@ const save = () => {
     </div>
     <div class="field_wrap">
       <p class='label'>Display Name</p>
-      <input type="text" class="ed" placeholder="Display Name">
+      <input type="text" class="ed" placeholder="Display Name" bind:value={changes.display_name}>
     </div>
   </div>
 
