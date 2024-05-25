@@ -1,12 +1,12 @@
 <script lang='ts'>
 import { onMount } from "svelte";
-    import Button from "../components/Button.svelte";
+import Button from "../components/Button.svelte";
 
 // Component Inputs.
 export let output_res: {x: number, y:number};
 export let round: boolean;
 export let input_src: string;
-export let on_submit: (src: string) => void;
+export let on_submit: (output: {url: string, blob: Blob}) => void;
 
 const ratio = output_res.x / output_res.y; 
 
@@ -114,8 +114,12 @@ function save(){
 
   ctx.drawImage(image, src_offset_x, src_offset_y, src_w, src_h, 0, 0, canvas.width, canvas.height);
 
-  const output = canvas.toDataURL('image/png');
-  on_submit(output);
+  const url = canvas.toDataURL('image/png');
+  canvas.toBlob((blob) => {
+    // WARNING: This error handle is not acceptable for prod.
+    if (!blob) return console.error("Failed to create blob.");
+    on_submit({url, blob});
+  }, 'image/png', 1)
 }
 
 // Handeling input events.

@@ -14,6 +14,7 @@ export type RequestOptions = {
   notify_fail?: boolean,
   fail_action?: (result?: any) => void,
   succeed_action?: (result?: any) => void,
+  omit_content_type?: boolean
 }
 
 class RequestsManager {
@@ -43,9 +44,12 @@ class RequestsManager {
   }
 
   private request = (path: string, method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH", body?: string, options?: RequestOptions) => {
+    const headers: HeadersInit = [];
+    if (!options?.omit_content_type) headers.push(["Content-Type", "application/json"] );
+
     fetch(`${this.base}${path}`, {
       method,
-      headers: [ ["Content-Type", "application/json"] ],
+      headers,
       body
     }).then(res=>{
         if (!res.ok) {

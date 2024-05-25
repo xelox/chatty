@@ -7,7 +7,17 @@ import CropperTool from "./CropperTool.svelte";
 let pfp_picker: HTMLInputElement;
 let banner_picker: HTMLInputElement;
 
-const changes: Partial<Omit<SchemaUserInfo, "id">> = {}
+const changes: Partial<Omit<SchemaUserInfo, "id" | "pfp_url" | "banner_url">> = {}
+const pictures: {
+  pfp?: {
+    url: string,
+    blob: Blob
+  },
+  banner?: {
+    url: string,
+    blob: Blob,
+  }
+} = {}
 
 const tmp: {
   pfp?: string,
@@ -45,6 +55,16 @@ const save = () => {
   const opts: RequestOptions = {
     succeed_action: () => {
       console.log('yeyyyy!');
+    },
+    omit_content_type: true,
+  }
+  const form = new FormData();
+  for(const [key, data] of Object.entries(pictures)) {
+    form.append(key, data.blob);
+  }
+  for(const [key, change] of Object.entries(changes)) {
+    if (change) {
+      form.append(key, change);
     }
   }
   requests_manager.post('/api/update_profile', changes, opts);
@@ -58,7 +78,7 @@ const save = () => {
       <p class='label'>Profile</p>
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="profile_banner_wrap">
-        <img class='banner_img' src={changes.banner_url ?? $user_data?.banner_url ?? '#' } alt="" />
+        <img class='banner_img' src={pictures.banner?.url ?? $user_data?.banner_url ?? '#' } alt="" />
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="edit_hover" on:click={()=>{banner_picker.click()}}>
           <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
@@ -66,7 +86,7 @@ const save = () => {
         </div>
         <div class="profile_banner">
           <div class="pfp_wrap">
-            <img src={changes.pfp_url?? $user_data?.pfp_url ?? '#' } class="pfp_img" alt=''/>
+            <img src={pictures.pfp?.url ?? $user_data?.pfp_url ?? '#' } class="pfp_img" alt=''/>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="edit_hover" on:click={()=>{pfp_picker.click()}}>
               <img class='edit_icon' src="/svg-files/Education/pencil.svg" alt=""/>
@@ -90,14 +110,14 @@ const save = () => {
     <CropperTool input_src={tmp.pfp} 
     round={true} 
     output_res={{x: 600, y: 600}} 
-    on_submit={s => {tmp.pfp = undefined; changes.pfp_url = s}}/>
+    on_submit={output => {tmp.pfp = undefined; pictures.pfp = output}}/>
   {/if}
 
   {#if tmp.banner}
     <CropperTool input_src={tmp.banner} 
     round={false} 
     output_res={{x: 1200, y: 280}} 
-    on_submit={s => {tmp.banner = undefined; changes.banner_url = s}}/>
+    on_submit={output => {tmp.banner = undefined; pictures.banner = output}}/>
   {/if}
 
   {#if there_are_changes}
