@@ -1,5 +1,6 @@
 <script lang='ts'>
 import { onMount } from "svelte";
+    import Button from "../components/Button.svelte";
 
 // Component Inputs.
 export let output_res: {x: number, y:number};
@@ -166,11 +167,11 @@ onMount(()=>{
     </div>
     <div class="footer">
       <div>
-        <button class='edit_btn'>Mirror V</button>
-        <button class='edit_btn'>Mirror H</button>
+        <Button>Mirror V</Button>
+        <Button>Mirror H</Button>
       </div>
       <div>
-        <button class='save_btn' on:click={save}>Save</button>
+        <Button action={save} bg={'green'}>Save</Button>
       </div>
     </div>
   </div>
@@ -215,18 +216,6 @@ onMount(()=>{
 }
 canvas {
   display: none;
-}
-button {
-  padding: 4px 10px 4px 10px;
-  border-radius: 2px;
-  font-family: 'Noto Sans';
-  background: var(--btn-blue);
-  color: white;
-  -webkit-box-shadow: 0px 3px 5px -2px rgba(0,0,0,0.24); 
-  box-shadow: 0px 3px 5px -2px rgba(0,0,0,0.24);
-}
-.save_btn {
-  background: var(--btn-green);
 }
 .arc {
   padding: 20px;

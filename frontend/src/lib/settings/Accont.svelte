@@ -1,5 +1,6 @@
 <script lang='ts'>
 import { user_data, type SchemaUserInfo } from "../../stores/data";
+    import Button from "../components/Button.svelte";
 import CropperTool from "./CropperTool.svelte";
 
 let pfp_picker: HTMLInputElement;
@@ -83,6 +84,14 @@ const any_changes = (): boolean => {
     round={false} 
     output_res={{x: 1200, y: 280}} 
     on_submit={s => {tmp.banner = undefined; changes.banner_url = s}}/>
+  {/if}
+
+  {#if any_changes()}
+    <div class="changes_to_commit_wrap">
+      You have un-saved changes!
+      <Button bg={'red'}>Cancel</Button>
+      <Button bg={'green'}>Save</Button>
+    </div>
   {/if}
 </main>
 
