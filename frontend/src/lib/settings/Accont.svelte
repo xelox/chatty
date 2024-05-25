@@ -11,7 +11,7 @@ const changes: {
   display_name?: string,
   about_me?: string,
   status?: string,
-} = {};
+} = { display_name: $user_data?.display_name ?? undefined};
 const pictures: {
   pfp?: {
     url: string,
