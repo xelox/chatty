@@ -3,8 +3,8 @@ import { writable } from "svelte/store"
 export type SchemaUserInfo = {
   id: string,
   username: string,
-  pfp_url?: string,
-  banner_url?: string,
+  has_pfp?: boolean,
+  has_banner?: boolean,
   display_name: string | null,
   status?: string,
 };

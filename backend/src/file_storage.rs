@@ -1,7 +1,7 @@
 use std::{fs::{self, OpenOptions}, io::{self, Write}, path::Path};
 use axum::body::Bytes;
 
-static BASE_PATH_STR: &str = "/home/alex/dev/chatty/public";
+static BASE_PATH_STR: &str = "/home/alex/dev/chatty/media";
 
 pub fn save(path: &Path, bytes: &Bytes) -> io::Result<()> {
     let full_path = Path::new(BASE_PATH_STR).join(path);

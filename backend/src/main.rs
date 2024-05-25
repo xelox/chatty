@@ -51,6 +51,7 @@ async fn main() {
         .route("/api/initial_data_request", get(api::initial_data_request))
         .nest_service("/assets", ServeDir::new("../frontend/dist/assets"))
         .nest_service("/", ServeDir::new("../frontend/public"))
+        .nest_service("/media", ServeDir::new("/home/alex/dev/chatty/media"))
         .layer(middleware::from_fn(middlewares::log))
         .layer(CorsLayer::permissive())
         .layer(SessionLayer::new(session_store))

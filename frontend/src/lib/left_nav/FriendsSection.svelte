@@ -8,7 +8,7 @@ import Link from '../components/Link.svelte';
   {#each Object.entries($friend_list) as [relation_id, friend_item]}
     <Link to={`/app/chat/friends/${relation_id}`}>
     <div class='friend_item' class:active_channel={relation_id === $router_state.active_channel}>
-      <span class="left"> <img src="{friend_item?.pfp_url}" title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
+      <span class="left"> <img src={`/media/pfp/${friend_item.id}.png`} title="{friend_item.display_name ?? friend_item.username}" alt=""> </span>
       <div class="right">
         <span class="display_name">{friend_item.display_name ?? friend_item.username}</span>
       </div>

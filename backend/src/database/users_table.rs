@@ -169,12 +169,12 @@ impl User {
         for decoration in decorations.iter() {
             match decoration {
                 ProfileDecoration::Pfp(bytes) => {
-                    let path_str = format!("user_decorations/pfp/{uid}.png");
+                    let path_str = format!("pfp/{uid}.png");
                     let _ = save(Path::new(&path_str), &bytes);
                     changes.has_pfp = Some(&true);
                 },
                 ProfileDecoration::Banner(bytes) => {
-                    let path_str = format!("user_decorations/banner/{uid}.png");
+                    let path_str = format!("banner/{uid}.png");
                     let _ = save(Path::new(&path_str), &bytes);
                     changes.has_banner = Some(&true);
                 },
