@@ -1,4 +1,3 @@
-use crate::database;
 use crate::database::channel_subscribers_table::ChannelSubscribers;
 use crate::database::channel_table::ChannelTable;
 use crate::database::message_table::{Message, NewMessage};
@@ -10,13 +9,25 @@ use crate::structs::checked_string::CheckedString;
 use crate::structs::notification::Notification;
 use crate::structs::socket_signal::Signal;
 use crate::structs::ts::TimeStamp;
-use axum::extract::{Json, Path, State};
+use axum::extract::{Json, Path, State, Multipart};
 use axum::response::{IntoResponse, Response};
 use axum_session::{Session, SessionPgPool};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use crate::structs::id::ChattyId;
 
+pub async fn update_profile(session: Session<SessionPgPool>, mut form: Multipart) -> ChattyResponse {
+    let Some(_uid) = session.get::<ChattyId>("user_id") else {
+        return ChattyResponse::InternalError;
+    };
+    
+    while let Some(field) = form.next_field().await.unwrap() {
+        let key = field.name().unwrap().to_string();
+        let data = field.bytes().await.unwrap();
+        dbg!(key, data);
+    }
+    ChattyResponse::Ok
+}
 pub async fn send_message(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>) -> ChattyResponse {
     let Some(allowed_channels) = session.get::<Vec<ChattyId>>("channels") else {
         println!("No channels set");

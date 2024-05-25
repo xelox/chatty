@@ -38,9 +38,11 @@ const image_file_handler = async (e: Event, key: 'pfp' | 'banner') => {
 }
 
 let there_are_changes = true;
-$: if(changes) {
+$: if(changes || pictures) {
   const any_changes = (): boolean => {
-    console.log('changes check');
+    for (const change of Object.values(pictures)) {
+      if (change) return true; 
+    }
     for (const [key_, change] of Object.entries(changes)) {
       const key = key_ as keyof SchemaUserInfo;
       if (change === $user_data![key]) continue
@@ -56,7 +58,6 @@ const save = () => {
     succeed_action: () => {
       console.log('yeyyyy!');
     },
-    omit_content_type: true,
   }
   const form = new FormData();
   for(const [key, data] of Object.entries(pictures)) {
@@ -67,7 +68,7 @@ const save = () => {
       form.append(key, change);
     }
   }
-  requests_manager.post('/api/update_profile', changes, opts);
+  requests_manager.post_form('/api/update_profile', form, opts);
 }
 </script>
 

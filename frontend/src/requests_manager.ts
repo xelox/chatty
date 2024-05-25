@@ -14,7 +14,6 @@ export type RequestOptions = {
   notify_fail?: boolean,
   fail_action?: (result?: any) => void,
   succeed_action?: (result?: any) => void,
-  omit_content_type?: boolean
 }
 
 class RequestsManager {
@@ -43,9 +42,9 @@ class RequestsManager {
     if (options?.fail_action) options.fail_action(err_message);
   }
 
-  private request = (path: string, method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH", body?: string, options?: RequestOptions) => {
+  private request = (path: string, method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH", body?: string | FormData, options?: RequestOptions, is_form?: boolean) => {
     const headers: HeadersInit = [];
-    if (!options?.omit_content_type) headers.push(["Content-Type", "application/json"] );
+    if (!is_form) headers.push(["Content-Type", "application/json"] );
 
     fetch(`${this.base}${path}`, {
       method,
@@ -80,6 +79,13 @@ class RequestsManager {
    * @param options can be used to add behaviour.
    * */
   public post = (path: string, item: any, options?: RequestOptions) => { this.request(path, "POST", JSON.stringify(item), options); }
+
+  /** 
+   * @param path starting with /
+   * @param form to be serialized to json and sent to server.
+   * @param options can be used to add behaviour.
+   * */
+  public post_form = (path: string, form: FormData, options?: RequestOptions) => { this.request(path, "POST", form, options, true); }
 
   /** 
    * @param path starting with /
