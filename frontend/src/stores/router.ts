@@ -1,6 +1,8 @@
 import navaid, { type Params } from 'navaid';
 import { readable, type Readable } from 'svelte/store';
 import { channels_store, type SchemaChannelList } from './messages';
+import { requests_manager, type RequestOptions } from '../requests_manager';
+import { erase } from './data';
 
 const r = navaid('app', (url) => {
   console.log('Used undefined route:', url);
@@ -116,7 +118,7 @@ r.on('chat/:section?/:channel_id?', (params) => {
 
   update(u);
 })
-.on('settings/:section?', params => {
+  .on('settings/:section?', params => {
     if (!params) return console.error("params need to be set");
     let section = params.section as SettingsNavSections | undefined;
     if (!section) {
@@ -130,16 +132,27 @@ r.on('chat/:section?/:channel_id?', (params) => {
       main_section: 'settings',
       settings_nav_section: section,
     });
-})
-.on('add_friend', _ => {
+  })
+  .on('add_friend', _ => {
     update({
       main_section: 'friend_req_tool',
     });
-})
-.on('auth', _ => {
+  })
+  .on('auth', _ => {
     update({
       main_section: 'auth',
     });
-})
+  })
+  .on('logout', _ => {
+    const opts: RequestOptions = {
+      succeed_action: () => {
+        erase();
+        r.route('/app/auth', true);
+      },
+      notify_fail: true,
+    } 
+
+    requests_manager.get('/api/logout', opts);
+  })
 
 export const router = r.listen();

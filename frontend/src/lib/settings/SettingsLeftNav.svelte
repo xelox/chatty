@@ -1,6 +1,7 @@
 <script lang='ts'>
-import { router, router_state, SETTINGS_NAV_SECTIONS } from "../../stores/router";
+import { router_state, SETTINGS_NAV_SECTIONS } from "../../stores/router";
 import { settings_left_pos } from "../../stores/ui";
+import Link from "../components/Link.svelte";
 let ui_width = 0;
 $: if($settings_left_pos) {
   ui_width = $settings_left_pos - 40;
@@ -11,9 +12,9 @@ $: if($settings_left_pos) {
 <main>
   <div class="buttons_wrap">
     {#each Object.entries(SETTINGS_NAV_SECTIONS) as [key, title]} 
-      <button class="pannel_btn" class:active_section={$router_state.settings_nav_section === key} on:click={()=>{ 
-        router.route(`/app/settings/${key}`);
-      }}>{title}</button>
+      <Link to={`/app/settings/${key}`}>
+      <div class="pannel_btn" class:active_section={$router_state.settings_nav_section === key}>{title}</div>
+      </Link>
     {/each}
   </div>
 </main>

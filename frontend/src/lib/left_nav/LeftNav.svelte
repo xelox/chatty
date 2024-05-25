@@ -1,5 +1,6 @@
 <script lang="ts">
 import { router, router_state } from "../../stores/router";
+    import Link from "../components/Link.svelte";
 import FriendsSection from "./FriendsSection.svelte"
 import GuildsSection from "./GuildsSection.svelte"
 import RequestsSection from "./RequestsSection.svelte"
@@ -7,9 +8,15 @@ import RequestsSection from "./RequestsSection.svelte"
 
 <main>
   <div class="buttons_wrap">
-    <button class="button" on:click={()=>{router.route("/app/chat/friends")}} class:active_section={$router_state.chat_nav_section === 'friends'}> Friends </button>
-    <button class="button" on:click={()=>{router.route("/app/chat/guilds")}} class:active_section={$router_state.chat_nav_section === 'guilds'}> Guilds </button>
-    <button class="button" on:click={()=>{router.route("/app/chat/requests")}} class:active_section={$router_state.chat_nav_section === 'requests'}> Requests </button>
+    <Link to='/app/friends'> 
+      <div class="button" class:active_section={$router_state.chat_nav_section === 'friends'}> Friends</div>
+    </Link>
+    <Link to='/app/guilds'> 
+      <div class="button" class:active_section={$router_state.chat_nav_section === 'guilds'}> Guilds</div>
+    </Link>
+    <Link to='/app/requests'> 
+      <div class="button" class:active_section={$router_state.chat_nav_section === 'requests'}> Requests</div>
+    </Link>
   </div> 
   <div class="active_section_wrapper">
     {#if $router_state.chat_nav_section === "friends"}
