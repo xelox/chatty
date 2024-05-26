@@ -50,7 +50,7 @@ function to_time_str(ts: number) {
   font-size: var(--size-small);
 }
 .head{
-  padding: 2px 8px 2px 8px;
+  padding: 0 8px;
 }
 main {
   margin-bottom: 1em;

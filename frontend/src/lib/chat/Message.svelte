@@ -40,7 +40,7 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 <style>
 .content{
   white-space: pre-line;
-  padding: 2px 8px 2px 8px;
+  padding: 0 8px;
 }
 main:hover {
   background: var(--surface0);

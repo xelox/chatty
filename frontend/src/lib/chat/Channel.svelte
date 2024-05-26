@@ -210,7 +210,7 @@ main {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--crust);
+  background: var(--mantle);
 }
 .messages_wrap {
   flex-grow: 1;
