@@ -27,7 +27,7 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 });
 </script>
 
-<main class='content' class:unsent={message.id}>
+<main class='content' class:unsent={!message.id}>
   {#each content_segments as segment}
     {#if segment.kind === 'text'}
       <SvelteMarkdown source={segment.content} isInline={true}/>
@@ -46,6 +46,6 @@ main:hover {
   background: var(--surface0);
 }
 .unsent {
-  opacity: 0.8;
+  opacity: 0.5;
 }
 </style>

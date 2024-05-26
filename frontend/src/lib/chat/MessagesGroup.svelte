@@ -35,7 +35,7 @@ function to_time_str(ts: number) {
   </div>
   <div class="right">
     <div class="head">
-      <UserIdWrap id={group.sender_id}/>
+      <span class="user"><UserIdWrap id={group.sender_id}/></span>
       <span class='time'>{to_time_str(group.group_ts_start)}</span>
     </div>
     {#each Object.values(group.messages).sort((a, b) => {return a.sent_at - b.sent_at}) as message (message.id)} 
@@ -45,6 +45,10 @@ function to_time_str(ts: number) {
 </main>
 
 <style>
+.user {
+  color: var(--blue);
+  font-weight: bolder;
+}
 .time {
   opacity: 0.8;
   font-size: var(--size-small);

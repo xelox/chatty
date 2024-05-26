@@ -12,10 +12,3 @@ onDestroy(u);
 </script>
 
 <span>{username}</span>
-
-<style>
-span{
-  color: var(--blue);
-  font-weight: bold;
-}
-</style>
