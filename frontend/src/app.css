@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
 :root {
 --crust:      #11111b;
 --mantle:     #181825;
@@ -59,15 +61,17 @@ body {
   margin: 0;
   background: var(--base);
   color: var(--text);
-  font-family: 'maple';
   font-size: 14px;
+  font-family: 'Nunito', sans-serif;
+  font-optical-sizing: auto;
 }
 
-input, button {
+input, button, textarea {
   background: none;
   color: var(--text);
-  font-family: 'maple';
   border: none;
+  font-family: 'Nunito', sans-serif;
+  resize: none;
 }
 
 

@@ -37,7 +37,6 @@ import Link from '../components/Link.svelte';
   justify-content: space-around
 }
 .friend_item {
-  font-family: "maple";
   padding: 4px;
   display: flex;
   flex-direction: row;

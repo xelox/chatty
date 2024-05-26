@@ -93,7 +93,6 @@ button:hover {
   justify-content: space-around
 }
 .friend_item {
-  font-family: "maple";
   padding: 2px 10px 2px 10px;
   margin: 0;
   display: flex;

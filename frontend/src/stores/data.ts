@@ -6,6 +6,7 @@ export type SchemaUserInfo = {
   has_pfp?: boolean,
   has_banner?: boolean,
   display_name: string | null,
+  about_me: string,
   status?: string,
 };
 

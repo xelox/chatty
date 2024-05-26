@@ -11,7 +11,18 @@ const changes: {
   display_name?: string,
   about_me?: string,
   status?: string,
-} = { display_name: $user_data?.display_name ?? undefined};
+} = {};
+
+const limits = <const>{
+  display_name: 25,
+  about_me: 500,
+  status: 50,
+};
+
+$: over_limit = (key: keyof typeof limits) => {
+  return (changes[key]?.length || 0) > limits[key];
+}
+
 const pictures: {
   pfp?: {
     url: string,
@@ -48,9 +59,10 @@ $: if(changes || pictures) {
       if (change) return true; 
     }
     for (const [key_, change] of Object.entries(changes)) {
-      const key = key_ as keyof SchemaUserInfo;
+      const key = key_ as keyof typeof changes;
+      if (over_limit(key)) return false;
       if (change === $user_data![key]) continue
-      if(change) return true;
+      if(change !== undefined) return true;
     }
     return false;
   }
@@ -61,7 +73,10 @@ const reset = () => {
   pictures.pfp = undefined;
   pictures.banner = undefined;
   changes.display_name = $user_data?.display_name ?? undefined;
+  changes.about_me = $user_data?.about_me ?? undefined;
 }
+
+reset();
 
 const save = () => {
   const opts: RequestOptions = {
@@ -88,7 +103,7 @@ const save = () => {
 <main>
   <h1>Account Settings</h1>
   <div class="sections_wrap">
-    <div class="">
+    <div class="field_wrap">
       <p class='label'>Profile</p>
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="profile_banner_wrap">
@@ -110,13 +125,35 @@ const save = () => {
         </div>
       </div>
     </div>
-    <div class="field_wrap">
-      <p class='label'>Username</p>
-      <p class="ed">{$user_data?.username}</p>
-    </div>
+
     <div class="field_wrap">
       <p class='label'>Display Name</p>
-      <input type="text" class="ed" placeholder="Display Name" bind:value={changes.display_name}>
+      <div class="input_wrap">
+        <input type="text" class="ed" placeholder="Display Name" bind:value={changes.display_name}>
+        <span class="length_limit" class:over_limit={over_limit('display_name')}>
+          {changes.display_name?.length || 0}/{limits.display_name}
+        </span>
+      </div>
+    </div>
+
+    <div class="field_wrap">
+      <p class='label'>Status</p>
+      <div class="input_wrap">
+        <input type="text" class="ed" placeholder="Custom Status" bind:value={changes.status}>
+        <span class="length_limit" class:over_limit={over_limit('status')}>
+          {changes.status?.length || 0}/{limits.status}
+        </span>
+      </div>
+    </div>
+
+    <div class="field_wrap">
+      <p class="label">About Me</p>
+      <div class="input_wrap">
+        <textarea class='ed' rows="4" bind:value={changes.about_me}></textarea>
+        <span class="length_limit" class:over_limit={over_limit('about_me')}>
+          {changes.about_me?.length || 0}/{limits.about_me}
+        </span>
+      </div>
     </div>
   </div>
 
@@ -150,14 +187,14 @@ const save = () => {
   width: 100%;
   object-fit: cover;
   position: absolute;
+  border-radius: 4px;
 }
 .file_input {
   display: none;
 }
 .profile_banner_wrap {
   position: relative;
-  overflow: hidden;
-  border-radius: 4px;
+  /* overflow: hidden; */
 }
 .profile_banner {
   background: var(--surface0);
@@ -169,12 +206,11 @@ const save = () => {
   border-radius: 100%;
   width: 90px;
   aspect-ratio: 1/1;
-  border: 0;
+  border: 4px solid var(--base);
   margin: 0;
   position: absolute;
   overflow: hidden;
-  bottom: 8px;
-  left: 8px;
+  bottom: -14px; left: -14px;
 }
 .edit_hover {
   opacity: 0;
@@ -202,25 +238,19 @@ const save = () => {
 .field_wrap {
   display: flex;
   flex-direction: column;
-  align-content: center;
-  justify-content: center;
-}
-.field_wrap {
   padding-bottom: 20px;
   margin-top: 20px;
   border-bottom: 1px solid var(--surface0);
 }
 .label {
   margin-bottom: 4px;
-  font-family: 'Maple';
   font-weight: bold;
   font-size: var(--size-large)
 }
 .ed{
   font-size: var(--size-normal);
-  padding: 8px;
-  border-radius: 4px;
-  background: var(--mantle);
+  flex: 1;
+  outline: none;
 }
 .sections_wrap {
   display: flex;
@@ -245,4 +275,16 @@ h1 {
   margin-top: auto;
   margin-bottom:  auto;
 }
+.input_wrap {
+  padding: 8px 16px;
+  border-radius: 4px;
+  background: var(--mantle);
+  position: relative;
+  display: flex;
+  flex-direction: row;
+}
+.over_limit {
+  color: var(--red);
+}
+
 </style>
