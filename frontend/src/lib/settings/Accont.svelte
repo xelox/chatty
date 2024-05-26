@@ -218,14 +218,12 @@ const save = () => {
   position: relative;
   cursor: pointer;
   position: absolute;
-  width: 100%;
-  height: 100%;
-  left: 0;
-  top: 0;
-  background: var(--overlay2);
+  width: 100%; height: 100%;
+  left: 0; top: 0;
+  background: var(--crust);
 }
 .edit_hover:hover {
-  opacity: 0.5;
+  opacity: 0.7;
 }
 .edit_icon {
   filter: invert(87%) sepia(6%) saturate(987%) hue-rotate(192deg) brightness(98%) contrast(94%);
