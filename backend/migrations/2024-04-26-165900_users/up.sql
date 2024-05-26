@@ -7,7 +7,7 @@ CREATE TABLE users (
   email VARCHAR(254) UNIQUE,
   password_hash CHAR(97) NOT NULL,
 
-  display_name VARCHAR(50) NOT NULL DEFAULT '',
+  display_name VARCHAR(25) NOT NULL DEFAULT '',
   has_pfp BOOLEAN NOT NULL DEFAULT FALSE,
   has_banner BOOLEAN NOT NULL DEFAULT FALSE,
   custom_status VARCHAR(50),

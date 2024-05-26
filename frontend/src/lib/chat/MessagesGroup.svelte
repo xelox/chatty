@@ -30,13 +30,18 @@ function to_time_str(ts: number) {
 </script>
 
 <main>
-  <div class="head">
-    <UserIdWrap id={group.sender_id}/>
-    <span class='time'>{to_time_str(group.group_ts_start)}</span>
+  <div class="left">
+    <img src={`/media/pfp/${group.sender_id}.png`} alt='' class='pfp'>
   </div>
-  {#each Object.values(group.messages).sort((a, b) => {return a.sent_at - b.sent_at}) as message (message.id)} 
-    <Message {message}/>
-  {/each}
+  <div class="right">
+    <div class="head">
+      <UserIdWrap id={group.sender_id}/>
+      <span class='time'>{to_time_str(group.group_ts_start)}</span>
+    </div>
+    {#each Object.values(group.messages).sort((a, b) => {return a.sent_at - b.sent_at}) as message (message.id)} 
+      <Message {message}/>
+    {/each}
+  </div>
 </main>
 
 <style>
@@ -48,6 +53,16 @@ function to_time_str(ts: number) {
   padding: 2px 8px 2px 8px;
 }
 main {
-  margin-bottom: 10px;
+  margin-bottom: 1em;
+  display: flex;
+}
+.pfp {
+  width: 46px;
+  aspect-ratio: 1/1;
+  border-radius: 100vh;
+  margin: 4px 10px;
+}
+.right {
+  flex: 1;
 }
 </style>

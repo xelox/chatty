@@ -189,6 +189,7 @@ let wrap_height: number;
 
 <main bind:clientHeight={wrap_height}>
   <div bind:this={messages_wrap_dom} on:scroll={handle_scroll} class="messages_wrap" style="height: calc({wrap_height}px - {input_height}px);">
+    <div class="whitespace_up"></div>
     {#each messages as group}
       <MessagesGroup {group}/>
     {/each}
@@ -202,6 +203,9 @@ let wrap_height: number;
 </main>
 
 <style>
+.whitespace_up {
+  height: 1em;
+}
 main {
   height: 100%;
   display: flex;
