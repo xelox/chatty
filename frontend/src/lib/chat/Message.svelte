@@ -30,7 +30,7 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 <main class='content' class:unsent={message.id}>
   {#each content_segments as segment}
     {#if segment.kind === 'text'}
-      <SvelteMarkdown source={segment.content}/>
+      <SvelteMarkdown source={segment.content} isInline={true}/>
     {:else}
       <Tag tag_type={segment.kind} id={segment.content}/>
     {/if}
