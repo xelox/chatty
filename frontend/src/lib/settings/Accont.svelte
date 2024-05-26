@@ -10,13 +10,13 @@ let banner_picker: HTMLInputElement;
 const changes: {
   display_name?: string,
   about_me?: string,
-  status?: string,
+  custom_status?: string,
 } = {};
 
 const limits = <const>{
   display_name: 25,
   about_me: 500,
-  status: 50,
+  custom_status: 50,
 };
 
 $: over_limit = (key: keyof typeof limits) => {
@@ -74,6 +74,7 @@ const reset = () => {
   pictures.banner = undefined;
   changes.display_name = $user_data?.display_name ?? undefined;
   changes.about_me = $user_data?.about_me ?? undefined;
+  changes.custom_status = $user_data?.custom_status ?? undefined;
 }
 
 reset();
@@ -87,8 +88,9 @@ const save = () => {
     },
   }
   const form = new FormData();
+  console.log(pictures);
   for(const [key, data] of Object.entries(pictures)) {
-    form.append(key, data.blob);
+    if (data) form.append(key, data.blob);
   }
   for(const [key, change] of Object.entries(changes)) {
     if (change) {
@@ -139,9 +141,9 @@ const save = () => {
     <div class="field_wrap">
       <p class='label'>Status</p>
       <div class="input_wrap">
-        <input type="text" class="ed" placeholder="Custom Status" bind:value={changes.status}>
-        <span class="length_limit" class:over_limit={over_limit('status')}>
-          {changes.status?.length || 0}/{limits.status}
+        <input type="text" class="ed" placeholder="Custom Status" bind:value={changes.custom_status}>
+        <span class="length_limit" class:over_limit={over_limit('custom_status')}>
+          {changes.custom_status?.length || 0}/{limits.custom_status}
         </span>
       </div>
     </div>

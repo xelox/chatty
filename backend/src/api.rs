@@ -41,7 +41,7 @@ pub async fn update_profile(session: Session<SessionPgPool>, mut form: Multipart
                 let str = field.text().await.unwrap();
                 decorations.push(ProfileDecoration::AboutMe(str));
             },
-            "status" => {
+            "custom_status" => {
                 let str = field.text().await.unwrap();
                 decorations.push(ProfileDecoration::Status(str));
             }

@@ -7,7 +7,7 @@ export type SchemaUserInfo = {
   has_banner?: boolean,
   display_name: string | null,
   about_me: string,
-  status?: string,
+  custom_status?: string,
 };
 
 export type SchemaPeer = SchemaUserInfo & { 
