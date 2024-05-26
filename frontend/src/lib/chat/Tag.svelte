@@ -1,5 +1,5 @@
 <script lang='ts'>
-    import UserIdWrap from "./UserIdWrap.svelte";
+import UserIdWrap from "./UserIdWrap.svelte";
 
 export let id: string;
 export let tag_type: 'user_mention' | 'channel_mention';
