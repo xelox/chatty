@@ -50,28 +50,6 @@ pub async fn update_profile(session: Session<SessionPgPool>, mut form: Multipart
     }
     User::update_profile_decorations(decorations, uid)
 }
-pub async fn send_message(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(mut payload): Json<NewMessage>) -> ChattyResponse {
-    let Some(allowed_channels) = session.get::<Vec<ChattyId>>("channels") else {
-        println!("No channels set");
-        return ChattyResponse::InternalError;
-    };
-    if allowed_channels.binary_search(&payload.channel_id).is_err() {
-        let query = ChannelSubscribers::sorded_subscribed_channels(&payload.sender_id);
-        let Some(allwed_channels) = query else {
-            return ChattyResponse::InternalError;
-        };
-        if allwed_channels.binary_search(&payload.channel_id).is_err() {
-            return ChattyResponse::Unauthorized;
-        }
-        session.set("channels", allwed_channels);
-    }
-
-    let message = Message::store(&mut payload).await;
-    match message {
-        Some(message) => state.broadcast_message(message).await,
-        None => ChattyResponse::InternalError
-    }
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FriendRequestForm {

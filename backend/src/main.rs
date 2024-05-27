@@ -17,6 +17,7 @@ pub mod server_state;
 pub mod structs;
 pub mod web_socket_manager;
 pub mod file_storage;
+pub mod chat_api;
 
 use crate::server_state::ServerState;
 
@@ -39,8 +40,9 @@ async fn main() {
         .route("/app/*any", get(serve_app::serve_app))
         .route("/api/update_profile", post(api::update_profile))
         .route("/api/channel_info/:channel_id", get(api::channel_info))
-        .route("/api/load_messages/:channel_id/:ts", get(api::load_messages))
-        .route("/api/send_message", post(api::send_message))
+
+        .nest("/api/message", chat_api::router::create_chat_api_router(server_state.clone()))
+
         .route("/api/send_friend_request", post(api::send_friend_request))
         .route("/api/friendship/:action", post(api::edit_relation))
         .route("/api/logout", get(api::logout))
