@@ -1,5 +1,6 @@
 <script lang='ts'>
 import { header_height } from "../stores/ui";
+    import Icon from "./components/Icon.svelte";
 import Link from "./components/Link.svelte";
 let rect: DOMRect;
 $: if(rect) {
@@ -10,19 +11,19 @@ $: if(rect) {
 <main bind:contentRect={rect}>
   <div class="group">
     <Link to='/app/chat'>
-      <img class="btn_svg" src="/svg-files/Communication/comments-alt-2.svg" title="chat" alt="link to chat"/>
+      <Icon variant='chat'/>
     </Link>
     <Link to='/app/add_friend'>
-      <img class="btn_svg" src="/svg-files/Interface and Sign/circle-plus.svg" title="add friend" alt="link to add friend page"/>
+      <Icon variant='plus'/>
     </Link>
   </div>
 
   <div class="group">
     <Link to='/app/settings'>
-      <img class="btn_svg" src="/svg-files/Web and Technology/user.svg" title="inbox" alt="button to inbox"/>
+      <Icon variant='settings'/>
     </Link>
     <Link to='/app/logout'>
-      <img class="btn_svg" src="/svg-files/Direction/exit.svg" title="inbox" alt="button to inbox"/>
+      <Icon variant='exit'/>
     </Link>
   </div>
 </main>
