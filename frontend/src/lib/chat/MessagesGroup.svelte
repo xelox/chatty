@@ -64,6 +64,7 @@ function to_time_str(ts: number) {
 main {
   margin-bottom: 1em;
   display: flex;
+  flex-direction: row;
 }
 .pfp {
   width: inherit;
@@ -72,5 +73,6 @@ main {
 }
 .middle {
   flex: 1;
+  width: 10px;
 }
 </style>

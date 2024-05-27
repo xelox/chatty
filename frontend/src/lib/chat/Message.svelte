@@ -30,13 +30,15 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 </script>
 
 <main class:unsent={!message.id}>
-  {#each content_segments as segment}
-    {#if segment.kind === 'text'}
-      <SvelteMarkdown source={segment.content} isInline={true}/>
-    {:else}
-      <Tag tag_type={segment.kind} id={segment.content}/>
-    {/if}
-  {/each}
+  <div class="content">
+    {#each content_segments as segment}
+      {#if segment.kind === 'text'}
+        <SvelteMarkdown source={segment.content} isInline={true}/>
+      {:else}
+        <Tag tag_type={segment.kind} id={segment.content}/>
+      {/if}
+    {/each}
+  </div>
 
   <div class="controlls_wrap">
     {#if message.sender_id === $user_data?.id}
@@ -49,11 +51,15 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 </main>
 
 <style>
-main{
-  white-space: pre-line;
-  padding: 0 8px;
-  border-radius: 2px;
+main {
   position: relative;
+  padding: 0 8px;
+}
+.content {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  border-radius: 2px;
+  width: 100%;
 }
 main:hover {
   background: var(--surface0);
