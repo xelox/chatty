@@ -249,4 +249,9 @@ h1 {
   display: flex;
   justify-content: space-between;
 }
+.footer > div {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
 </style>
