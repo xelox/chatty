@@ -33,7 +33,7 @@ function to_time_str(ts: number) {
   <div class="left">
     <img src={`/media/pfp/${group.sender_id}.png`} alt='' class='pfp'>
   </div>
-  <div class="right">
+  <div class="middle">
     <div class="head">
       <span class="user"><UserIdWrap id={group.sender_id}/></span>
       <span class='time'>{to_time_str(group.group_ts_start)}</span>
@@ -42,9 +42,14 @@ function to_time_str(ts: number) {
       <Message {message}/>
     {/each}
   </div>
+  <div class="right"></div>
 </main>
 
 <style>
+.left, .right {
+  padding: 4px 4px 0 12px;
+  width: 46px;
+}
 .user {
   color: var(--blue);
   font-weight: bolder;
@@ -61,12 +66,11 @@ main {
   display: flex;
 }
 .pfp {
-  width: 46px;
+  width: inherit;
   aspect-ratio: 1/1;
   border-radius: 100vh;
-  margin: 4px 10px;
 }
-.right {
+.middle {
   flex: 1;
 }
 </style>

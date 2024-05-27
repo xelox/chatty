@@ -1,10 +1,10 @@
 <script lang='ts'>
 import type { SchemaMessage } from "../../stores/messages";
+    import Button from "../components/Button.svelte";
 import Tag from './Tag.svelte';
 import SvelteMarkdown from "svelte-markdown";
-import UserIdWrap from "./UserIdWrap.svelte";
-export let message: SchemaMessage;
 
+export let message: SchemaMessage;
 
 type MessageFragment = {
   kind: "text" | "user_mention" | "channel_mention",
@@ -27,7 +27,7 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 });
 </script>
 
-<main class='content' class:unsent={!message.id}>
+<main class:unsent={!message.id}>
   {#each content_segments as segment}
     {#if segment.kind === 'text'}
       <SvelteMarkdown source={segment.content} isInline={true}/>
@@ -35,15 +35,38 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
       <Tag tag_type={segment.kind} id={segment.content}/>
     {/if}
   {/each}
+
+  <div class="controlls_wrap">
+    <Button bg='blue'>Edit</Button> 
+    <Button bg='red'>Delete</Button> 
+  </div>
 </main>
 
 <style>
-.content{
+main{
   white-space: pre-line;
   padding: 0 8px;
+  border-radius: 2px;
+  position: relative;
 }
 main:hover {
   background: var(--surface0);
+}
+
+.controlls_wrap {
+  background: var(--surface0);
+  padding: 4px 10px;
+  border-radius: 4px;
+  position: absolute;
+  top: 0; right: 0;
+  flex-direction: row;
+  gap: 4px;
+  display: none;
+  transform: translateY(-50%);
+}
+
+main:hover .controlls_wrap {
+  display: flex;
 }
 .unsent {
   opacity: 0.5;
