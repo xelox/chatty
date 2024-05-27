@@ -73,6 +73,6 @@ main {
 }
 .middle {
   flex: 1;
-  width: 10px;
+  width: 0; /* This is weird I know... */
 }
 </style>
