@@ -19,7 +19,9 @@
 
 <style>
 button {
-  padding: 4px 10px 4px 10px;
+  display: flex;
+  flex-direction: row;
+  padding: 4px 10px;
   border-radius: 2px;
   font-family: 'Noto Sans';
   color: white;

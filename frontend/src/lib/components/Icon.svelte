@@ -48,6 +48,7 @@
 img {
   filter: invert(87%) sepia(6%) saturate(987%) hue-rotate(192deg) brightness(98%) contrast(94%);
   aspect-ratio: 1/1;
-  margin: 4px;
+  margin: 0;
+  background: red;
 }
 </style>

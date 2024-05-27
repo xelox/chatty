@@ -1,6 +1,8 @@
 <script lang='ts'>
+    import { user_data } from "../../stores/data";
 import type { SchemaMessage } from "../../stores/messages";
     import Button from "../components/Button.svelte";
+    import Icon from "../components/Icon.svelte";
 import Tag from './Tag.svelte';
 import SvelteMarkdown from "svelte-markdown";
 
@@ -37,8 +39,12 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
   {/each}
 
   <div class="controlls_wrap">
-    <Button bg='blue'>Edit</Button> 
-    <Button bg='red'>Delete</Button> 
+    {#if message.sender_id === $user_data?.id}
+      <Button bg='blue'><Icon variant='edit' size='16px'/></Button> 
+    {:else}
+      <Button bg='blue'><Icon variant='reply' size='16px'/></Button> 
+    {/if}
+    <Button bg='red'><Icon variant='delete' size='16px'/></Button> 
   </div>
 </main>
 
