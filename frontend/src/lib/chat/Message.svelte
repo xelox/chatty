@@ -1,8 +1,9 @@
 <script lang='ts'>
-    import { user_data } from "../../stores/data";
+    import { requests_manager } from "../../requests_manager";
+import { user_data } from "../../stores/data";
 import type { SchemaMessage } from "../../stores/messages";
-    import Button from "../components/Button.svelte";
-    import Icon from "../components/Icon.svelte";
+import Button from "../components/Button.svelte";
+import Icon from "../components/Icon.svelte";
 import Tag from './Tag.svelte';
 import SvelteMarkdown from "svelte-markdown";
 
@@ -27,6 +28,10 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
     content: item
   }
 });
+
+function delete_message() {
+  requests_manager.get(`/api/delete_message/${message.id}`);
+}
 </script>
 
 <main class:unsent={!message.id}>
@@ -44,7 +49,7 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
     {#if message.sender_id === $user_data?.id}
       <Button bg='blue'><Icon variant='edit' size='16px'/></Button> 
     {:else}
-      <Button bg='blue'><Icon variant='reply' size='16px'/></Button> 
+      <Button bg='blue' action={delete_message}><Icon variant='reply' size='16px'/></Button> 
     {/if}
     <Button bg='red'><Icon variant='delete' size='16px'/></Button> 
   </div>
