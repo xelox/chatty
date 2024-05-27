@@ -54,11 +54,11 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 main {
   position: relative;
   padding: 0 8px;
+  border-radius: 2px;
 }
 .content {
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  border-radius: 2px;
   width: 100%;
 }
 main:hover {
