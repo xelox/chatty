@@ -86,6 +86,7 @@ pub async fn update_profile(session: Session<SessionPgPool>, mut form: Multipart
     let mut decorations = Vec::<ProfileDecoration>::new();
     while let Some(field) = form.next_field().await.unwrap() {
         let key = field.name().unwrap().to_string();
+        // TODO: Use streams instead of bytes for performance benefits.
         match key.as_str() {
             "display_name" => {
                 let str = field.text().await.unwrap();

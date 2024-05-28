@@ -19,12 +19,8 @@ pub struct Message {
     pub updated_at: Option<TimeStamp>,
 }
 
-#[derive(Deserialize, Insertable)]
-#[diesel(table_name = schema::messages)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Deserialize, Clone)]
 pub struct NewMessage {
-    #[serde(skip_deserializing)]
-    pub id: ChattyId,
     pub sender_id: ChattyId,
     pub channel_id: ChattyId,
     pub content: String
@@ -32,16 +28,32 @@ pub struct NewMessage {
 
 impl Message {
     /// WARNING dosen't ensure that the sender is authorized!
-    pub async fn store(message: &mut NewMessage) -> Option<Message> {
+    pub async fn store(message: &NewMessage) -> Option<Message> {
         use schema::messages;
         use diesel::prelude::*;
 
+        #[derive(Insertable)]
+        #[diesel(table_name = schema::messages)]
+        #[diesel(check_for_backend(diesel::pg::Pg))]
+        struct NewMessageInDB<'a> {
+            id: &'a ChattyId,
+            sender_id: &'a ChattyId,
+            channel_id: &'a ChattyId,
+            content: &'a String
+        }
+
         let id = ChattyId::gen().await;
-        message.id = id;
+
+        let save = NewMessageInDB {
+            id: &id,
+            sender_id: &message.sender_id,
+            channel_id: &message.channel_id,
+            content: &message.content
+        };
         
         let conn = &mut database::establish_connection();
         let query: Result<Message, diesel::result::Error> = diesel::insert_into(messages::table)
-            .values(&*message)
+            .values(save)
             .get_result(conn);
 
         match query {

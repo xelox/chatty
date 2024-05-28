@@ -8,25 +8,7 @@ use crate::server_state::ServerState;
 use super::{chat_api, user_api};
 
 pub fn create_api_router() -> Router<Arc<ServerState>> {
-    // MESSAGING
-    // [/] channel info             /channel/:channel_id        (get)
-    // [/] load messages            /messages/:channel_id/:ts   (get)
-    // [/] send message             /message                    (post)
-    // [/] delete message           /message/:message_id        (delete)
-    // [/] edit message             /message                    (patch)
-    //
-    // RELATIONS
-    // [/] send friend req          /relation                   (post)
-    // [/] edit friend rel          /relation                   (patch)
-    //
-    // USER
-    // [/] log out                  /log_out                    (patch)
-    // [/] sign in                  /signin                     (post)
-    // [/] sign up                  /signout                    (post)
-    // [/] initial data request     /init                       (get)
-    // [/] update profile           /profile                    (patch)
 
-    
     Router::new()
         .route("/channel/:channel_id", get(chat_api::channel_info))
 
