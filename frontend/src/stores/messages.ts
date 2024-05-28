@@ -43,7 +43,7 @@ const create_channels_store = () => {
         });
       }
     }
-    requests_manager.get(`/api/channel_info/${channel_id}`, opts);
+    requests_manager.get(`/api/channel/${channel_id}`, opts);
   }
   const remove_channel = ((channel: SchemaChannel) => {
     update(channels => {

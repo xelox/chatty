@@ -28,7 +28,7 @@ pub fn create_api_router() -> Router<Arc<ServerState>> {
 
     
     Router::new()
-        .route("/channel/:channel_id/:ts", get(chat_api::channel_info))
+        .route("/channel/:channel_id", get(chat_api::channel_info))
 
         .route("/messages/:channel_id/:ts", get(chat_api::load_messages))
         .route("/message", MethodRouter::new()
@@ -54,5 +54,7 @@ pub fn create_api_router() -> Router<Arc<ServerState>> {
 
         .route("/signin", post(user_api::signin))
         .route("/signup", post(user_api::signup))
+
+        .layer(ServiceBuilder::new().layer(middleware::from_fn(super::middlewares::log)))
 
 }

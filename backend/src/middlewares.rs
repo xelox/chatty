@@ -1,6 +1,6 @@
 use axum::{
     extract::Request, 
-    http::{StatusCode, Uri}, 
+    http::{Method, StatusCode, Uri}, 
     middleware::Next, 
     response::{
         IntoResponse, Redirect, Response
@@ -12,24 +12,17 @@ use crate::structs::id::ChattyId;
 
 pub async fn validate_auth(session: Session<SessionPgPool>, uri: Uri, request: Request, next: Next) -> Result<Response, StatusCode> {
     match session.get::<ChattyId>("user_id") {
-        Some(id) => {
-            println!("User: {}", id);
+        Some(_) => {
             Ok(next.run(request).await) 
         },
         _ => {
-            print!("UNAUTHORIZED usage {} ", uri);
-            if uri.to_string().starts_with("/api") {
-                println!("Returning Status Code");
-                Err(StatusCode::UNAUTHORIZED)
-            } else {
-                println!("Redirecting");
-                Ok(Redirect::to("/app/auth").into_response())
-            }
+            println!("UNAUTHORIZED page access {} ", uri);
+            Ok(Redirect::to("/app/auth").into_response())
         }
     }
 }
 
-pub async fn log(uri: Uri, request: Request, next: Next) -> Result<Response, StatusCode> {
-    println!("LOG: {}", uri.to_string());
+pub async fn log(method: Method, uri: Uri, request: Request, next: Next) -> Result<Response, StatusCode> {
+    println!("{}: {}", method.to_string(), uri.to_string());
     Ok(next.run(request).await)
 }

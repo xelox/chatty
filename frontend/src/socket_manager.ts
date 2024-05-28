@@ -9,31 +9,9 @@ class SocketManager {
   private socket: WebSocket | null = null;
 
   public initialize_client = async (): Promise<boolean> => {
-    type response_schema = {
-      user_info: {
-        id: string,
-        username: string,
-        display_name: string | null,
-      },
-      relations: {
-        relation:{
-          id: string,
-          a: string,
-          b: string,
-          sender: string,
-          accepted: boolean,
-        }
-        user: {
-          id: string,
-          username: string,
-          display_name: string | null,
-        }
-      }[]
-    }
-
     try {
-      const response = await fetch("http://localhost:8080/api/initial_data_request")
-      const json = await response.json() as response_schema;
+      const response = await fetch("http://localhost:8080/api/init")
+      const json = await response.json();
 
       user_data.set(json.user_info);
       

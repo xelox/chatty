@@ -1,12 +1,12 @@
 use axum::{
     middleware,
-    routing::{get, post},
+    routing::get,
     Router,
 };
 use axum_session::{SessionConfig, SessionLayer, SessionPgPool, SessionStore};
 use std::{fs, sync::Arc};
 use tower::ServiceBuilder;
-use tower_http::{cors::CorsLayer, services::ServeDir};
+use tower_http::services::ServeDir;
 
 pub mod api;
 pub mod config;
@@ -36,17 +36,26 @@ async fn main() {
 
     let app = Router::new()
         .route("/ws", get(web_socket_manager::handler))
+
+        // Restricted pages
         .route("/app/*any", get(serve_app::serve_app))
+        .layer(ServiceBuilder::new().layer(middleware::from_fn(middlewares::validate_auth)))
 
-        .nest("/api/messages", api::router::create_api_router())
+        // Api
+        .nest("/api", api::router::create_api_router())
 
+        // Un-restricted pages
         .route("/app/auth", get(serve_app::serve_app))
 
+        // Static File Server
         .nest_service("/assets", ServeDir::new("../frontend/dist/assets"))
         .nest_service("/", ServeDir::new("../frontend/public"))
         .nest_service("/media", ServeDir::new("/home/alex/dev/chatty/media"))
-        .layer(middleware::from_fn(middlewares::log))
-        .layer(CorsLayer::permissive())
+
+        // LOG middleware
+        // .layer(ServiceBuilder::new().layer(middleware::from_fn(middlewares::log)))
+
+        // State & Sessions
         .layer(SessionLayer::new(session_store))
         .with_state(server_state);
 
