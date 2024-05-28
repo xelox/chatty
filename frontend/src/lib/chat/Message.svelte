@@ -1,5 +1,5 @@
 <script lang='ts'>
-    import { requests_manager } from "../../requests_manager";
+import { requests_manager, type RequestOptions } from "../../requests_manager";
 import { user_data } from "../../stores/data";
 import type { SchemaMessage } from "../../stores/messages";
 import Button from "../components/Button.svelte";
@@ -29,8 +29,14 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
   }
 });
 
-function delete_message() {
-  requests_manager.get(`/api/delete_message/${message.id}`);
+const delete_message = () => {
+  console.log()
+  let opts: RequestOptions = {
+    succeed_action: () => {
+      console.log("message deleted");
+    }
+  }
+  requests_manager.delete(`/api/message`, message, opts);
 }
 </script>
 
@@ -49,9 +55,9 @@ function delete_message() {
     {#if message.sender_id === $user_data?.id}
       <Button bg='blue'><Icon variant='edit' size='16px'/></Button> 
     {:else}
-      <Button bg='blue' action={delete_message}><Icon variant='reply' size='16px'/></Button> 
+      <Button bg='blue'><Icon variant='reply' size='16px'/></Button> 
     {/if}
-    <Button bg='red'><Icon variant='delete' size='16px'/></Button> 
+    <Button bg='red' action={delete_message}><Icon variant='delete' size='16px'/></Button> 
   </div>
 </main>
 

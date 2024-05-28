@@ -92,21 +92,21 @@ class RequestsManager {
    * @param item to be serialized to json and sent to server.
    * @param options can be used to add behaviour.
    * */
-  public put = (path: string, item: any, options?: RequestOptions) => { this.request(path, "POST", JSON.stringify(item), options); }
+  public put = (path: string, item: any, options?: RequestOptions) => { this.request(path, "PUT", JSON.stringify(item), options); }
 
   /** 
    * @param path starting with /
    * @param item to be serialized to json and sent to server.
    * @param options can be used to add behaviour.
    * */
-  public delete = (path: string, item: any, options?: RequestOptions) => { this.request(path, "POST", JSON.stringify(item), options); }
+  public delete = (path: string, item: any, options?: RequestOptions) => { this.request(path, "DELETE", JSON.stringify(item), options); }
 
   /** 
    * @param path starting with /
    * @param item to be serialized to json and sent to server.
    * @param options can be used to add behaviour.
    * */
-  public patch = (path: string, item: any, options?: RequestOptions) => { this.request(path, "POST", JSON.stringify(item), options); }
+  public patch = (path: string, item: any, options?: RequestOptions) => { this.request(path, "PATCH", JSON.stringify(item), options); }
 }
 
 export const requests_manager = new RequestsManager("http://localhost:8080");
