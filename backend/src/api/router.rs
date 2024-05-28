@@ -23,9 +23,6 @@ pub fn create_api_router() -> Router<Arc<ServerState>> {
             .post(user_api::send_friend_request)
             .patch(user_api::edit_relation)
         )
-        // Roues are permission checked.
-        .layer(ServiceBuilder::new().layer(middleware::from_fn(super::middlewares::api_protection)))
-        // Routes are NOT permission checked.
 
         .route("/profile", patch(user_api::update_profile))
         .route("/init", get(user_api::initial_data_request))

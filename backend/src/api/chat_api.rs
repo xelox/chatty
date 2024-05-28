@@ -14,6 +14,20 @@ use crate::{
 };
 
 pub async fn send_message(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, Json(payload): Json<NewMessage>) -> ChattyResponse {
+    let Some(allowed_channels) = session.get::<Vec<ChattyId>>("channels") else {
+        println!("No channels set");
+        return ChattyResponse::InternalError;
+    };
+    if allowed_channels.binary_search(&payload.channel_id).is_err() {
+        let query = ChannelSubscribers::sorded_subscribed_channels(&payload.sender_id);
+        let Some(allwed_channels) = query else {
+            return ChattyResponse::InternalError;
+        };
+        session.set("channels", &allwed_channels);
+        if allwed_channels.binary_search(&payload.channel_id).is_err() {
+            return ChattyResponse::Unauthorized;
+        }
+    }
 
     let message = Message::store(&payload).await;
     match message {
