@@ -1,5 +1,5 @@
 use diesel::{deserialize::Queryable, prelude::Insertable};
-use crate::{database::{self, schema}, structs::ts::TimeStamp};
+use crate::{database::{self, schema}, structs::{chatty_response::ChattyResponse, ts::TimeStamp}};
 use serde::{Deserialize, Serialize};
 use crate::structs::id::ChattyId;
 
@@ -19,8 +19,16 @@ pub struct Message {
     pub updated_at: Option<TimeStamp>,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize)]
 pub struct NewMessage {
+    pub sender_id: ChattyId,
+    pub channel_id: ChattyId,
+    pub content: String
+}
+
+#[derive(Deserialize)]
+pub struct ExistingMessage {
+    pub id: ChattyId,
     pub sender_id: ChattyId,
     pub channel_id: ChattyId,
     pub content: String
@@ -59,6 +67,21 @@ impl Message {
         match query {
             Ok(message) => Some(message),
             Err(_) => None
+        }
+    }
+
+    pub fn delete(message: &ExistingMessage) -> ChattyResponse {
+        use schema::messages;
+        use diesel::prelude::*;
+        
+        let conn = &mut database::establish_connection();
+        let query = diesel::delete(messages::table)
+            .filter(messages::id.eq(message.id))
+            .execute(conn);
+        
+        match query {
+            Ok(_) => ChattyResponse::Ok,
+            _ => ChattyResponse::InternalError
         }
     }
 

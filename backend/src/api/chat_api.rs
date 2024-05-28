@@ -4,7 +4,7 @@ use axum::{extract::{Path, State}, response::{IntoResponse, Response}, Json};
 use axum_session::{Session, SessionPgPool};
 
 use crate::{
-    database::{channel_subscribers_table::ChannelSubscribers, channel_table::ChannelTable, message_table::{Message, NewMessage}}, 
+    database::{channel_subscribers_table::ChannelSubscribers, channel_table::ChannelTable, message_table::{ExistingMessage, Message, NewMessage}}, 
     server_state::ServerState, 
     structs::{
         chatty_response::{chatty_json_response, ChattyResponse}, 
@@ -36,8 +36,8 @@ pub async fn send_message(session: Session<SessionPgPool>, State(state): State<A
     }
 }
 
-pub async fn delete_message() -> ChattyResponse {
-    ChattyResponse::Ok
+pub async fn delete_message(Json(message): Json<ExistingMessage>) -> ChattyResponse {
+    Message::delete(&message)
 }
 
 pub async fn edit_message() -> ChattyResponse {
