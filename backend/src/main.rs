@@ -17,7 +17,6 @@ pub mod server_state;
 pub mod structs;
 pub mod web_socket_manager;
 pub mod file_storage;
-pub mod chat_api;
 
 use crate::server_state::ServerState;
 
@@ -38,19 +37,11 @@ async fn main() {
     let app = Router::new()
         .route("/ws", get(web_socket_manager::handler))
         .route("/app/*any", get(serve_app::serve_app))
-        .route("/api/update_profile", post(api::update_profile))
-        .route("/api/channel_info/:channel_id", get(api::channel_info))
 
-        .nest("/api/message", chat_api::router::create_chat_api_router(server_state.clone()))
+        .nest("/api/messages", api::router::create_api_router())
 
-        .route("/api/send_friend_request", post(api::send_friend_request))
-        .route("/api/friendship/:action", post(api::edit_relation))
-        .route("/api/logout", get(api::logout))
-        .layer(ServiceBuilder::new().layer(middleware::from_fn(middlewares::validate_auth)))
         .route("/app/auth", get(serve_app::serve_app))
-        .route("/api/signin", post(api::signin))
-        .route("/api/signup", post(api::signup))
-        .route("/api/initial_data_request", get(api::initial_data_request))
+
         .nest_service("/assets", ServeDir::new("../frontend/dist/assets"))
         .nest_service("/", ServeDir::new("../frontend/public"))
         .nest_service("/media", ServeDir::new("/home/alex/dev/chatty/media"))

@@ -112,7 +112,7 @@ const load_messages = () => {
     }
   }
 
-requests_manager.get(`/api/load_messages/${channel_info.id}/${ts}`, opts);
+requests_manager.get(`/api/messages/${channel_info.id}/${ts}`, opts);
 }
 
 onMount(() => {
@@ -148,7 +148,7 @@ const handle_keypress = (e: KeyboardEvent) => {
       content: input_text,
       sender_id: user_id,
     }
-    requests_manager.post("/api/send_message", message);
+    requests_manager.post("/api/messages", message);
     input_text = "";
     return;
   }

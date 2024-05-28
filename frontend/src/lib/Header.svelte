@@ -29,12 +29,6 @@ $: if(rect) {
 </main>
 
 <style>
-  .btn_svg {
-    filter: invert(87%) sepia(6%) saturate(987%) hue-rotate(192deg) brightness(98%) contrast(94%);
-    width: 20px;
-    aspect-ratio: 1/1;
-    margin: 4px;
-  }
   .group {
     display: flex;
     gap: 4px;
