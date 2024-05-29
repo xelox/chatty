@@ -13,11 +13,11 @@
 - [ ] Right Pannel (Show stuff on the right side of the screen depending on middle screen context...)
 
 # Backend
-- [ ] live Socket Signal update:
-    - [ ] profile patch
-    - [ ] friend request/relation
-    - [ ] message delete
-    - [ ] message edit
+- [/] live Socket Signal update:
+    - [/] profile patch
+    - [/] friend request/relation
+    - [/] message delete
+    - [/] message edit
 - [ ] Validate permissions
 - [ ] Message attachments
 - [ ] Edit message
