@@ -148,7 +148,7 @@ const handle_keypress = (e: KeyboardEvent) => {
       content: input_text,
       sender_id: user_id,
     }
-    requests_manager.post("/api/messages", message);
+    requests_manager.post("/api/message", message);
     input_text = "";
     return;
   }
