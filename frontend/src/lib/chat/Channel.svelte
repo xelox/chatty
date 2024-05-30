@@ -3,7 +3,6 @@ import type { SchemaMessageGroup, SchemaChannel, SchemaMessage, SchemaUpMessage 
 import event_manager from '../../event_manager';
 import { afterUpdate, beforeUpdate, onDestroy, onMount } from "svelte";
 import { user_data } from "../../stores/data";
-import MentionTool from "./MentionTool.svelte";
 import { requests_manager, type RequestOptions } from "../../requests_manager";
 import MessagesGroup from "./MessagesGroup.svelte";
 import { BiSequencer, type SequentialID } from "../../util/sequencer";
@@ -111,6 +110,7 @@ const delete_message = (message: SchemaMessage) => {
   groups = groups;
 }
 
+let just_loaded_messages = false;
 const load_messages = () => {
   if (fully_loaded) return;
   let ts = oldest_loaded_ts ?? new Date().getTime();
@@ -124,26 +124,33 @@ const load_messages = () => {
       for (const message of loaded_messages) {
         insert_message(message, 'up');
       }
+
+      just_loaded_messages = true;
     }
   }
   requests_manager.get(`/api/messages/${channel_info.id}/${ts}`, opts);
 }
 
+let autoscroll = false;
+let pre_update_scroll = 0;
 onMount(() => {
   load_messages();
-})
+});
 
-let autoscroll = false;
 beforeUpdate(()=>{
   if (messages_wrap_dom) {
+    pre_update_scroll = messages_wrap_dom.scrollHeight;
     const scrollable_dist = messages_wrap_dom.scrollHeight - messages_wrap_dom.offsetHeight;
     autoscroll = messages_wrap_dom.scrollTop > scrollable_dist - 20;
   }
 })
 afterUpdate(()=>{
+  if (just_loaded_messages) {
+    just_loaded_messages = false;
+    messages_wrap_dom.scrollTo(0, messages_wrap_dom.scrollHeight - pre_update_scroll);
+  }
   if (autoscroll) messages_wrap_dom.scrollTo(0, messages_wrap_dom.scrollHeight);
 });
-
 
 onDestroy(() => {
   for (const unsubscribe of unsubscribe_callbacks) {
@@ -168,7 +175,7 @@ const handle_keypress = (e: KeyboardEvent) => {
   }
 }
 
-const handle_scroll = (e: Event) => {
+const handle_scroll = () => {
   if (messages_wrap_dom.scrollTop === 0) {
     load_messages();
   }
@@ -182,7 +189,7 @@ let wrap_height: number;
 <main bind:clientHeight={wrap_height}>
   <div bind:this={messages_wrap_dom} on:scroll={handle_scroll} class="messages_wrap" style="height: calc({wrap_height}px - {input_height}px);">
     <div class="whitespace_up"></div>
-    {#each [...groups.entries()].sort((a, b) => a[1].group_ts_start - b[1].group_ts_start) as [key, group] (key)}
+    {#each [...groups.entries()].sort((a, b) => b[0] - a[0]) as [key, group] (key)}
       <MessagesGroup {group}/>
     {/each}
   </div>
@@ -204,6 +211,7 @@ main {
 .messages_wrap {
   flex-grow: 1;
   overflow-y: auto;
+  position: relative;
 }
 .input_wrap {
   padding: 10px;
