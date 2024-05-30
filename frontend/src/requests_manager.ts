@@ -69,13 +69,6 @@ class RequestsManager {
       }).catch(err => this.handle_error(err, options))
   }
 
-  private get = (path: string, options?: RequestOptions) => { this.request(path, "GET", undefined, options); }
-  private post = (path: string, item: any, options?: RequestOptions) => { this.request(path, "POST", JSON.stringify(item), options); }
-  private post_form = (path: string, form: FormData, options?: RequestOptions) => { this.request(path, "POST", form, options, true); }
-  private put = (path: string, item: any, options?: RequestOptions) => { this.request(path, "PUT", JSON.stringify(item), options); }
-  private delete = (path: string, item: any, options?: RequestOptions) => { this.request(path, "DELETE", JSON.stringify(item), options); }
-  private patch = (path: string, item: any, options?: RequestOptions) => { this.request(path, "PATCH", JSON.stringify(item), options); }
-
   public patch_profile(form: FormData) {
     return new Promise<SchemaUserInfo>((res, rej) => {
       const opts: RequestOptions = {
