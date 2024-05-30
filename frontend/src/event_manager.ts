@@ -49,7 +49,6 @@ class EventManager {
 
   public dispatch = (key: EventKey, ...args: any[]) => {
     const key_str = Object.values(key).join('.');
-    console.log(this.events.entries());
     const pool = this.events.get(key_str);
     if (!pool) return;
     for ( const callback of Object.values(pool)) {

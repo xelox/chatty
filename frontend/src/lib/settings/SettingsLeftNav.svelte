@@ -5,7 +5,6 @@ import Link from "../components/Link.svelte";
 let ui_width = 0;
 $: if($settings_left_pos) {
   ui_width = $settings_left_pos - 40;
-  console.log(ui_width);
 }
 </script>
 

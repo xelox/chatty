@@ -88,13 +88,11 @@ const save = () => {
     },
   }
   const form = new FormData();
-  console.log(pictures);
   for(const [key, data] of Object.entries(pictures)) {
     if (data) form.append(key, data.blob);
   }
   for(const [key, change] of Object.entries(changes)) {
     if (change) {
-      console.log(key, change);
       form.append(key, change);
     }
   }

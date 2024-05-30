@@ -20,7 +20,6 @@ const unsubscribe_callbacks: (()=>void)[] = [];
 
 unsubscribe_callbacks.push(
   event_manager.subscribe({action: "message_add", channel_id: channel_info.id}, (message: SchemaMessage) => {
-    console.log("message_add", message);
     insert_message(message, 'down');
   }),
 );
@@ -29,7 +28,7 @@ let messages_wrap_dom: HTMLElement;
 let fully_loaded = false;
 const GROUPING_TD = 60_000;
 
-const pick_group = (message: SchemaMessage, from: 'up' | 'down'): SchemaMessageGroup => {
+const pick_group = (message: SchemaMessage, from: 'up' | 'down'): {group: SchemaMessageGroup, id: SequentialID} => {
   {
     const id = (() => {
       if (from === 'up') return first_group_id; 
@@ -44,10 +43,8 @@ const pick_group = (message: SchemaMessage, from: 'up' | 'down'): SchemaMessageG
         return message.sent_at - group.group_ts_end;
       })();
 
-      console.log(t_delta);
-
       if (same_sender && t_delta <= GROUPING_TD) {
-        return group;
+        return {group, id};
       }
     }
   }
@@ -69,14 +66,15 @@ const pick_group = (message: SchemaMessage, from: 'up' | 'down'): SchemaMessageG
       messages: {}
     }
 
-    map_message_to_group.set(message.id, id);
     groups.set(id, group);
-    return group;
+    return {group, id};
   }
 }
 
 const insert_message = (message: SchemaMessage, to: 'up' | 'down') => {
-  const group = pick_group(message, to);
+  const {group, id} = pick_group(message, to);
+  map_message_to_group.set(message.id, id);
+
   group.messages[message.id] = message;
 
   if (message.sent_at < group.group_ts_start ) {
@@ -99,6 +97,7 @@ const insert_message = (message: SchemaMessage, to: 'up' | 'down') => {
 
 const delete_message = (message: SchemaMessage) => {
   const group_id = map_message_to_group.get(message.id);
+  map_message_to_group.delete(message.id);
   if (!group_id) {
     return console.error("tried to delete a message who's group does not exist.");
   }
@@ -125,7 +124,6 @@ const load_messages = () => {
       for (const message of loaded_messages) {
         insert_message(message, 'up');
       }
-      console.log(groups);
     }
   }
   requests_manager.get(`/api/messages/${channel_info.id}/${ts}`, opts);

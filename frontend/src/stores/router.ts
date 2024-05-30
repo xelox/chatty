@@ -5,7 +5,7 @@ import { requests_manager, type RequestOptions } from '../requests_manager';
 import { erase } from './data';
 
 const r = navaid('app', (url) => {
-  console.log('Used undefined route:', url);
+  console.info('Used undefined route:', url);
 });
 
 const MAIN_SECTIONS = <const>["auth", "chat", "settings", "friend_req_tool"];

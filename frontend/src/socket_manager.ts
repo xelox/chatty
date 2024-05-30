@@ -68,7 +68,6 @@ class SocketManager {
 
   private onmessage = (e: MessageEvent) => {
     const e_json: { signals: any[] } = JSON.parse(e.data);
-    console.log(e_json);
 
     for (const s of e_json.signals) {
       if (s.message) return this.handle_message(s.message);
