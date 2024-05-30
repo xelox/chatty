@@ -148,14 +148,15 @@ pub async fn send_friend_request( session: Session<SessionPgPool>, State(state):
 
 #[derive(Deserialize)]
 pub struct FriendshipInteraction {
+    action: EditFriendshipEnum,
     relation_id: ChattyId,
 }
 
 use crate::{database::{channel_subscribers_table::ChannelSubscribers, user_relations_table::EditFriendshipEnum, users_table::{AuthValidationResult, User}}, structs::{chatty_response::ChattyResponse, checked_string::CheckedString}};
-pub async fn edit_relation(Path(action): Path<EditFriendshipEnum>, session: Session<SessionPgPool>, Json(form): Json<FriendshipInteraction>) -> ChattyResponse {
+pub async fn edit_relation(session: Session<SessionPgPool>, Json(form): Json<FriendshipInteraction>) -> ChattyResponse {
     let Some(request_maker) = session.get::<ChattyId>("user_id") else {
         return ChattyResponse::Unauthorized;
     };
-    UserRelation::edit_relation(&request_maker, form.relation_id, action)
+    UserRelation::edit_relation(&request_maker, form.relation_id, form.action)
     // TODO: If the operation returns Ok, also send socket message to live "other" client.
 }

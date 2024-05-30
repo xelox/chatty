@@ -144,15 +144,10 @@ r.on('chat/:section?/:channel_id?', (params) => {
     });
   })
   .on('logout', _ => {
-    const opts: RequestOptions = {
-      succeed_action: () => {
+    requests_manager.logout().then(()=>{
         erase();
         r.route('/app/auth', true);
-      },
-      notify_fail: true,
-    } 
-
-    requests_manager.get('/api/logout', opts);
+    });
   })
 
 export const router = r.listen();

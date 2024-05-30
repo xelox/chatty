@@ -37,28 +37,20 @@ const validate = (): boolean => {
 
 const signup = () => {
   if (!validate()) return;
-  const options: RequestOptions = {
-    succeed_action: () => {
+
+  requests_manager.signup(username, password).then(() => {
       router.route("/app/chat");
       socket_manager.initialize_client();
-    }
-  }
-  requests_manager.post("/api/signup", {
-    username, password,
-  }, options)
+  })
 }
 
 const signin = () => {
   if (!validate()) return;
-  const options: RequestOptions = {
-    succeed_action: () => {
+
+  requests_manager.signin(username, password).then(() => {
       router.route("/app/chat");
       socket_manager.initialize_client();
-    }
-  }
-  requests_manager.post("/api/signin", {
-    username, password,
-  }, options)
+  })
 }
 
 </script>

@@ -1,5 +1,7 @@
 import type { Notification } from "./stores/inbox";
 import notification_manager from "./notification_manager"
+import { type SchemaInitData, type SchemaPeer, type SchemaPeerList, type SchemaUserInfo } from "./stores/data";
+import type { SchemaChannel, SchemaMessage, SchemaUpMessage } from "./stores/messages";
 
 /** 
  * @param exectly validation fails if result does not match this value exactly.
@@ -67,46 +69,156 @@ class RequestsManager {
       }).catch(err => this.handle_error(err, options))
   }
 
-  /** 
-   * @param path starting with /
-   * @param options can be used to add behaviour.
-   * */
-  public get = (path: string, options?: RequestOptions) => { this.request(path, "GET", undefined, options); }
+  private get = (path: string, options?: RequestOptions) => { this.request(path, "GET", undefined, options); }
+  private post = (path: string, item: any, options?: RequestOptions) => { this.request(path, "POST", JSON.stringify(item), options); }
+  private post_form = (path: string, form: FormData, options?: RequestOptions) => { this.request(path, "POST", form, options, true); }
+  private put = (path: string, item: any, options?: RequestOptions) => { this.request(path, "PUT", JSON.stringify(item), options); }
+  private delete = (path: string, item: any, options?: RequestOptions) => { this.request(path, "DELETE", JSON.stringify(item), options); }
+  private patch = (path: string, item: any, options?: RequestOptions) => { this.request(path, "PATCH", JSON.stringify(item), options); }
 
-  /** 
-   * @param path starting with /
-   * @param item to be serialized to json and sent to server.
-   * @param options can be used to add behaviour.
-   * */
-  public post = (path: string, item: any, options?: RequestOptions) => { this.request(path, "POST", JSON.stringify(item), options); }
+  public patch_profile(form: FormData) {
+    return new Promise<SchemaUserInfo>((res, rej) => {
+      const opts: RequestOptions = {
+        notify_fail: true,
+        succeed_action: (data) => { res(JSON.parse(data)); },
+        fail_action: rej
+      }
+      this.request('/api/profile', "PATCH", form, opts, true);
+    })
+  }
 
-  /** 
-   * @param path starting with /
-   * @param form to be serialized to json and sent to server.
-   * @param options can be used to add behaviour.
-   * */
-  public post_form = (path: string, form: FormData, options?: RequestOptions) => { this.request(path, "POST", form, options, true); }
+  public signup(username: string, password: string) {
+    return new Promise<void>((res, rej) => {
+      const opts: RequestOptions = {
+        notify_fail: true,
+        succeed_action: res,
+        fail_action: rej,
+      }
+      this.request('/api/singup', 'POST', JSON.stringify({username, password}), opts);
+    })
+  }
 
-  /** 
-   * @param path starting with /
-   * @param item to be serialized to json and sent to server.
-   * @param options can be used to add behaviour.
-   * */
-  public put = (path: string, item: any, options?: RequestOptions) => { this.request(path, "PUT", JSON.stringify(item), options); }
+  public signin(username: string, password: string) {
+    return new Promise<void>((res, rej) => {
+      const opts: RequestOptions = {
+        notify_fail: true,
+        succeed_action: res,
+        fail_action: rej,
+      }
+      this.request('/api/signin', 'POST', JSON.stringify({username, password}), opts);
+    })
+  }
 
-  /** 
-   * @param path starting with /
-   * @param item to be serialized to json and sent to server.
-   * @param options can be used to add behaviour.
-   * */
-  public delete = (path: string, item: any, options?: RequestOptions) => { this.request(path, "DELETE", JSON.stringify(item), options); }
+  public logout() {
+    return new Promise<void>((res, rej) => {
+      const opts: RequestOptions = {
+        notify_fail: true,
+        succeed_action: res,
+        fail_action: rej
+      }
+      this.request('/api/logout', 'GET', undefined, opts);
+    })
+  }
 
-  /** 
-   * @param path starting with /
-   * @param item to be serialized to json and sent to server.
-   * @param options can be used to add behaviour.
-   * */
-  public patch = (path: string, item: any, options?: RequestOptions) => { this.request(path, "PATCH", JSON.stringify(item), options); }
+  public get_channel_info(channel_id: string) {
+    return new Promise<SchemaChannel>((res, rej) => {
+      const opts: RequestOptions = {
+        succeed_action: (data) => { res(JSON.parse(data) as SchemaChannel) },
+        fail_action: rej
+      }
+      this.request(`/api/channel/${channel_id}`, 'GET', undefined, opts);
+    })
+  }
+
+  public load_messages(channel_id: string, ts: number) {
+    return new Promise<SchemaMessage[]>((res, rej) => {
+      const opts: RequestOptions = {
+        succeed_action: (messages) => { res(JSON.parse(messages) as SchemaMessage[]); },
+        fail_action: rej
+      }
+      this.request(`/api/messages/${channel_id}/${ts}`, 'GET', undefined, opts);
+    })
+  }
+
+  public send_message(message: SchemaUpMessage) {
+    return new Promise<void>((res, rej) => {
+      const opts: RequestOptions = {
+        notify_fail: true,
+        succeed_action: res,
+        fail_action: rej,
+      }
+      this.request('/api/message', 'POST', JSON.stringify(message), opts);
+    })
+  }
+
+  public delete_message(message: SchemaMessage) {
+    return new Promise<void>((res, rej) => {
+      const opts: RequestOptions = {
+        notify_fail: true,
+        succeed_action: res,
+        fail_action: rej,
+      }
+      this.request('/api/message', 'DELETE', JSON.stringify(message), opts);
+    })
+  }
+
+
+  public patch_relation(action: "cancel" | "accept" | "refuse", relation_id: string) {
+    return new Promise<void>((res, rej) => {
+      const opts: RequestOptions = {
+        notify_fail: true,
+        succeed_action: res,
+        fail_action: rej
+      }
+      this.request('/api/relation', 'PATCH', JSON.stringify({relation_id, action}), opts);
+    });
+  }
+
+  public init_client() {
+    type Relation = {
+      id: string, a: string, b: string, sender: string, accepted: true, created_at: number, accepted_at: number,
+    };
+
+    type DataResponse = {
+      relations: {user: SchemaUserInfo, relation: Relation}[]
+      user_info: SchemaUserInfo,
+    }
+
+    return new Promise<SchemaInitData>((res, rej) => {
+      const opts: RequestOptions = {
+        notify_fail: true,
+        fail_action: rej,
+        succeed_action: (json) => {
+          const data = JSON.parse(json) as DataResponse;
+
+          const friends: SchemaPeerList = {}
+          const pending_out: SchemaPeerList = {}
+          const pending_in: SchemaPeerList = {}
+          const known_users: SchemaPeer[] = [data.user_info];
+
+          for (const item of data.relations) {
+            known_users.push(item.user);
+            if (item.relation.accepted) {
+              friends[item.relation.id] = {...item.user, relation_id: item.relation.id}
+            } else if (item.relation.sender === data.user_info.id) {
+              pending_out[item.relation.id] = {...item.user, relation_id: item.relation.id}
+            } else {
+              pending_in[item.relation.id] = {...item.user, relation_id: item.relation.id}
+            }
+          }
+
+          res({
+            user: data.user_info,
+            friends,
+            pending_in,
+            pending_out,
+            known_users
+          });
+        },
+      }
+      this.request('/api/init', 'GET', undefined, opts);
+    })
+  }
 }
 
 export const requests_manager = new RequestsManager("http://localhost:8080");

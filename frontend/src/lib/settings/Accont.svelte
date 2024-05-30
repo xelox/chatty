@@ -80,13 +80,6 @@ const reset = () => {
 reset();
 
 const save = () => {
-  const opts: RequestOptions = {
-    succeed_action: (new_data) => {
-      const data: SchemaUserInfo = JSON.parse(new_data); 
-      user_data.set(data);
-      reset();
-    },
-  }
   const form = new FormData();
   for(const [key, data] of Object.entries(pictures)) {
     if (data) form.append(key, data.blob);
@@ -96,7 +89,11 @@ const save = () => {
       form.append(key, change);
     }
   }
-  requests_manager.post_form('/api/update_profile', form, opts);
+
+  requests_manager.patch_profile(form).then((data)=>{
+      user_data.set(data);
+      reset();
+  });
 }
 </script>
 

@@ -1,5 +1,13 @@
 import { writable } from "svelte/store"
 
+export type SchemaInitData = {
+  user: SchemaUserInfo,
+  known_users: SchemaPeer[],
+  pending_in: SchemaPeerList, 
+  pending_out: SchemaPeerList,
+  friends: SchemaPeerList,
+}
+
 export type SchemaUserInfo = {
   id: string,
   username: string,

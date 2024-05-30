@@ -115,20 +115,16 @@ const load_messages = () => {
   if (fully_loaded) return;
   let ts = oldest_loaded_ts ?? new Date().getTime();
 
-  const opts: RequestOptions = {
-    succeed_action: (messages_raw) => {
-      const loaded_messages: SchemaMessage[] = JSON.parse(messages_raw);
-      if (loaded_messages.length === 0) return fully_loaded = true;
-      oldest_loaded_ts = loaded_messages[loaded_messages.length - 1].sent_at;
+  requests_manager.load_messages(channel_info.id, ts).then(loaded_messages => {
+    if (loaded_messages.length === 0) return fully_loaded = true;
+    oldest_loaded_ts = loaded_messages[loaded_messages.length - 1].sent_at;
 
-      for (const message of loaded_messages) {
-        insert_message(message, 'up');
-      }
-
-      just_loaded_messages = true;
+    for (const message of loaded_messages) {
+      insert_message(message, 'up');
     }
-  }
-  requests_manager.get(`/api/messages/${channel_info.id}/${ts}`, opts);
+
+    just_loaded_messages = true;
+  })
 }
 
 let autoscroll = false;
@@ -169,7 +165,7 @@ const handle_keypress = (e: KeyboardEvent) => {
       content: input_text,
       sender_id: user_id,
     }
-    requests_manager.post("/api/message", message);
+    requests_manager.send_message(message);
     input_text = "";
     return;
   }

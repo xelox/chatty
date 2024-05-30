@@ -2,23 +2,19 @@
 import { requests_manager, type RequestOptions } from "../../requests_manager";
 import { pending_friends_in, pending_friends_out } from "../../stores/data";
 const interact = (interaction: "cancel" | "accept" | "refuse", relation_id: string) => {
-  const options: RequestOptions = {
-    succeed_action: () => {
-      if (interaction === "accept" || interaction === "refuse") {
-        pending_friends_in.update(store => {
-          delete store[relation_id];
-          return store;
-        })
-      } else if (interaction === "cancel") {
-        pending_friends_out.update(store => {
-          delete store[relation_id];
-          return store;
-        })
-      }
-    },
-    notify_fail: true,
-  }
-  requests_manager.post(`/api/friendship/${interaction}`, {relation_id}, options)
+  requests_manager.patch_relation(interaction, relation_id).then(()=>{
+    if (interaction === "accept" || interaction === "refuse") {
+      pending_friends_in.update(store => {
+        delete store[relation_id];
+        return store;
+      })
+    } else if (interaction === "cancel") {
+      pending_friends_out.update(store => {
+        delete store[relation_id];
+        return store;
+      })
+    }
+  })
 }
 let section: "inbound" | "outbound";
 const set_section = (s: "inbound" | "outbound") => {

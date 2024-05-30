@@ -30,10 +30,7 @@ const content_segments: MessageFragment[] = message.content.split(/([@%][0-9a-z-
 });
 
 const delete_message = () => {
-  let opts: RequestOptions = {
-    notify_fail: true,
-  }
-  requests_manager.delete(`/api/message`, message, opts);
+  requests_manager.delete_message(message);
 }
 </script>
 

@@ -26,7 +26,7 @@ pub fn create_api_router() -> Router<Arc<ServerState>> {
 
         .route("/profile", patch(user_api::update_profile))
         .route("/init", get(user_api::initial_data_request))
-        .route("/logout", post(user_api::logout))
+        .route("/logout", get(user_api::logout))
         // User is Logged In.
         .layer(ServiceBuilder::new().layer(middleware::from_fn(super::middlewares::validate_auth)))
         // User is NOT Logged In.
