@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use futures_locks::RwLock;
 use axum::extract::ws::WebSocket;
 
-use crate::database::message_table::Message;
+use crate::database::message_table::{Message, MessageOperations};
 use crate::structs::channel::Channel;
 use crate::structs::chatty_response::ChattyResponse;
 use crate::structs::client::Client;
@@ -61,12 +61,12 @@ impl ServerState {
         map
     }
 
-    pub async fn broadcast_message(&self, message: Message) -> ChattyResponse {
+    pub async fn broadcast_message(&self, message: Message, op: MessageOperations) -> ChattyResponse {
         let channels_map = self.channels_map.read().await;
         let Some(channel) = channels_map.get(&message.channel_id) else {
             return ChattyResponse::InternalError;
         };
-        channel.broadcast_message(message).await;
+        channel.broadcast_message(message, op).await;
         ChattyResponse::Ok
     }
 }

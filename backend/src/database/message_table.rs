@@ -1,5 +1,5 @@
 use diesel::{deserialize::Queryable, prelude::Insertable};
-use crate::{database::{self, schema}, structs::{chatty_response::ChattyResponse, ts::TimeStamp}};
+use crate::{database::{self, schema}, structs::ts::TimeStamp};
 use serde::{Deserialize, Serialize};
 use crate::structs::id::ChattyId;
 
@@ -70,18 +70,19 @@ impl Message {
         }
     }
 
-    pub fn delete(message: &ExistingMessage) -> ChattyResponse {
+    pub fn delete(message: &ExistingMessage) -> Option<Message> {
         use schema::messages;
         use diesel::prelude::*;
         
         let conn = &mut database::establish_connection();
-        let query = diesel::delete(messages::table)
+        let query: Result<Message, diesel::result::Error> = diesel::delete(messages::table)
             .filter(messages::id.eq(message.id))
-            .execute(conn);
+            .returning(messages::all_columns)
+            .get_result(conn);
         
         match query {
-            Ok(_) => ChattyResponse::Ok,
-            _ => ChattyResponse::InternalError
+            Ok(message) => Some(message),
+            _ => None
         }
     }
 
@@ -103,4 +104,12 @@ impl Message {
             _ => None
         }
     }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all(serialize = "snake_case"))]
+pub enum MessageOperations {
+    Send,
+    Delete,
+    Patch,
 }

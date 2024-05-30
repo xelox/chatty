@@ -68,14 +68,18 @@ class SocketManager {
 
   private onmessage = (e: MessageEvent) => {
     const e_json: { signals: any[] } = JSON.parse(e.data);
+    console.log(e_json);
 
     for (const s of e_json.signals) {
       if (s.message) return this.handle_message(s.message);
     }
   }
 
-  private handle_message = (s: SchemaMessage) => {
-    event_manager.dispatch("message_add", s);
+  private handle_message = (input: ['send' | 'delete' | 'patch', SchemaMessage]) => {
+    const [action, message] = input;
+    if (action === "send") return event_manager.dispatch({action: "message_add", channel_id: message.channel_id}, message);
+    if (action === "delete") return event_manager.dispatch({action: "message_delete", message_id: message.id}, message);
+    if (action === "patch") return event_manager.dispatch({action: "message_update", message_id: message.id}, message);
   }
   
   private onclose = () => {

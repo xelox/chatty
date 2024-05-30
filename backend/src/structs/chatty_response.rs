@@ -1,6 +1,7 @@
 use axum::{body::Body, response::{IntoResponse, Response}};
 use serde::Serialize;
 
+#[derive(PartialEq, Eq)]
 pub enum ChattyResponse {
     Ok,
     Unauthorized,

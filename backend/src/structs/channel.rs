@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use super::{client::Client, id::ChattyId, socket_signal::Signal};
-use crate::{database::{channel_table::ChannelTable, message_table::Message}, server_state::ServerState};
+use crate::{database::{channel_table::ChannelTable, message_table::{Message, MessageOperations}}, server_state::ServerState};
 
 pub struct Channel {
     clients: HashMap<ChattyId, Client>,
@@ -22,8 +22,8 @@ impl Channel {
         self.clients.remove(client_id);
     }
 
-    pub async fn broadcast_message(&self, message: Message) {
-        let order = Arc::new([Signal::Message(message)]);
+    pub async fn broadcast_message(&self, message: Message, op: MessageOperations) {
+        let order = Arc::new([Signal::Message(op, message)]);
         let mut futures = Vec::new();
         for client in self.clients.values() {
             futures.push(client.send_socket_order(order.clone()));

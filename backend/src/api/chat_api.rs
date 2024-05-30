@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
 use axum::{extract::{Path, State}, response::{IntoResponse, Response}, Json};
+use axum_macros::debug_handler;
 use axum_session::{Session, SessionPgPool};
 
 use crate::{
-    database::{channel_subscribers_table::ChannelSubscribers, channel_table::ChannelTable, message_table::{ExistingMessage, Message, NewMessage}}, 
+    database::{channel_subscribers_table::ChannelSubscribers, channel_table::ChannelTable, message_table::{ExistingMessage, Message, MessageOperations, NewMessage}}, 
     server_state::ServerState, 
     structs::{
         chatty_response::{chatty_json_response, ChattyResponse}, 
@@ -31,13 +32,17 @@ pub async fn send_message(session: Session<SessionPgPool>, State(state): State<A
 
     let message = Message::store(&payload).await;
     match message {
-        Some(message) => state.broadcast_message(message).await,
+        Some(message) => state.broadcast_message(message, MessageOperations::Send).await,
         None => ChattyResponse::InternalError
     }
 }
 
-pub async fn delete_message(Json(message): Json<ExistingMessage>) -> ChattyResponse {
-    Message::delete(&message)
+pub async fn delete_message(State(state): State<Arc<ServerState>>, Json(input): Json<ExistingMessage>) -> ChattyResponse {
+    let Some(message) = Message::delete(&input) else {
+        return ChattyResponse::InternalError;
+    };
+
+    state.broadcast_message(message, MessageOperations::Delete).await
 }
 
 pub async fn edit_message() -> ChattyResponse {

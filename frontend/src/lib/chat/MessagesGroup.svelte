@@ -1,8 +1,8 @@
 <script lang="ts">
-import type { MessageGroup } from "../../stores/messages";
+import type { SchemaMessageGroup } from "../../stores/messages";
 import Message from "./Message.svelte";
 import UserIdWrap from "./UserIdWrap.svelte";
-export let group: MessageGroup;
+export let group: SchemaMessageGroup;
 
 function to_time_str(ts: number) {
   const o = new Date(ts);
@@ -26,7 +26,6 @@ function to_time_str(ts: number) {
 
   return `${day}/${month}/${year} ${h}:${m}`;
 }
-
 </script>
 
 <main>

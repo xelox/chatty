@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::extract::ws::{self};
 use serde::Serialize;
 
-use crate::database::message_table::Message;
+use crate::database::message_table::{Message, MessageOperations};
 
 use super::{id::ChattyId, notification::Notification};
 
@@ -25,7 +25,7 @@ pub struct FriendListItem {
 #[derive(Serialize)]
 #[serde(rename_all(serialize = "snake_case"))]
 pub enum Signal {
-    Message(Message),
+    Message(MessageOperations, Message),
     Notification(Notification),
     FriendReq(FriendReqItem),
     FriendListChanged(FriendListItem),

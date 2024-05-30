@@ -1,70 +1,116 @@
 <script lang='ts'>
-import type { MessageGroup, SchemaChannel, SchemaMessage, SchemaUpMessage } from "../../stores/messages";
+import type { SchemaMessageGroup, SchemaChannel, SchemaMessage, SchemaUpMessage } from "../../stores/messages";
 import event_manager from '../../event_manager';
 import { afterUpdate, beforeUpdate, onDestroy, onMount } from "svelte";
 import { user_data } from "../../stores/data";
 import MentionTool from "./MentionTool.svelte";
 import { requests_manager, type RequestOptions } from "../../requests_manager";
 import MessagesGroup from "./MessagesGroup.svelte";
+import { BiSequencer, type SequentialID } from "../../util/sequencer";
 
 export let channel_info: SchemaChannel;
-
-let messages: MessageGroup[] = [];
+const sequencer = new BiSequencer();
+let groups = new Map<SequentialID, SchemaMessageGroup>();
+const map_message_to_group = new Map<string, SequentialID>;
+let first_group_id: SequentialID | null = null;
+let last_group_id: SequentialID | null = null;
 let oldest_loaded_ts: null | number = null;
 
 const unsubscribe_callbacks: (()=>void)[] = [];
 
-const GROUPING_DT = 60_000;
-
 unsubscribe_callbacks.push(
-  event_manager.subscribe("message_add", (message: SchemaMessage) => {
-    if (message.channel_id != channel_info.id) return;
-    const last_group = messages.pop();
-    if (last_group) {
-      const same_sender = last_group.sender_id === message.sender_id;
-      const time_delta =  message.sent_at - last_group.group_ts_start;
-      if (!same_sender || time_delta > GROUPING_DT) {
-        const new_group: MessageGroup = {
-          sender_id: message.sender_id,
-          group_ts_start: message.sent_at,
-          messages: {[message.id]: message},
-          group_ts_end: message.sent_at,
-        };
-        messages = [...messages, last_group, new_group];
-        return;
-      }
-
-      last_group.messages[message.id] = message;
-      last_group.group_ts_end = message.sent_at;
-      messages = [...messages, last_group];
-      return;
-    }
-
-    const new_group: MessageGroup = {
-      sender_id: message.sender_id,
-      group_ts_start: message.sent_at,
-      messages: {[message.id]: message},
-      group_ts_end: message.sent_at,
-    };
-    messages = [...messages, new_group];
-    return;
-  })
-);
-
-unsubscribe_callbacks.push(
-  event_manager.subscribe("message_delete", (message: SchemaMessage) => {
-    if (message.channel_id != channel_info.id) return;
-    for (const group of messages) {
-      if (group.sender_id !== message.sender_id) continue; 
-      const time_delta = Math.abs(group.group_ts_start - message.sent_at);
-      if (time_delta > GROUPING_DT || time_delta < 0) continue;
-      delete group.messages[message.id];
-    }
-  })
+  event_manager.subscribe({action: "message_add", channel_id: channel_info.id}, (message: SchemaMessage) => {
+    console.log("message_add", message);
+    insert_message(message, 'down');
+  }),
 );
 
 let messages_wrap_dom: HTMLElement;
 let fully_loaded = false;
+const GROUPING_TD = 60_000;
+
+const pick_group = (message: SchemaMessage, from: 'up' | 'down'): SchemaMessageGroup => {
+  {
+    const id = (() => {
+      if (from === 'up') return first_group_id; 
+      return last_group_id;
+    })();
+
+    if (id) {
+      const group = groups.get(id)!;
+      const same_sender = group.sender_id === message.sender_id;
+      const t_delta = (()=> {
+        if (from === 'up') return group.group_ts_end - message.sent_at;
+        return message.sent_at - group.group_ts_end;
+      })();
+
+      console.log(t_delta);
+
+      if (same_sender && t_delta <= GROUPING_TD) {
+        return group;
+      }
+    }
+  }
+
+  {
+    const id = (() => {
+      if (from === 'up') {
+        first_group_id = sequencer.up();
+        return first_group_id;
+      } 
+      last_group_id = sequencer.down();
+      return last_group_id;
+    })();
+
+    const group: SchemaMessageGroup = {
+      sender_id: message.sender_id,
+      group_ts_start: message.sent_at,
+      group_ts_end: message.sent_at,
+      messages: {}
+    }
+
+    map_message_to_group.set(message.id, id);
+    groups.set(id, group);
+    return group;
+  }
+}
+
+const insert_message = (message: SchemaMessage, to: 'up' | 'down') => {
+  const group = pick_group(message, to);
+  group.messages[message.id] = message;
+
+  if (message.sent_at < group.group_ts_start ) {
+    group.group_ts_start = message.sent_at
+  }
+
+  if (message.sent_at > group.group_ts_end ) {
+    group.group_ts_end = message.sent_at
+  }
+
+  groups = groups;
+  
+  unsubscribe_callbacks.push(
+    event_manager.subscribe({action: "message_delete", message_id: message.id}, (message: SchemaMessage) => {
+      delete_message(message);
+    })
+  );
+}
+
+
+const delete_message = (message: SchemaMessage) => {
+  const group_id = map_message_to_group.get(message.id);
+  if (!group_id) {
+    return console.error("tried to delete a message who's group does not exist.");
+  }
+
+  const group = groups.get(group_id)!;
+  delete group.messages[message.id];
+  if (Object.keys(group.messages).length === 0) {
+    groups.delete(group_id);
+  }
+
+  groups = groups;
+}
 
 const load_messages = () => {
   if (fully_loaded) return;
@@ -77,42 +123,12 @@ const load_messages = () => {
       oldest_loaded_ts = loaded_messages[loaded_messages.length - 1].sent_at;
 
       for (const message of loaded_messages) {
-        const first_group = messages.shift();
-        if (first_group) {
-          const same_sender = first_group.sender_id === message.sender_id;
-          const time_delta = first_group.group_ts_end - message.sent_at;
-          if (!same_sender || time_delta > GROUPING_DT) {
-            const new_group: MessageGroup = {
-              group_ts_end: message.sent_at,
-              sender_id: message.sender_id,
-              group_ts_start: message.sent_at,
-              messages: {[message.id]: message}
-            };
-            messages = [new_group, first_group, ...messages];
-            continue;
-          }
-
-          first_group.messages[message.id] = message;
-          first_group.group_ts_start = message.sent_at;
-          messages = [first_group, ...messages];
-          continue;
-        }
-
-        const new_group: MessageGroup = {
-          group_ts_end: message.sent_at,
-          sender_id: message.sender_id,
-          group_ts_start: message.sent_at,
-          messages: {[message.id]: message}
-        };
-        messages = [new_group, ...messages];
-        continue;
+        insert_message(message, 'up');
       }
-
-      
+      console.log(groups);
     }
   }
-
-requests_manager.get(`/api/messages/${channel_info.id}/${ts}`, opts);
+  requests_manager.get(`/api/messages/${channel_info.id}/${ts}`, opts);
 }
 
 onMount(() => {
@@ -154,28 +170,6 @@ const handle_keypress = (e: KeyboardEvent) => {
   }
 }
 
-let mention_search: string | null = null;
-
-const handle_input = (e: Event) => {
-  mention_search = null;
-  const cursor_index = (e.target as HTMLTextAreaElement).selectionStart;
-  let mention_start = input_text.lastIndexOf('@', cursor_index);
-  if (mention_start === -1) {
-    return;
-  }
-
-  let mention_end = input_text.indexOf(' ', mention_start);
-  if (mention_end === -1) {
-    mention_end = input_text.length;
-  }
-
-  const mention = input_text.substring(mention_start, mention_end);
-  if (mention.length > 0 && cursor_index >= mention_start && cursor_index <= mention_end) {
-    mention_search = mention;
-    return;
-  }
-}
-
 const handle_scroll = (e: Event) => {
   if (messages_wrap_dom.scrollTop === 0) {
     load_messages();
@@ -190,14 +184,11 @@ let wrap_height: number;
 <main bind:clientHeight={wrap_height}>
   <div bind:this={messages_wrap_dom} on:scroll={handle_scroll} class="messages_wrap" style="height: calc({wrap_height}px - {input_height}px);">
     <div class="whitespace_up"></div>
-    {#each messages as group}
+    {#each [...groups.entries()].sort((a, b) => a[1].group_ts_start - b[1].group_ts_start) as [key, group] (key)}
       <MessagesGroup {group}/>
     {/each}
   </div>
   <div class="input_wrap" bind:clientHeight={input_height}>
-    {#if mention_search}
-      <MentionTool mention_search={mention_search}/>
-    {/if}
     <textarea bind:value={input_text} on:keypress={handle_keypress}></textarea>
   </div>
 </main>
