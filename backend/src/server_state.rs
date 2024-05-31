@@ -1,12 +1,15 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 use futures_locks::RwLock;
 use axum::extract::ws::WebSocket;
 
 use crate::database::message_table::{Message, MessageOperations};
+use crate::database::users_table::User;
 use crate::structs::channel::Channel;
 use crate::structs::chatty_response::ChattyResponse;
 use crate::structs::client::Client;
 use crate::structs::id::ChattyId;
+use crate::structs::socket_signal::Signal;
 
 pub struct ServerState {
     clients_map: RwLock<HashMap<ChattyId, Client>>,
@@ -67,6 +70,35 @@ impl ServerState {
             return ChattyResponse::InternalError;
         };
         channel.broadcast_message(message, op).await;
+        ChattyResponse::Ok
+    }
+
+    pub async fn broadcast_profile_patch(&self, user: User) -> ChattyResponse {
+        let client_map = self.clients_map.read().await;
+        let channel_map = self.channels_map.read().await;
+
+        let Some(client) = client_map.get(&user.id) else {
+            return ChattyResponse::InternalError;
+        };
+        let order = Arc::new([Signal::ProfilePatch(user)]);
+        let channel_ids = client.list_subscribed_channels().await;
+
+        let mut visited_clients = HashSet::<ChattyId>::new();
+        let mut futures = Vec::new();
+
+        for channel_id in channel_ids {
+            if let Some(channel) = channel_map.get(&channel_id) {
+                for (client_id, client) in channel.get_clients() {
+                    if visited_clients.get(client_id) == None {
+                        visited_clients.insert(*client_id);
+                        futures.push(client.send_socket_order(order.clone()))
+                    } 
+                }
+            }
+        }
+
+        futures::future::join_all(futures).await;
+
         ChattyResponse::Ok
     }
 }

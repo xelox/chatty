@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use axum::{extract::{Path, State}, response::{IntoResponse, Response}, Json};
-use axum_macros::debug_handler;
 use axum_session::{Session, SessionPgPool};
 
 use crate::{

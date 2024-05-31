@@ -30,4 +30,8 @@ impl Channel {
         }
         futures::future::join_all(futures).await;
     }
+
+    pub fn get_clients(&self) -> &HashMap<ChattyId, Client> {
+        &self.clients
+    }
 }

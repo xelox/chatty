@@ -143,7 +143,7 @@ impl User {
         }
     }
         
-    pub fn update_profile_decorations(decorations: Vec<ProfileDecoration>, uid: ChattyId) -> ChattyResponse {
+    pub fn update_profile_decorations(decorations: Vec<ProfileDecoration>, uid: ChattyId) -> Option<User> {
         use schema::users;
         use diesel::prelude::*;
 
@@ -197,8 +197,8 @@ impl User {
             .get_result(conn);
 
         match query {
-            Ok(user) => ChattyResponse::Plain(serde_json::to_string(&user).unwrap(), None),
-            Err(_) => ChattyResponse::InternalError,
+            Ok(user) => Some(user),
+            Err(_) => None,
         }
     }
 }

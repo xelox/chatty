@@ -1,7 +1,7 @@
 import event_manager from "./event_manager";
 import notification_manager from "./notification_manager";
 import { requests_manager } from "./requests_manager";
-import {friend_list, pending_friends_in, pending_friends_out, user_data } from "./stores/data";
+import {friend_list, pending_friends_in, pending_friends_out, user_data, type SchemaUserInfo } from "./stores/data";
 import {type SchemaMessage } from "./stores/messages";
 import users from "./stores/users";
 
@@ -36,7 +36,8 @@ class SocketManager {
     const e_json: { signals: any[] } = JSON.parse(e.data);
 
     for (const s of e_json.signals) {
-      if (s.message) return this.handle_message(s.message);
+      if (s.message) this.handle_message(s.message);
+      if (s.profile_patch) this.handle_profile_patch(s.profile_patch);
     }
   }
 
@@ -45,6 +46,10 @@ class SocketManager {
     if (action === "send") return event_manager.dispatch({action: "message_add", channel_id: message.channel_id}, message);
     if (action === "delete") return event_manager.dispatch({action: "message_delete", message_id: message.id}, message);
     if (action === "patch") return event_manager.dispatch({action: "message_update", message_id: message.id}, message);
+  }
+
+  private handle_profile_patch = (input: SchemaUserInfo) => {
+    users.update_peers([input]);
   }
   
   private onclose = () => {

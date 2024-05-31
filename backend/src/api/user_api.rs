@@ -2,7 +2,7 @@ use axum::Json;
 use axum_session::{Session, SessionPgPool};
 use serde::Deserialize;
 use axum::response::IntoResponse;
-use axum::extract::{Path, Multipart};
+use axum::extract::Multipart;
 use crate::structs::socket_signal::Signal;
 use crate::structs::notification::Notification;
 use crate::database::user_relations_table::{UserRelationPair, RelationAndUser, UserRelation};
@@ -78,15 +78,14 @@ pub async fn initial_data_request(session: Session<SessionPgPool>) -> Response {
     return chatty_json_response(complete_result);
 }
 
-pub async fn update_profile(session: Session<SessionPgPool>, mut form: Multipart) -> ChattyResponse {
+pub async fn update_profile(session: Session<SessionPgPool>, State(state): State<Arc<ServerState>>, mut form: Multipart) -> Response {
     let Some(uid) = session.get::<ChattyId>("user_id") else {
-        return ChattyResponse::InternalError;
+        return ChattyResponse::InternalError.into_response();
     };
     
     let mut decorations = Vec::<ProfileDecoration>::new();
     while let Some(field) = form.next_field().await.unwrap() {
         let key = field.name().unwrap().to_string();
-        // TODO: Use streams instead of bytes for performance benefits.
         match key.as_str() {
             "display_name" => {
                 let str = field.text().await.unwrap();
@@ -111,7 +110,11 @@ pub async fn update_profile(session: Session<SessionPgPool>, mut form: Multipart
             _ => {}
         }
     }
-    User::update_profile_decorations(decorations, uid)
+    let Some(user) = User::update_profile_decorations(decorations, uid) else {
+        return ChattyResponse::InternalError.into_response();
+    };
+    state.broadcast_profile_patch(user.clone()).await;
+    chatty_json_response(&user)
 }
 
 #[derive(Debug, Deserialize, Serialize)]
