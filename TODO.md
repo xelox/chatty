@@ -15,7 +15,7 @@
 
 # Backend
 - [/] live Socket Signal update:
-    - [/] profile patch
+    - [x] profile patch
     - [/] friend request/relation
     - [x] message delete
     - [/] message edit

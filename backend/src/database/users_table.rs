@@ -8,7 +8,6 @@ use diesel::expression::ValidGrouping;
 use serde::Serialize;
 use crate::database;
 use crate::file_storage::save;
-use crate::structs::chatty_response::ChattyResponse;
 use crate::structs::checked_string::CheckedString;
 use crate::database::schema;
 use crate::structs::checked_string::Email;
@@ -32,8 +31,8 @@ pub struct User {
     pub password_hash: String,
 
     pub display_name: Option<String>,
-    pub has_pfp: bool,
-    pub has_banner: bool,
+    pub pfp_last_update: Option<TimeStamp>,
+    pub banner_last_update: Option<TimeStamp>,
     pub custom_status: Option<String>,
     pub about_me: String,
 
@@ -152,31 +151,33 @@ impl User {
         #[diesel(table_name = schema::users)]
         struct Change<'a> {
             display_name: Option<&'a str>,
-            has_pfp: Option<&'a bool>,
-            has_banner: Option<&'a bool>,
+            pfp_last_update: Option<&'a TimeStamp>,
+            banner_last_update: Option<&'a TimeStamp>,
             about_me: Option<&'a str>,
             custom_status: Option<&'a str>,
         }
 
         let mut changes = Change {
             display_name: None,
-            has_pfp: None,
-            has_banner: None,
+            pfp_last_update: None,
+            banner_last_update: None,
             about_me: None,
             custom_status: None
         };
+
+        let ts = TimeStamp::now();
 
         for decoration in decorations.iter() {
             match decoration {
                 ProfileDecoration::Pfp(bytes) => {
                     let path_str = format!("pfp/{uid}.png");
                     let _ = save(Path::new(&path_str), &bytes);
-                    changes.has_pfp = Some(&true);
+                    changes.pfp_last_update = Some(&ts);
                 },
                 ProfileDecoration::Banner(bytes) => {
                     let path_str = format!("banner/{uid}.png");
                     let _ = save(Path::new(&path_str), &bytes);
-                    changes.has_banner = Some(&true);
+                    changes.banner_last_update = Some(&ts);
                 },
                 ProfileDecoration::DisplayName(display_name) => {
                     changes.display_name = Some(display_name);

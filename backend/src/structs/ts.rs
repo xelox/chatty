@@ -9,8 +9,6 @@ use diesel::{deserialize::FromSqlRow, expression::AsExpression};
 use serde::de::Visitor;
 use serde::{Deserialize, Serialize};
 
-use crate::structs::id::ChattyId;
-
 
 #[derive(Clone, Debug, Copy)]
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
@@ -21,7 +19,7 @@ pub struct TimeStamp {
 }
 
 impl TimeStamp {
-    fn now() -> TimeStamp {
+    pub fn now() -> TimeStamp {
         TimeStamp {
             ts: SystemTime::now()
                 .duration_since(UNIX_EPOCH)

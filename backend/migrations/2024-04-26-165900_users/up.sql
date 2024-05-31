@@ -8,8 +8,8 @@ CREATE TABLE users (
   password_hash CHAR(97) NOT NULL,
 
   display_name VARCHAR(25) NOT NULL DEFAULT '',
-  has_pfp BOOLEAN NOT NULL DEFAULT FALSE,
-  has_banner BOOLEAN NOT NULL DEFAULT FALSE,
+  pfp_last_update TIMESTAMP,
+  banner_last_update TIMESTAMP, 
   custom_status VARCHAR(50),
   about_me VARCHAR(500) NOT NULL DEFAULT '',
 

@@ -54,10 +54,10 @@ diesel::table! {
         email -> Nullable<Varchar>,
         #[max_length = 97]
         password_hash -> Bpchar,
-        #[max_length = 50]
+        #[max_length = 25]
         display_name -> Nullable<Varchar>,
-        has_pfp -> Bool,
-        has_banner -> Bool,
+        pfp_last_update -> Nullable<Timestamp>,
+        banner_last_update -> Nullable<Timestamp>,
         #[max_length = 50]
         custom_status -> Nullable<Varchar>,
         #[max_length = 500]
