@@ -87,7 +87,7 @@ class RequestsManager {
         succeed_action: res,
         fail_action: rej,
       }
-      this.request('/api/singup', 'POST', JSON.stringify({username, password}), opts);
+      this.request('/api/signup', 'POST', JSON.stringify({username, password}), opts);
     })
   }
 
