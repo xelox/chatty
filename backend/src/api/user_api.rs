@@ -127,6 +127,8 @@ pub async fn send_friend_request( session: Session<SessionPgPool>, State(state):
         return ChattyResponse::Unauthorized;
     };
 
+    println!("{sender_id}");
+
     match User::query_user_by_username(&payload.to) {
         Some(target) => {
             let Some(req_id) = UserRelation::create(

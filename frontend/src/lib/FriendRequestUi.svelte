@@ -1,15 +1,11 @@
 <script lang='ts'>
+import { requests_manager } from "../requests_manager";
+
 let input = '';
 const send_friend_request = () => {
-  // TODO: use the request manager abastraction instead.
-  fetch('/api/send_friend_request', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({to: input})
-  }).then(res=>{
-      res.text().then(json=>{
-      }).catch();
-    }).catch(err=>console.error(err));
+  requests_manager.send_friend_req(input).finally(()=>{
+    input = '';
+  })
 }
 </script>
 

@@ -155,6 +155,17 @@ class RequestsManager {
     })
   }
 
+  public send_friend_req(to: string) {
+    return new Promise<void>((res, rej) => {
+      const opts: RequestOptions = {
+        notify_fail: true,
+        succeed_action: res,
+        fail_action: rej
+      }
+
+      this.request('/api/relation', 'POST', JSON.stringify({to}), opts);
+    })
+  }
 
   public patch_relation(action: "cancel" | "accept" | "refuse", relation_id: string) {
     return new Promise<void>((res, rej) => {
